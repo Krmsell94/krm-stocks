@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRM Stocks</title>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
+import { getFirestore, collection, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
+  authDomain: "krm-stocks.firebaseapp.com",
+  projectId: "krm-stocks",
+  storageBucket: "krm-stocks.firebasestorage.app",
+  messagingSenderId: "317882690506",
+  appId: "1:317882690506:web:790be2a4214f8270bcfd33",
+  measurementId: "G-7KF2KPlJ53"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window._db = db;
+window._firestoreOps = { collection, getDocs, doc, getDoc };
+</script>
+
+<!-- TradingView Lightweight Charts -->
+<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
+
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #21262d;
+    --border: #30363d;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --green: #3fb950;
+    --red: #f85149;
+    --blue: #58a6ff;
+    --gold: #d29922;
+    --accent: #1f6feb;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--blue);
+    letter-spacing: 1px;
+  }
+
+  .last-update {
+    font-size: 12px;
+    color: var(--text2);
+  }
+
+  .tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 20px;
+  }
+
+  .tab {
+    padding: 12px 20px;
+    cursor: pointer;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    color: var(--blue);
+    border-bottom-color: var(--blue);
+  }
+
+  .tab:hover:not(.active) {
+    color: var(--text);
+  }
+
+  .page { display: none; padding: 20px; }
+  .page.active { display: block; }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stocks-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stock-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.2s;
+  }
+
+  .stock-card:hover { border-color: var(--blue); }
+
+  .card-header {
+    padding: 12px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .symbol {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .score-badge {
+    background: var(--surface2);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .score-badge.great { color: var(--green); }
+  .score-badge.good { color: var(--gold); }
+  .score-badge.ok { color: var(--text2); }
+
+  .chart-container {
+    height: 120px;
+    position: relative;
+  }
+
+  .card-footer {
+    padding: 8px 14px;
+    font-size: 11px;
+    color: var(--text2);
+    background: var(--surface2);
+  }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-header {
+    padding: 16px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--surface);
+  }
+
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-size: 20px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  .modal-close:hover { background: var(--surface2); color: var(--text); }
+
+  .modal-chart {
+    height: 300px;
+    padding: 16px;
+  }
+
+  .modal-info {
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .info-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 10px 14px;
+  }
+
+  .info-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .info-value { font-size: 16px; font-weight: 700; }
+
+  .tv-link {
+    display: block;
+    margin: 0 20px 20px;
+    background: var(--accent);
+    color: white;
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  .tv-link:hover { opacity: 0.9; }
+
+  /* Loading */
+  .loading {
+    text-align: center;
+    padding: 60px;
+    color: var(--text2);
+  }
+
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--border);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 16px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Empty */
+  .empty {
+    text-align: center;
+    padding: 60px;
+    color: var(--text2);
+  }
+
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* Arkitaz */
+  .arkitaz-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  .arkitaz-table th {
+    background: var(--surface2);
+    padding: 10px 12px;
+    text-align: right;
+    color: var(--text2);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arkitaz-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .arkitaz-table tr:hover td { background: var(--surface2); cursor: pointer; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
+  .badge-gold { background: rgba(210,153,34,0.15); color: var(--gold); }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .modal-info { grid-template-columns: repeat(2, 1fr); }
+    .stocks-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">📈 KRM Stocks</div>
+  <div class="last-update" id="lastUpdate">جاري التحميل...</div>
+</header>
+
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('foras')">🔥 الفرص</div>
+  <div class="tab" onclick="switchTab('arkitaz')">🎯 الارتكاز</div>
+</div>
+
+<!-- الفرص Tab -->
+<div class="page active" id="page-foras">
+  <div id="foras-us-section">
+    <div class="section-title">🇺🇸 الأسهم الأمريكية</div>
+    <div class="stocks-grid" id="grid-us">
+      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
+    </div>
+  </div>
+
+  <div id="foras-sa-section">
+    <div class="section-title">🇸🇦 السوق السعودي (تداول)</div>
+    <div class="stocks-grid" id="grid-sa">
+      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
+    </div>
+  </div>
+</div>
+
+<!-- الارتكاز Tab -->
+<div class="page" id="page-arkitaz">
+  <div class="empty">
+    <div class="empty-icon">🎯</div>
+    <div>قيد التطوير</div>
+    <div style="font-size:12px;margin-top:8px">قريباً: أسهم الارتكاز مع نطاق ضيق</div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal" id="modalBox">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">—</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-chart" id="modalChart"></div>
+    <div class="modal-info" id="modalInfo"></div>
+    <a class="tv-link" id="modalTvLink" href="#" target="_blank">📊 افتح في TradingView</a>
+  </div>
+</div>
+
+<script type="module">
+// ── Wait for Firebase to init ──
+async function waitForDB() {
+  for (let i = 0; i < 50; i++) {
+    if (window._db) return;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  throw new Error('Firebase timeout');
+}
+
+// ── Score color ──
+function scoreClass(score) {
+  if (score < 0.03) return 'great';
+  if (score < 0.08) return 'good';
+  return 'ok';
+}
+
+function scoreLabel(score) {
+  if (score < 0.03) return '🟢 ممتاز';
+  if (score < 0.08) return '🟡 جيد';
+  return '⚪ مقبول';
+}
+
+// ── Mini sparkline chart ──
+function renderMiniChart(container, candles) {
+  container.innerHTML = '';
+  if (!candles || !candles.length) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;font-size:12px">لا توجد بيانات</div>';
+    return;
+  }
+  const chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth || 300,
+    height: 120,
+    layout: { background: { color: 'transparent' }, textColor: '#8b949e' },
+    grid: { vertLines: { visible: false }, horzLines: { color: '#21262d' } },
+    crosshair: { mode: LightweightCharts.CrosshairMode.Hidden },
+    rightPriceScale: { visible: false },
+    timeScale: { visible: false },
+    handleScroll: false,
+    handleScale: false,
+  });
+  const series = chart.addAreaSeries({
+    lineColor: '#58a6ff',
+    topColor: 'rgba(88,166,255,0.25)',
+    bottomColor: 'rgba(88,166,255,0)',
+    lineWidth: 1.5,
+  });
+  series.setData(candles.map(c => ({ time: c.t, value: c.c })));
+  chart.timeScale().fitContent();
+}
+
+// ── Full chart in modal ──
+function renderFullChart(container, candles) {
+  container.innerHTML = '';
+  if (!candles || !candles.length) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555">لا توجد بيانات</div>';
+    return;
+  }
+  const chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth || 700,
+    height: 280,
+    layout: { background: { color: 'transparent' }, textColor: '#8b949e' },
+    grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
+    rightPriceScale: { borderColor: '#30363d' },
+    timeScale: { borderColor: '#30363d', timeVisible: true },
+  });
+  const series = chart.addCandlestickSeries({
+    upColor: '#3fb950', downColor: '#f85149',
+    borderUpColor: '#3fb950', borderDownColor: '#f85149',
+    wickUpColor: '#3fb950', wickDownColor: '#f85149',
+  });
+  series.setData(candles.map(c => ({ time: c.t, open: c.o, high: c.h, low: c.l, close: c.c })));
+  chart.timeScale().fitContent();
+}
+
+// ── Build stock card ──
+function buildCard(symbol, data, market) {
+  const div = document.createElement('div');
+  div.className = 'stock-card';
+  const cls = scoreClass(data.score || 1);
+  div.innerHTML = `
+    <div class="card-header">
+      <div class="symbol">${symbol}</div>
+      <div class="score-badge ${cls}">${scoreLabel(data.score || 1)}</div>
+    </div>
+    <div class="chart-container" id="chart-${market}-${symbol}"></div>
+    <div class="card-footer">${data.note || ''}</div>
+  `;
+  div.onclick = () => openModal(symbol, data, market);
+  return div;
+}
+
+// ── Modal ──
+window._currentCharts = {};
+function openModal(symbol, data, market) {
+  document.getElementById('modalTitle').textContent = symbol;
+
+  // TV link
+  const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
+  document.getElementById('modalTvLink').href = `https://www.tradingview.com/chart/?symbol=${tvSuffix}`;
+
+  // Info
+  const score = data.score ?? '—';
+  const pctScore = typeof score === 'number' ? (score * 100).toFixed(1) + '%' : '—';
+  document.getElementById('modalInfo').innerHTML = `
+    <div class="info-card">
+      <div class="info-label">نسبة القرب من القاع</div>
+      <div class="info-value" style="color:${score < 0.03 ? 'var(--green)' : score < 0.08 ? 'var(--gold)' : 'var(--text)'}">${pctScore}</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">آخر تحديث</div>
+      <div class="info-value" style="font-size:13px">${data.date || '—'}</div>
+    </div>
+    <div class="info-card">
+      <div class="info-label">ملاحظة</div>
+      <div class="info-value" style="font-size:12px;font-weight:400">${data.note || '—'}</div>
+    </div>
+  `;
+
+  // Chart
+  const chartDiv = document.getElementById('modalChart');
+  chartDiv.innerHTML = '';
+  if (data.candles && data.candles.length) {
+    renderFullChart(chartDiv, data.candles);
+  } else {
+    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً بعد أول فرصة تحديث</div></div>';
+  }
+
+  document.getElementById('modal').classList.add('open');
+}
+
+window.closeModal = function(e) {
+  if (!e || e.target === document.getElementById('modal')) {
+    document.getElementById('modal').classList.remove('open');
+  }
+};
+
+// ── Load Firestore data ──
+async function loadMarket(gridId, collectionName, market) {
+  const grid = document.getElementById(gridId);
+  try {
+    await waitForDB();
+    const { collection, getDocs } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, collectionName));
+
+    if (snap.empty) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد بيانات حالياً</div>';
+      return;
+    }
+
+    const stocks = [];
+    snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
+    stocks.sort((a, b) => (a.score || 1) - (b.score || 1));
+
+    grid.innerHTML = '';
+    for (const s of stocks) {
+      const card = buildCard(s.id, s, market);
+      grid.appendChild(card);
+      // render mini chart after insert
+      setTimeout(() => {
+        const c = document.getElementById(`chart-${market}-${s.id}`);
+        if (c) renderMiniChart(c, s.candles);
+      }, 50);
+    }
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ في التحميل: ${err.message}</div>`;
+  }
+}
+
+// ── Load meta ──
+async function loadMeta() {
+  try {
+    await waitForDB();
+    const { doc, getDoc } = window._firestoreOps;
+    const metaUS = await getDoc(doc(window._db, 'meta', 'suggestions_us'));
+    const metaSA = await getDoc(doc(window._db, 'meta', 'suggestions_sa'));
+    const us = metaUS.data();
+    const sa = metaSA.data();
+    const date = us?.lastRun || sa?.lastRun || '—';
+    document.getElementById('lastUpdate').textContent = `آخر تحديث: ${date}`;
+  } catch {}
+}
+
+// ── Tab switch ──
+window.switchTab = function(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+};
+
+// ── Init ──
+loadMeta();
+loadMarket('grid-us', 'suggestions_us', 'us');
+loadMarket('grid-sa', 'suggestions_sa', 'sa');
+</script>
+
+</body>
+</html>
