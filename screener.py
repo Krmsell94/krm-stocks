@@ -43,7 +43,7 @@ PERIOD_DAYS   = 220
 MAX_SCORE     = 0.10
 HOURLY_DROP   = -0.10
 MIN_VOLUME    = 100_000
-TOP_N         = 10
+TOP_N         = 999
 
 # ─── طبقة 1: كلاسيكي ─────────────────────────────────────────────
 def proximity_score(hist):
