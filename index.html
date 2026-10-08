@@ -8,7 +8,7 @@
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, getDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
@@ -24,7 +24,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 window._db = db;
-window._firestoreOps = { collection, getDocs, doc, getDoc };
+window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc };
 </script>
 
 <!-- TradingView Lightweight Charts -->
@@ -43,6 +43,8 @@ window._firestoreOps = { collection, getDocs, doc, getDoc };
     --blue: #58a6ff;
     --gold: #d29922;
     --accent: #1f6feb;
+    --purple: #bc8cff;
+    --teal: #39d353;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -66,265 +68,259 @@ window._firestoreOps = { collection, getDocs, doc, getDoc };
     z-index: 100;
   }
 
-  .logo {
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--blue);
-    letter-spacing: 1px;
-  }
-
-  .last-update {
-    font-size: 12px;
-    color: var(--text2);
-  }
+  .logo { font-size: 20px; font-weight: 700; color: var(--blue); letter-spacing: 1px; }
+  .last-update { font-size: 12px; color: var(--text2); }
 
   .tabs {
     display: flex;
     background: var(--surface);
     border-bottom: 1px solid var(--border);
     padding: 0 20px;
+    overflow-x: auto;
   }
 
   .tab {
-    padding: 12px 20px;
+    padding: 12px 18px;
     cursor: pointer;
     color: var(--text2);
     border-bottom: 2px solid transparent;
     font-size: 14px;
     font-weight: 500;
     transition: all 0.2s;
+    white-space: nowrap;
   }
 
-  .tab.active {
-    color: var(--blue);
-    border-bottom-color: var(--blue);
-  }
-
-  .tab:hover:not(.active) {
-    color: var(--text);
-  }
+  .tab.active { color: var(--blue); border-bottom-color: var(--blue); }
+  .tab:hover:not(.active) { color: var(--text); }
 
   .page { display: none; padding: 20px; }
   .page.active { display: block; }
 
   .section-title {
-    font-size: 16px;
-    font-weight: 600;
-    color: var(--text2);
-    margin-bottom: 12px;
-    padding-bottom: 6px;
-    border-bottom: 1px solid var(--border);
+    font-size: 16px; font-weight: 600; color: var(--text2);
+    margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
   }
 
   .stocks-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
+    gap: 12px; margin-bottom: 24px;
   }
 
   .stock-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-    cursor: pointer;
-    transition: border-color 0.2s;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color 0.2s;
   }
-
   .stock-card:hover { border-color: var(--blue); }
 
   .card-header {
-    padding: 12px 14px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 12px 14px; display: flex;
+    justify-content: space-between; align-items: center;
     border-bottom: 1px solid var(--border);
   }
 
-  .symbol {
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-  }
+  .symbol { font-size: 16px; font-weight: 700; color: var(--text); }
 
   .score-badge {
-    background: var(--surface2);
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 12px;
-    font-weight: 600;
+    background: var(--surface2); border-radius: 20px;
+    padding: 3px 10px; font-size: 12px; font-weight: 600;
   }
-
   .score-badge.great { color: var(--green); }
-  .score-badge.good { color: var(--gold); }
-  .score-badge.ok { color: var(--text2); }
+  .score-badge.good  { color: var(--gold); }
+  .score-badge.ok    { color: var(--text2); }
 
-  .chart-container {
-    height: 120px;
-    position: relative;
-  }
+  .chart-container { height: 120px; position: relative; }
 
-  .card-footer {
-    padding: 8px 14px;
-    font-size: 11px;
-    color: var(--text2);
-    background: var(--surface2);
+  .confidence-row {
+    padding: 6px 14px 8px; display: flex;
+    align-items: center; gap: 8px; font-size: 11px;
   }
+  .conf-label { color: var(--text2); min-width: 50px; }
+  .conf-bar { flex: 1; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; }
+  .conf-fill { height: 100%; border-radius: 2px; transition: width 0.5s; }
+  .conf-pct { color: var(--text2); min-width: 35px; text-align: left; }
+
+  .card-footer { padding: 8px 14px; font-size: 11px; color: var(--text2); background: var(--surface2); }
 
   /* Modal */
   .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: center;
-    justify-content: center;
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 200;
+    align-items: center; justify-content: center;
   }
-
   .modal-overlay.open { display: flex; }
 
   .modal {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    width: 90%;
-    max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; width: 90%; max-width: 800px;
+    max-height: 90vh; overflow-y: auto;
   }
 
   .modal-header {
-    padding: 16px 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    padding: 16px 20px; display: flex;
+    justify-content: space-between; align-items: center;
     border-bottom: 1px solid var(--border);
-    position: sticky;
-    top: 0;
-    background: var(--surface);
+    position: sticky; top: 0; background: var(--surface); z-index: 10;
   }
+  .modal-title { font-size: 18px; font-weight: 700; }
+  .modal-header-actions { display: flex; align-items: center; gap: 10px; }
 
-  .modal-title {
-    font-size: 18px;
-    font-weight: 700;
+  .btn-buy {
+    background: rgba(63,185,80,0.15); border: 1px solid var(--green);
+    color: var(--green); padding: 6px 14px; border-radius: 6px;
+    cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s;
   }
+  .btn-buy:hover { background: rgba(63,185,80,0.25); }
+  .btn-buy.bought { background: var(--green); color: #0d1117; }
 
   .modal-close {
-    background: none;
-    border: none;
-    color: var(--text2);
-    font-size: 20px;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 4px;
+    background: none; border: none; color: var(--text2);
+    font-size: 20px; cursor: pointer; padding: 4px 8px; border-radius: 4px;
   }
-
   .modal-close:hover { background: var(--surface2); color: var(--text); }
 
-  .modal-chart {
-    height: 300px;
-    padding: 16px;
-  }
+  .modal-chart { height: 300px; padding: 16px; }
 
   .modal-info {
     padding: 16px 20px;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
   }
 
-  .info-card {
-    background: var(--surface2);
-    border-radius: 8px;
-    padding: 10px 14px;
-  }
-
+  .info-card { background: var(--surface2); border-radius: 8px; padding: 10px 14px; }
   .info-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
   .info-value { font-size: 16px; font-weight: 700; }
 
-  .tv-link {
-    display: block;
-    margin: 0 20px 20px;
-    background: var(--accent);
-    color: white;
-    text-align: center;
-    padding: 10px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 14px;
+  .layer-scores {
+    padding: 0 20px 16px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;
   }
+  .layer-card {
+    background: var(--surface2); border-radius: 8px;
+    padding: 10px 12px; border: 1px solid var(--border);
+  }
+  .layer-name { font-size: 10px; color: var(--text2); margin-bottom: 6px; font-weight: 600; }
+  .layer-val { font-size: 20px; font-weight: 700; }
+  .layer-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+  .layer-fill { height: 100%; border-radius: 2px; }
 
+  .tv-link {
+    display: block; margin: 0 20px 20px;
+    background: var(--accent); color: white; text-align: center;
+    padding: 10px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; font-size: 14px;
+  }
   .tv-link:hover { opacity: 0.9; }
 
-  /* Loading */
-  .loading {
-    text-align: center;
-    padding: 60px;
-    color: var(--text2);
+  /* Buy form */
+  .buy-form { padding: 16px 20px; border-top: 1px solid var(--border); display: none; }
+  .buy-form.open { display: block; }
+  .buy-form h4 { font-size: 14px; margin-bottom: 12px; color: var(--green); }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .form-group label { display: block; font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+  .form-group input {
+    width: 100%; background: var(--bg); border: 1px solid var(--border);
+    color: var(--text); padding: 7px 10px; border-radius: 6px; font-size: 13px;
+  }
+  .form-group input:focus { outline: none; border-color: var(--blue); }
+
+  .btn-save-buy {
+    background: var(--green); color: #0d1117; border: none;
+    padding: 8px 20px; border-radius: 6px; cursor: pointer;
+    font-size: 13px; font-weight: 700; margin-left: 8px;
+  }
+  .btn-cancel-buy {
+    background: none; border: 1px solid var(--border); color: var(--text2);
+    padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px;
   }
 
+  /* Loading / Empty */
+  .loading { text-align: center; padding: 60px; color: var(--text2); }
   .spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid var(--border);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    margin: 0 auto 16px;
+    width: 40px; height: 40px; border: 3px solid var(--border);
+    border-top-color: var(--blue); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 16px;
   }
-
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* Empty */
-  .empty {
-    text-align: center;
-    padding: 60px;
-    color: var(--text2);
-  }
-
+  .empty { text-align: center; padding: 60px; color: var(--text2); }
   .empty-icon { font-size: 40px; margin-bottom: 12px; }
 
-  /* Arkitaz */
-  .arkitaz-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
-
+  /* Arkitaz table */
+  .arkitaz-table { width: 100%; border-collapse: collapse; font-size: 13px; margin-bottom: 24px; }
   .arkitaz-table th {
-    background: var(--surface2);
-    padding: 10px 12px;
-    text-align: right;
-    color: var(--text2);
-    font-weight: 600;
+    background: var(--surface2); padding: 10px 12px;
+    text-align: right; color: var(--text2); font-weight: 600;
     border-bottom: 1px solid var(--border);
   }
-
-  .arkitaz-table td {
-    padding: 10px 12px;
-    border-bottom: 1px solid var(--border);
-  }
-
+  .arkitaz-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: middle; }
   .arkitaz-table tr:hover td { background: var(--surface2); cursor: pointer; }
 
-  .badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: 600;
+  .mini-conf-bar { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; }
+  .mini-bar { width: 50px; height: 4px; background: var(--surface2); border-radius: 2px; overflow: hidden; display: inline-block; }
+  .mini-fill { height: 100%; border-radius: 2px; }
+
+  /* Performance */
+  .perf-stats {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; margin-bottom: 24px;
   }
+  .perf-stat {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 16px; text-align: center;
+  }
+  .perf-stat .label { font-size: 11px; color: var(--text2); margin-bottom: 8px; }
+  .perf-stat .value { font-size: 24px; font-weight: 700; }
 
-  .badge-green { background: rgba(63,185,80,0.15); color: var(--green); }
-  .badge-gold { background: rgba(210,153,34,0.15); color: var(--gold); }
+  .perf-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .perf-table th {
+    background: var(--surface2); padding: 10px 12px;
+    text-align: right; color: var(--text2); font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .perf-table td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+  .perf-table tr:last-child td { border-bottom: none; }
 
-  /* Responsive */
+  .pnl-positive { color: var(--green); font-weight: 600; }
+  .pnl-negative { color: var(--red); font-weight: 600; }
+  .pnl-neutral  { color: var(--text2); }
+
+  .btn-remove {
+    background: none; border: none; color: var(--red);
+    cursor: pointer; font-size: 16px; padding: 2px 6px;
+    border-radius: 4px; opacity: 0.6; transition: opacity 0.2s;
+  }
+  .btn-remove:hover { opacity: 1; background: rgba(248,81,73,0.1); }
+
+  .close-trade-btn {
+    background: rgba(248,81,73,0.12); border: 1px solid var(--red);
+    color: var(--red); padding: 3px 10px; border-radius: 4px;
+    cursor: pointer; font-size: 11px; font-weight: 600;
+  }
+  .close-trade-btn:hover { background: rgba(248,81,73,0.22); }
+
+  .status-open   { color: var(--gold); font-weight: 600; font-size: 11px; }
+  .status-closed { color: var(--text2); font-size: 11px; }
+  .empty-perf { text-align: center; padding: 60px 20px; color: var(--text2); }
+
+  /* Close dialog */
+  #closeTradeDialog {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7); z-index: 300;
+    align-items: center; justify-content: center;
+  }
+  #closeTradeDialog.open { display: flex; }
+  .dialog-box {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 24px; width: 320px;
+  }
+  .dialog-box h4 { margin-bottom: 16px; font-size: 16px; }
+
   @media (max-width: 600px) {
     .modal-info { grid-template-columns: repeat(2, 1fr); }
+    .layer-scores { grid-template-columns: repeat(3, 1fr); }
     .stocks-grid { grid-template-columns: 1fr; }
+    .form-row { grid-template-columns: 1fr; }
+    .perf-stats { grid-template-columns: repeat(2, 1fr); }
   }
 </style>
 </head>
@@ -336,33 +332,56 @@ window._firestoreOps = { collection, getDocs, doc, getDoc };
 </header>
 
 <div class="tabs">
-  <div class="tab active" onclick="switchTab('foras')">🔥 الفرص</div>
-  <div class="tab" onclick="switchTab('arkitaz')">🎯 الارتكاز</div>
+  <div class="tab active" onclick="switchTab('foras', this)">🔥 الفرص</div>
+  <div class="tab" onclick="switchTab('arkitaz', this)">🎯 الارتكاز</div>
+  <div class="tab" onclick="switchTab('performance', this)">📊 اختبار الأداء</div>
 </div>
 
-<!-- الفرص Tab -->
+<!-- الفرص -->
 <div class="page active" id="page-foras">
-  <div id="foras-us-section">
-    <div class="section-title">🇺🇸 الأسهم الأمريكية</div>
-    <div class="stocks-grid" id="grid-us">
+  <div class="section-title">🇺🇸 الأسهم الأمريكية</div>
+  <div class="stocks-grid" id="grid-us">
+    <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
+  </div>
+  <div class="section-title">🇸🇦 السوق السعودي (تداول)</div>
+  <div class="stocks-grid" id="grid-sa">
+    <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
+  </div>
+</div>
+
+<!-- الارتكاز -->
+<div class="page" id="page-arkitaz">
+  <div style="margin-bottom:32px">
+    <div class="section-title">🇺🇸 ارتكاز — الأسهم الأمريكية</div>
+    <div id="arkitaz-us-container">
       <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
     </div>
   </div>
-
-  <div id="foras-sa-section">
-    <div class="section-title">🇸🇦 السوق السعودي (تداول)</div>
-    <div class="stocks-grid" id="grid-sa">
+  <div>
+    <div class="section-title">🇸🇦 ارتكاز — السوق السعودي</div>
+    <div id="arkitaz-sa-container">
       <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
     </div>
   </div>
 </div>
 
-<!-- الارتكاز Tab -->
-<div class="page" id="page-arkitaz">
-  <div class="empty">
-    <div class="empty-icon">🎯</div>
-    <div>قيد التطوير</div>
-    <div style="font-size:12px;margin-top:8px">قريباً: أسهم الارتكاز مع نطاق ضيق</div>
+<!-- اختبار الأداء -->
+<div class="page" id="page-performance">
+  <div class="perf-stats">
+    <div class="perf-stat"><div class="label">إجمالي الصفقات</div><div class="value" id="statTotal">—</div></div>
+    <div class="perf-stat"><div class="label">صفقات رابحة</div><div class="value" style="color:var(--green)" id="statWins">—</div></div>
+    <div class="perf-stat"><div class="label">صفقات خاسرة</div><div class="value" style="color:var(--red)" id="statLosses">—</div></div>
+    <div class="perf-stat"><div class="label">نسبة النجاح</div><div class="value" id="statWinRate">—</div></div>
+    <div class="perf-stat"><div class="label">متوسط الربح</div><div class="value" style="color:var(--green)" id="statAvgWin">—</div></div>
+    <div class="perf-stat"><div class="label">إجمالي الأرباح/الخسائر</div><div class="value" id="statTotalPnL">—</div></div>
+  </div>
+  <div class="section-title">سجل الصفقات</div>
+  <div id="perfTableContainer">
+    <div class="empty-perf">
+      <div class="empty-icon">📋</div>
+      <div>لا توجد صفقات مسجلة بعد</div>
+      <div style="font-size:12px;margin-top:8px">اضغط "شراء 🛒" على أي سهم لتسجيل صفقة وتتبع أدائها</div>
+    </div>
   </div>
 </div>
 
@@ -371,16 +390,60 @@ window._firestoreOps = { collection, getDocs, doc, getDoc };
   <div class="modal" id="modalBox">
     <div class="modal-header">
       <div class="modal-title" id="modalTitle">—</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-header-actions">
+        <button class="btn-buy" id="btnBuy" onclick="toggleBuyForm()">🛒 شراء</button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
     </div>
     <div class="modal-chart" id="modalChart"></div>
     <div class="modal-info" id="modalInfo"></div>
+    <div class="layer-scores" id="layerScores"></div>
+    <div class="buy-form" id="buyForm">
+      <h4>🛒 تسجيل صفقة شراء</h4>
+      <div class="form-row">
+        <div class="form-group"><label>سعر الشراء</label><input type="number" id="buyPrice" placeholder="0.00" step="0.01"></div>
+        <div class="form-group"><label>عدد الأسهم</label><input type="number" id="buyQty" placeholder="100" step="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>تاريخ الشراء</label><input type="date" id="buyDate"></div>
+        <div class="form-group"><label>هدف السعر (اختياري)</label><input type="number" id="buyTarget" placeholder="0.00" step="0.01"></div>
+      </div>
+      <div>
+        <button class="btn-save-buy" onclick="saveBuy()">حفظ الصفقة ✓</button>
+        <button class="btn-cancel-buy" onclick="toggleBuyForm()">إلغاء</button>
+      </div>
+    </div>
     <a class="tv-link" id="modalTvLink" href="#" target="_blank">📊 افتح في TradingView</a>
   </div>
 </div>
 
+<!-- Close Trade Dialog -->
+<div id="closeTradeDialog">
+  <div class="dialog-box">
+    <h4>إغلاق الصفقة 🏁</h4>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>سعر الإغلاق</label>
+      <input type="number" id="closePriceInput" placeholder="0.00" step="0.01"
+        style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
+    </div>
+    <div class="form-group" style="margin-bottom:16px">
+      <label>تاريخ الإغلاق</label>
+      <input type="date" id="closeDateInput"
+        style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">تأكيد الإغلاق</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">إلغاء</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
-// ── Wait for Firebase to init ──
+
+let _currentStock = null;
+let _trades = JSON.parse(localStorage.getItem('krm_trades') || '[]');
+let _closeTradeId = null;
+
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
     if (window._db) return;
@@ -389,123 +452,120 @@ async function waitForDB() {
   throw new Error('Firebase timeout');
 }
 
-// ── Score color ──
-function scoreClass(score) {
-  if (score < 0.03) return 'great';
-  if (score < 0.08) return 'good';
-  return 'ok';
-}
+function scoreClass(s) { return s < 0.03 ? 'great' : s < 0.08 ? 'good' : 'ok'; }
+function scoreLabel(s) { return s < 0.03 ? '🟢 ممتاز' : s < 0.08 ? '🟡 جيد' : '⚪ مقبول'; }
+function confColor(v)  { return v >= 70 ? 'var(--green)' : v >= 40 ? 'var(--gold)' : 'var(--red)'; }
 
-function scoreLabel(score) {
-  if (score < 0.03) return '🟢 ممتاز';
-  if (score < 0.08) return '🟡 جيد';
-  return '⚪ مقبول';
-}
-
-// ── Mini sparkline chart ──
 function renderMiniChart(container, candles) {
   container.innerHTML = '';
-  if (!candles || !candles.length) {
+  if (!candles?.length) {
     container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;font-size:12px">لا توجد بيانات</div>';
     return;
   }
   const chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth || 300,
-    height: 120,
+    width: container.clientWidth || 300, height: 120,
     layout: { background: { color: 'transparent' }, textColor: '#8b949e' },
     grid: { vertLines: { visible: false }, horzLines: { color: '#21262d' } },
     crosshair: { mode: LightweightCharts.CrosshairMode.Hidden },
-    rightPriceScale: { visible: false },
-    timeScale: { visible: false },
-    handleScroll: false,
-    handleScale: false,
+    rightPriceScale: { visible: false }, timeScale: { visible: false },
+    handleScroll: false, handleScale: false,
   });
-  const series = chart.addAreaSeries({
-    lineColor: '#58a6ff',
-    topColor: 'rgba(88,166,255,0.25)',
-    bottomColor: 'rgba(88,166,255,0)',
-    lineWidth: 1.5,
-  });
-  series.setData(candles.map(c => ({ time: c.t, value: c.c })));
+  const s = chart.addAreaSeries({ lineColor: '#58a6ff', topColor: 'rgba(88,166,255,0.25)', bottomColor: 'rgba(88,166,255,0)', lineWidth: 1.5 });
+  s.setData(candles.map(c => ({ time: c.t, value: c.c })));
   chart.timeScale().fitContent();
 }
 
-// ── Full chart in modal ──
 function renderFullChart(container, candles) {
   container.innerHTML = '';
-  if (!candles || !candles.length) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555">لا توجد بيانات</div>';
+  if (!candles?.length) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
     return;
   }
   const chart = LightweightCharts.createChart(container, {
-    width: container.clientWidth || 700,
-    height: 280,
+    width: container.clientWidth || 700, height: 280,
     layout: { background: { color: 'transparent' }, textColor: '#8b949e' },
     grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
     rightPriceScale: { borderColor: '#30363d' },
     timeScale: { borderColor: '#30363d', timeVisible: true },
   });
-  const series = chart.addCandlestickSeries({
+  const s = chart.addCandlestickSeries({
     upColor: '#3fb950', downColor: '#f85149',
     borderUpColor: '#3fb950', borderDownColor: '#f85149',
     wickUpColor: '#3fb950', wickDownColor: '#f85149',
   });
-  series.setData(candles.map(c => ({ time: c.t, open: c.o, high: c.h, low: c.l, close: c.c })));
+  s.setData(candles.map(c => ({ time: c.t, open: c.o, high: c.h, low: c.l, close: c.c })));
   chart.timeScale().fitContent();
 }
 
-// ── Build stock card ──
 function buildCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
-  const cls = scoreClass(data.score || 1);
+  const conf = data.confidence || 0;
+  const col = confColor(conf);
   div.innerHTML = `
     <div class="card-header">
       <div class="symbol">${symbol}</div>
-      <div class="score-badge ${cls}">${scoreLabel(data.score || 1)}</div>
+      <div class="score-badge ${scoreClass(data.score||1)}">${scoreLabel(data.score||1)}</div>
     </div>
     <div class="chart-container" id="chart-${market}-${symbol}"></div>
-    <div class="card-footer">${data.note || ''}</div>
-  `;
+    <div class="confidence-row">
+      <span class="conf-label">ثقة</span>
+      <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${col}"></div></div>
+      <span class="conf-pct" style="color:${col}">${conf}%</span>
+    </div>
+    <div class="card-footer">${data.note||''}</div>`;
   div.onclick = () => openModal(symbol, data, market);
   return div;
 }
 
-// ── Modal ──
-window._currentCharts = {};
 function openModal(symbol, data, market) {
+  _currentStock = { symbol, data, market };
   document.getElementById('modalTitle').textContent = symbol;
-
-  // TV link
   const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
   document.getElementById('modalTvLink').href = `https://www.tradingview.com/chart/?symbol=${tvSuffix}`;
 
-  // Info
-  const score = data.score ?? '—';
-  const pctScore = typeof score === 'number' ? (score * 100).toFixed(1) + '%' : '—';
-  document.getElementById('modalInfo').innerHTML = `
-    <div class="info-card">
-      <div class="info-label">نسبة القرب من القاع</div>
-      <div class="info-value" style="color:${score < 0.03 ? 'var(--green)' : score < 0.08 ? 'var(--gold)' : 'var(--text)'}">${pctScore}</div>
-    </div>
-    <div class="info-card">
-      <div class="info-label">آخر تحديث</div>
-      <div class="info-value" style="font-size:13px">${data.date || '—'}</div>
-    </div>
-    <div class="info-card">
-      <div class="info-label">ملاحظة</div>
-      <div class="info-value" style="font-size:12px;font-weight:400">${data.note || '—'}</div>
-    </div>
-  `;
+  const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
+  const btn = document.getElementById('btnBuy');
+  if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
+  else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
 
-  // Chart
+  document.getElementById('buyForm').classList.remove('open');
+  document.getElementById('buyDate').valueAsDate = new Date();
+
+  const score = data.score ?? '—';
+  const pctScore = typeof score === 'number' ? (score*100).toFixed(1)+'%' : '—';
+  const conf = data.confidence || 0;
+  document.getElementById('modalInfo').innerHTML = `
+    <div class="info-card"><div class="info-label">القرب من القاع</div>
+      <div class="info-value" style="color:${score<0.03?'var(--green)':score<0.08?'var(--gold)':'var(--text)'}">${pctScore}</div></div>
+    <div class="info-card"><div class="info-label">مستوى الثقة</div>
+      <div class="info-value" style="color:${confColor(conf)}">${conf}%</div></div>
+    <div class="info-card"><div class="info-label">آخر سعر</div>
+      <div class="info-value">${data.close?data.close.toFixed(2):'—'}</div></div>
+    <div class="info-card"><div class="info-label">انخفاض 72 ساعة</div>
+      <div class="info-value" style="color:${(data.drop72h||0)>0.05?'var(--red)':'var(--text2)'}">
+        ${data.drop72h?(data.drop72h*100).toFixed(1)+'%':'—'}</div></div>
+    <div class="info-card"><div class="info-label">آخر تحديث</div>
+      <div class="info-value" style="font-size:12px;font-weight:400">${data.date||'—'}</div></div>
+    <div class="info-card"><div class="info-label">ملاحظة</div>
+      <div class="info-value" style="font-size:11px;font-weight:400">${data.note||'—'}</div></div>`;
+
+  const w = data.wyckoff||0, e = data.elliott||0;
+  const p = typeof score==='number' ? Math.max(0, 1 - score/0.10) : 0;
+  document.getElementById('layerScores').innerHTML = `
+    <div class="layer-card"><div class="layer-name">📊 كلاسيكي</div>
+      <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
+      <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div></div>
+    <div class="layer-card"><div class="layer-name">🌊 وايكوف</div>
+      <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
+      <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div></div>
+    <div class="layer-card"><div class="layer-name">🌀 إليوت</div>
+      <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
+      <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div></div>`;
+
   const chartDiv = document.getElementById('modalChart');
-  chartDiv.innerHTML = '';
-  if (data.candles && data.candles.length) {
-    renderFullChart(chartDiv, data.candles);
-  } else {
-    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً بعد أول فرصة تحديث</div></div>';
-  }
+  if (data.candles?.length) renderFullChart(chartDiv, data.candles);
+  else chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
 
   document.getElementById('modal').classList.add('open');
 }
@@ -513,69 +573,194 @@ function openModal(symbol, data, market) {
 window.closeModal = function(e) {
   if (!e || e.target === document.getElementById('modal')) {
     document.getElementById('modal').classList.remove('open');
+    document.getElementById('buyForm').classList.remove('open');
   }
 };
 
-// ── Load Firestore data ──
+window.toggleBuyForm = function() {
+  const already = _trades.find(t => _currentStock && t.symbol===_currentStock.symbol && t.status==='open');
+  if (already) return;
+  const form = document.getElementById('buyForm');
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    const c = _currentStock?.data?.close;
+    if (c) document.getElementById('buyPrice').value = c.toFixed(2);
+  }
+};
+
+window.saveBuy = function() {
+  if (!_currentStock) return;
+  const price = parseFloat(document.getElementById('buyPrice').value);
+  const qty   = parseFloat(document.getElementById('buyQty').value);
+  const date  = document.getElementById('buyDate').value;
+  const target= parseFloat(document.getElementById('buyTarget').value)||null;
+  if (!price||!qty||!date) { alert('يرجى تعبئة سعر الشراء والكمية والتاريخ'); return; }
+  _trades.push({
+    id: Date.now().toString(), symbol: _currentStock.symbol,
+    market: _currentStock.market, buyPrice: price, qty, buyDate: date,
+    target, confidence: _currentStock.data.confidence||0,
+    status: 'open', closePrice: null, closeDate: null,
+  });
+  saveTrades();
+  document.getElementById('buyForm').classList.remove('open');
+  const btn = document.getElementById('btnBuy');
+  btn.textContent = '✅ تم الشراء'; btn.classList.add('bought');
+  renderPerformancePage();
+};
+
+function saveTrades() { localStorage.setItem('krm_trades', JSON.stringify(_trades)); }
+
+window.openCloseTrade = function(id) {
+  _closeTradeId = id;
+  document.getElementById('closePriceInput').value = '';
+  document.getElementById('closeDateInput').valueAsDate = new Date();
+  document.getElementById('closeTradeDialog').classList.add('open');
+};
+
+window.confirmCloseTrade = function() {
+  const closePrice = parseFloat(document.getElementById('closePriceInput').value);
+  const closeDate  = document.getElementById('closeDateInput').value;
+  if (!closePrice||!closeDate) { alert('يرجى إدخال السعر والتاريخ'); return; }
+  const t = _trades.find(t => t.id===_closeTradeId);
+  if (t) { t.closePrice=closePrice; t.closeDate=closeDate; t.status='closed'; saveTrades(); renderPerformancePage(); }
+  document.getElementById('closeTradeDialog').classList.remove('open');
+};
+
+window.removeTrade = function(id) {
+  if (!confirm('هل تريد حذف هذه الصفقة؟')) return;
+  _trades = _trades.filter(t => t.id!==id);
+  saveTrades(); renderPerformancePage();
+};
+
+function renderPerformancePage() {
+  const closed = _trades.filter(t => t.status==='closed');
+  let totalPnL=0, wins=0, losses=0, sumWin=0;
+  closed.forEach(t => {
+    const pct = (t.closePrice-t.buyPrice)/t.buyPrice*100;
+    totalPnL += (t.closePrice-t.buyPrice)*t.qty;
+    if (pct>0){wins++;sumWin+=pct;}else{losses++;}
+  });
+  document.getElementById('statTotal').textContent    = _trades.length||'—';
+  document.getElementById('statWins').textContent     = wins||'—';
+  document.getElementById('statLosses').textContent   = losses||'—';
+  document.getElementById('statWinRate').textContent  = closed.length ? ((wins/closed.length)*100).toFixed(0)+'%' : '—';
+  document.getElementById('statAvgWin').textContent   = wins ? '+'+(sumWin/wins).toFixed(1)+'%' : '—';
+  document.getElementById('statTotalPnL').textContent = totalPnL ? (totalPnL>=0?'+':'')+totalPnL.toFixed(0) : '—';
+  document.getElementById('statTotalPnL').style.color = totalPnL>=0?'var(--green)':'var(--red)';
+
+  const container = document.getElementById('perfTableContainer');
+  if (!_trades.length) {
+    container.innerHTML=`<div class="empty-perf"><div class="empty-icon">📋</div><div>لا توجد صفقات مسجلة بعد</div><div style="font-size:12px;margin-top:8px">اضغط "شراء 🛒" على أي سهم لتسجيل صفقة</div></div>`;
+    return;
+  }
+  const sorted = [..._trades].sort((a,b)=>{
+    if(a.status==='open'&&b.status!=='open')return -1;
+    if(b.status==='open'&&a.status!=='open')return 1;
+    return (b.closeDate||b.buyDate)>(a.closeDate||a.buyDate)?1:-1;
+  });
+  let rows='';
+  sorted.forEach(t=>{
+    const pct=t.closePrice?((t.closePrice-t.buyPrice)/t.buyPrice*100):null;
+    const pnl=t.closePrice?((t.closePrice-t.buyPrice)*t.qty):null;
+    const pctStr=pct!==null?(pct>=0?`<span class="pnl-positive">+${pct.toFixed(1)}%</span>`:`<span class="pnl-negative">${pct.toFixed(1)}%</span>`):'<span class="pnl-neutral">—</span>';
+    const pnlStr=pnl!==null?(pnl>=0?`<span class="pnl-positive">+${pnl.toFixed(0)}</span>`:`<span class="pnl-negative">${pnl.toFixed(0)}</span>`):'<span class="pnl-neutral">—</span>';
+    const status=t.status==='open'?'<span class="status-open">🟡 مفتوحة</span>':'<span class="status-closed">✅ مغلقة</span>';
+    const action=t.status==='open'?`<button class="close-trade-btn" onclick="openCloseTrade('${t.id}')">إغلاق</button>`:'';
+    rows+=`<tr>
+      <td><b>${t.symbol}</b> <small style="color:var(--text2)">${t.market==='sa'?'🇸🇦':'🇺🇸'}</small></td>
+      <td>${t.buyDate||'—'}</td><td>${t.buyPrice.toFixed(2)}</td>
+      <td>${t.closePrice?t.closePrice.toFixed(2):'—'}</td>
+      <td>${t.qty}</td><td>${pctStr}</td><td>${pnlStr}</td>
+      <td>${t.confidence}%</td><td>${status}</td>
+      <td>${action} <button class="btn-remove" onclick="removeTrade('${t.id}')" title="حذف">🗑</button></td>
+    </tr>`;
+  });
+  container.innerHTML=`<table class="perf-table"><thead><tr>
+    <th>السهم</th><th>تاريخ الشراء</th><th>سعر الشراء</th><th>سعر الإغلاق</th>
+    <th>الكمية</th><th>التغير %</th><th>الأرباح/الخسائر</th><th>الثقة</th><th>الحالة</th><th>إجراء</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
 async function loadMarket(gridId, collectionName, market) {
   const grid = document.getElementById(gridId);
   try {
     await waitForDB();
     const { collection, getDocs } = window._firestoreOps;
     const snap = await getDocs(collection(window._db, collectionName));
-
-    if (snap.empty) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد بيانات حالياً</div>';
-      return;
-    }
-
-    const stocks = [];
-    snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
-    stocks.sort((a, b) => (a.score || 1) - (b.score || 1));
-
-    grid.innerHTML = '';
-    for (const s of stocks) {
-      const card = buildCard(s.id, s, market);
+    if (snap.empty) { grid.innerHTML='<div class="empty"><div class="empty-icon">📭</div>لا توجد بيانات حالياً</div>'; return; }
+    const stocks=[];
+    snap.forEach(d=>{ if(d.id!=='meta') stocks.push({id:d.id,...d.data()}); });
+    stocks.sort((a,b)=>(b.confidence||0)-(a.confidence||0));
+    grid.innerHTML='';
+    for(const s of stocks){
+      const card=buildCard(s.id,s,market);
       grid.appendChild(card);
-      // render mini chart after insert
-      setTimeout(() => {
-        const c = document.getElementById(`chart-${market}-${s.id}`);
-        if (c) renderMiniChart(c, s.candles);
-      }, 50);
+      setTimeout(()=>{ const c=document.getElementById(`chart-${market}-${s.id}`); if(c) renderMiniChart(c,s.candles); },50);
     }
-  } catch (err) {
-    console.error(err);
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ في التحميل: ${err.message}</div>`;
-  }
+  } catch(err) { grid.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`; }
 }
 
-// ── Load meta ──
+async function loadArkitaz(containerId, collectionName, market) {
+  const container = document.getElementById(containerId);
+  try {
+    await waitForDB();
+    const { collection, getDocs } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, collectionName));
+    if (snap.empty) {
+      container.innerHTML='<div class="empty"><div class="empty-icon">🎯</div>لا توجد أسهم ارتكاز الآن<br><small style="font-size:12px;margin-top:8px;display:block">سيتم تحديث البيانات تلقائياً بعد إغلاق السوق</small></div>';
+      return;
+    }
+    const stocks=[];
+    snap.forEach(d=>{ if(d.id!=='meta') stocks.push({id:d.id,...d.data()}); });
+    stocks.sort((a,b)=>(b.confidence||0)-(a.confidence||0));
+    let rows='';
+    stocks.forEach(s=>{
+      const conf=s.confidence||0, col=confColor(conf);
+      rows+=`<tr onclick="openModal('${s.id}',${JSON.stringify(s).replace(/'/g,"&#39;")},'${market}')">
+        <td><b>${s.id}</b></td>
+        <td>${s.close?s.close.toFixed(2):'—'}</td>
+        <td><div class="mini-conf-bar">
+          <div class="mini-bar"><div class="mini-fill" style="width:${conf}%;background:${col}"></div></div>
+          <span style="color:${col};font-size:11px">${conf}%</span>
+        </div></td>
+        <td style="font-size:11px;color:var(--text2)">${s.consReason||'—'}</td>
+        <td>${s.date||'—'}</td>
+      </tr>`;
+    });
+    container.innerHTML=`<table class="arkitaz-table"><thead><tr>
+      <th>السهم</th><th>السعر</th><th>مستوى الثقة</th><th>سبب الارتكاز</th><th>التاريخ</th>
+    </tr></thead><tbody>${rows}</tbody></table>`;
+  } catch(err) { container.innerHTML=`<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`; }
+}
+
 async function loadMeta() {
   try {
     await waitForDB();
     const { doc, getDoc } = window._firestoreOps;
-    const metaUS = await getDoc(doc(window._db, 'meta', 'suggestions_us'));
-    const metaSA = await getDoc(doc(window._db, 'meta', 'suggestions_sa'));
-    const us = metaUS.data();
-    const sa = metaSA.data();
-    const date = us?.lastRun || sa?.lastRun || '—';
-    document.getElementById('lastUpdate').textContent = `آخر تحديث: ${date}`;
+    const us = (await getDoc(doc(window._db,'meta','suggestions_us'))).data();
+    const sa = (await getDoc(doc(window._db,'meta','suggestions_sa'))).data();
+    document.getElementById('lastUpdate').textContent = `آخر تحديث: ${us?.lastRun||sa?.lastRun||'—'}`;
   } catch {}
 }
 
-// ── Tab switch ──
-window.switchTab = function(tab) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  event.target.classList.add('active');
-  document.getElementById('page-' + tab).classList.add('active');
+window.switchTab = function(tab, el) {
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+tab).classList.add('active');
 };
 
-// ── Init ──
-loadMeta();
-loadMarket('grid-us', 'suggestions_us', 'us');
-loadMarket('grid-sa', 'suggestions_sa', 'sa');
-</script>
+window.openModal=openModal; window.openCloseTrade=openCloseTrade;
+window.removeTrade=removeTrade; window.confirmCloseTrade=confirmCloseTrade;
+window.toggleBuyForm=toggleBuyForm; window.saveBuy=saveBuy;
 
+loadMeta();
+loadMarket('grid-us','suggestions_us','us');
+loadMarket('grid-sa','suggestions_sa','sa');
+loadArkitaz('arkitaz-us-container','consolidation_us','us');
+loadArkitaz('arkitaz-sa-container','consolidation_sa','sa');
+renderPerformancePage();
+
+</script>
 </body>
 </html>
