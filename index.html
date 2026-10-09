@@ -226,6 +226,12 @@ border-right: 3px solid var(--gold);
 color: var(--gold);
 }
 
+.category-header.ready {
+color: var(--green);
+border-right-color: var(--green);
+background: rgba(0,230,118,0.04);
+}
+
 .category-header.watch {
 background: linear-gradient(135deg, rgba(68,138,255,0.06) 0%, transparent 100%);
 border-right: 3px solid var(--blue);
@@ -327,6 +333,9 @@ letter-spacing: 0.3px;
 .opp-wyckoff { background: var(--teal); color: #0a0e14; }
 .opp-elliott { background: var(--gold-dim); color: var(--gold); }
 .opp-classic { background: var(--blue-dim); color: var(--blue); }
+
+.stock-card.card-ready { border: 2px solid var(--green); box-shadow: 0 0 12px rgba(0,230,118,0.15); }
+.stock-card.card-ready:hover { box-shadow: 0 8px 24px rgba(0,230,118,0.2); }
 
 .confidence-badge {
 font-size: 13px;
@@ -718,6 +727,7 @@ left: 0;
 height: 2px;
 }
 
+.summary-card.s-ready::before { background: var(--green); }
 .summary-card.s-strong::before { background: var(--green); }
 .summary-card.s-medium::before { background: var(--gold); }
 .summary-card.s-watch::before { background: var(--blue); }
@@ -726,6 +736,7 @@ height: 2px;
 .summary-count { font-size: 28px; font-weight: 800; }
 .summary-label { font-size: 11px; color: var(--text2); margin-top: 2px; }
 
+.summary-card.s-ready .summary-count { color: var(--green); }
 .summary-card.s-strong .summary-count { color: var(--green); }
 .summary-card.s-medium .summary-count { color: var(--gold); }
 .summary-card.s-watch .summary-count { color: var(--blue); }
@@ -846,6 +857,11 @@ header { padding: 12px 16px; }
 
 <!-- Summary -->
 <div class="summary-bar">
+<div class="summary-card s-ready">
+<div class="summary-icon">🎯</div>
+<div class="summary-count" id="sumReady">0</div>
+<div class="summary-label">جاهز للدخول</div>
+</div>
 <div class="summary-card s-strong">
 <div class="summary-icon">🔥</div>
 <div class="summary-count" id="sumStrong">0</div>
@@ -866,6 +882,7 @@ header { padding: 12px 16px; }
 <!-- Filter -->
 <div class="filter-bar">
 <button class="filter-btn active" onclick="filterStocks('all', this)">📋 الكل <span class="count" id="filterAll">0</span></button>
+<button class="filter-btn" onclick="filterStocks('ready', this)">🎯 جاهز <span class="count" id="filterReady">0</span></button>
 <button class="filter-btn" onclick="filterStocks('strong', this)">🔥 قوية <span class="count" id="filterStrong">0</span></button>
 <button class="filter-btn" onclick="filterStocks('medium', this)">⚡ متوسطة <span class="count" id="filterMedium">0</span></button>
 <button class="filter-btn" onclick="filterStocks('watch', this)">👀 مراقبة <span class="count" id="filterWatch">0</span></button>
@@ -874,6 +891,10 @@ header { padding: 12px 16px; }
 <!-- US Market -->
 <div class="market-divider">🇺🇸 الأسهم الأمريكية</div>
 
+<div id="us-ready" class="category-section">
+<div class="category-header ready">🎯 جاهز للدخول <span class="category-count" id="us-ready-count">0</span></div>
+<div class="stocks-grid" id="grid-us-ready"></div>
+</div>
 <div id="us-strong" class="category-section">
 <div class="category-header strong">🔥 فرصة قوية <span class="category-count" id="us-strong-count">0</span></div>
 <div class="stocks-grid" id="grid-us-strong"></div>
@@ -892,6 +913,10 @@ header { padding: 12px 16px; }
 <!-- SA Market -->
 <div class="market-divider">🇸🇦 السوق السعودي (تداول)</div>
 
+<div id="sa-ready" class="category-section">
+<div class="category-header ready">🎯 جاهز للدخول <span class="category-count" id="sa-ready-count">0</span></div>
+<div class="stocks-grid" id="grid-sa-ready"></div>
+</div>
 <div id="sa-strong" class="category-section">
 <div class="category-header strong">🔥 فرصة قوية <span class="category-count" id="sa-strong-count">0</span></div>
 <div class="stocks-grid" id="grid-sa-strong"></div>
@@ -1057,6 +1082,14 @@ if (v >= 40) return 'var(--gold)';
 return 'var(--red)';
 }
 
+function isReadyToEnter(data) {
+let count = 0;
+if ((data.proximity_score || 1) < 0.05) count++;
+if ((data.wyckoff || 0) >= 0.6) count++;
+if ((data.elliott || 0) >= 0.6) count++;
+return count >= 2;
+}
+
 function getOpportunityType(data) {
 const w = data.wyckoff || 0;
 const e = data.elliott || 0;
@@ -1128,8 +1161,10 @@ const col = strengthColor(conf);
 const opp = getOpportunityType(data);
 const inPf = isInPortfolio(symbol);
 
-div.className = `stock-card card-${cat}`;
+const ready = isReadyToEnter(data);
+div.className = `stock-card card-${cat}${ready ? ' card-ready' : ''}`;
 div.setAttribute('data-category', cat);
+if (ready) div.setAttribute('data-ready', 'true');
 
 const confBadgeClass = conf > 70 ? 'conf-high' : conf >= 40 ? 'conf-mid' : 'conf-low';
 const priceColor = data.close ? (data.drop72h > 0.03 ? 'var(--red)' : 'var(--text)') : 'var(--text2)';
@@ -1163,15 +1198,18 @@ return div;
 
 function updateCounts() {
 const all = [..._allStocks.us, ..._allStocks.sa];
+const ready = all.filter(s => isReadyToEnter(s)).length;
 const strong = all.filter(s => getCategory(s.confidence || 0) === 'strong').length;
 const medium = all.filter(s => getCategory(s.confidence || 0) === 'medium').length;
 const watch = all.filter(s => getCategory(s.confidence || 0) === 'watch').length;
 
+document.getElementById('sumReady').textContent = ready;
 document.getElementById('sumStrong').textContent = strong;
 document.getElementById('sumMedium').textContent = medium;
 document.getElementById('sumWatch').textContent = watch;
 
 document.getElementById('filterAll').textContent = all.length;
+document.getElementById('filterReady').textContent = ready;
 document.getElementById('filterStrong').textContent = strong;
 document.getElementById('filterMedium').textContent = medium;
 document.getElementById('filterWatch').textContent = watch;
@@ -1186,7 +1224,7 @@ document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active
 el.classList.add('active');
 
 ['us', 'sa'].forEach(market => {
-['strong', 'medium', 'watch'].forEach(cat => {
+['ready', 'strong', 'medium', 'watch'].forEach(cat => {
 const section = document.getElementById(`${market}-${cat}`);
 if (!section) return;
 if (filter === 'all' || filter === cat) {
@@ -1547,19 +1585,25 @@ return;
 
 const stocks = [];
 snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
-stocks.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+stocks.sort((a, b) => {
+const aReady = isReadyToEnter(a) ? 1 : 0;
+const bReady = isReadyToEnter(b) ? 1 : 0;
+if (bReady !== aReady) return bReady - aReady;
+return (b.confidence || 0) - (a.confidence || 0);
+});
 
 _allStocks[market] = stocks;
 
-const groups = { strong: [], medium: [], watch: [] };
+const groups = { ready: [], strong: [], medium: [], watch: [] };
 stocks.forEach(s => {
 const cat = getCategory(s.confidence || 0);
+if (isReadyToEnter(s)) groups.ready.push(s);
 groups[cat].push(s);
 });
 
 loadingEl.style.display = 'none';
 
-['strong', 'medium', 'watch'].forEach(cat => {
+['ready', 'strong', 'medium', 'watch'].forEach(cat => {
 const grid = document.getElementById(`grid-${market}-${cat}`);
 const countEl = document.getElementById(`${market}-${cat}-count`);
 const section = document.getElementById(`${market}-${cat}`);
