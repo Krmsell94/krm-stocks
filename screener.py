@@ -297,8 +297,7 @@ def screen_stock(symbol, market="us"):
 
         # ── الارتكاز ──
 consolidating, cons_reason = is_consolidating(hist)
-consolidating = bool(consolidating)
-        # ── درجة الثقة ──
+        consolidating = bool(consolidating)        # ── درجة الثقة ──
         confidence = confidence_score(score, wyckoff, elliott)
 
         note    = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
