@@ -296,8 +296,8 @@ def screen_stock(symbol, market="us"):
         elliott = elliott_score(hist)
 
         # ── الارتكاز ──
-        consolidating, cons_reason = is_consolidating(hist)
-
+consolidating, cons_reason = is_consolidating(hist)
+consolidating = bool(consolidating)
         # ── درجة الثقة ──
         confidence = confidence_score(score, wyckoff, elliott)
 
