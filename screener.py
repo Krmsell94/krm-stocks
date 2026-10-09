@@ -185,7 +185,8 @@ def build_note(score, drop, wyckoff, elliott, consolidating, cons_reason):
 # ─── حساب درجة الثقة ─────────────────────────────────────────────
 def confidence_score(prox, wyckoff, elliott):
     prox_score = max(0, 1 - (prox / 0.10))
-    total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)    return round(total * 100)
+    total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)  
+    return round(total * 100)
     return round(total * 100)
 
 # ─── فحص سهم واحد ────────────────────────────────────────────────
