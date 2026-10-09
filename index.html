@@ -5,7 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRM Stocks</title>
 
-<!-- Firebase -->
+<!-- Firebase Compat SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+
+<!-- Firebase Modular -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
 import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
@@ -25,6 +29,11 @@ const db = getFirestore(app);
 
 window._db = db;
 window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc };
+
+// Initialize Firebase Auth (compat)
+if (!firebase.apps.length) {
+firebase.initializeApp(firebaseConfig);
+}
 </script>
 
 <!-- TradingView Lightweight Charts -->
@@ -836,13 +845,143 @@ header { padding: 12px 16px; }
 .page { padding: 16px; }
 .portfolio-grid { grid-template-columns: 1fr; }
 }
+
+/* Login Screen */
+#login-screen {
+position: fixed;
+inset: 0;
+z-index: 9999;
+background: var(--bg);
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.login-box {
+background: var(--surface);
+border: 1px solid var(--border);
+border-radius: 16px;
+padding: 40px 32px;
+width: 100%;
+max-width: 380px;
+margin: 0 16px;
+text-align: center;
+}
+
+.login-logo {
+font-size: 32px;
+font-weight: 800;
+background: linear-gradient(135deg, var(--blue) 0%, var(--teal) 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+margin-bottom: 8px;
+}
+
+.login-subtitle {
+font-size: 13px;
+color: var(--text2);
+margin-bottom: 28px;
+}
+
+.login-input {
+width: 100%;
+padding: 12px 16px;
+background: var(--bg);
+border: 1px solid var(--border);
+border-radius: 10px;
+color: var(--text);
+font-size: 14px;
+margin-bottom: 12px;
+outline: none;
+transition: border-color 0.2s;
+box-sizing: border-box;
+direction: ltr;
+text-align: left;
+}
+
+.login-input:focus {
+border-color: var(--blue);
+}
+
+.login-input::placeholder {
+color: var(--text2);
+opacity: 0.6;
+}
+
+.login-btn {
+width: 100%;
+padding: 12px;
+background: linear-gradient(135deg, var(--blue), var(--teal));
+border: none;
+border-radius: 10px;
+color: #fff;
+font-size: 15px;
+font-weight: 700;
+cursor: pointer;
+margin-top: 8px;
+transition: opacity 0.2s;
+}
+
+.login-btn:hover { opacity: 0.9; }
+.login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.login-error {
+color: var(--red);
+font-size: 12px;
+margin-top: 12px;
+min-height: 18px;
+}
+
+.logout-btn {
+background: var(--surface2);
+border: 1px solid var(--border);
+color: var(--text2);
+padding: 4px 12px;
+border-radius: 20px;
+font-size: 11px;
+cursor: pointer;
+transition: all 0.2s;
+margin-right: 8px;
+}
+
+.logout-btn:hover {
+background: var(--red-dim);
+color: var(--red);
+border-color: var(--red);
+}
+
+.header-right {
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+#app-content { display: none; }
 </style>
 </head>
 <body>
 
+<!-- Login Screen -->
+<div id="login-screen">
+<div class="login-box">
+<div class="login-logo">📈 KRM Stocks</div>
+<div class="login-subtitle">سجّل دخولك للوصول إلى التحليلات</div>
+<input type="email" class="login-input" id="login-email" placeholder="البريد الإلكتروني" autocomplete="email">
+<input type="password" class="login-input" id="login-password" placeholder="كلمة المرور" autocomplete="current-password">
+<button class="login-btn" id="login-btn" onclick="handleLogin()">دخول</button>
+<div class="login-error" id="login-error"></div>
+</div>
+</div>
+
+<!-- App Content -->
+<div id="app-content">
+
 <header>
 <div class="logo">📈 KRM Stocks</div>
+<div class="header-right">
+<button class="logout-btn" onclick="handleLogout()">تسجيل خروج</button>
 <div class="last-update" id="lastUpdate">جاري التحميل...</div>
+</div>
 </header>
 
 <div class="tabs">
@@ -1035,6 +1174,8 @@ style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
+
+</div><!-- /app-content -->
 
 <script type="module">
 
@@ -1695,12 +1836,74 @@ window.saveBuy = saveBuy;
 window.quickBuy = window.quickBuy;
 window.removeFromPortfolio = window.removeFromPortfolio;
 
+// Auth functions
+window.handleLogin = async function() {
+const email = document.getElementById('login-email').value.trim();
+const password = document.getElementById('login-password').value;
+const errorEl = document.getElementById('login-error');
+const btn = document.getElementById('login-btn');
+
+if (!email || !password) {
+errorEl.textContent = 'أدخل البريد وكلمة المرور';
+return;
+}
+
+btn.disabled = true;
+btn.textContent = 'جاري الدخول...';
+errorEl.textContent = '';
+
+try {
+await firebase.auth().signInWithEmailAndPassword(email, password);
+} catch (err) {
+let msg = 'خطأ في تسجيل الدخول';
+if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+msg = 'البريد أو كلمة المرور غير صحيحة';
+} else if (err.code === 'auth/too-many-requests') {
+msg = 'محاولات كثيرة، حاول لاحقاً';
+} else if (err.code === 'auth/invalid-email') {
+msg = 'البريد الإلكتروني غير صالح';
+}
+errorEl.textContent = msg;
+btn.disabled = false;
+btn.textContent = 'دخول';
+}
+};
+
+window.handleLogout = function() {
+firebase.auth().signOut();
+};
+
+// Enter key to login
+document.getElementById('login-password').addEventListener('keydown', function(e) {
+if (e.key === 'Enter') handleLogin();
+});
+document.getElementById('login-email').addEventListener('keydown', function(e) {
+if (e.key === 'Enter') document.getElementById('login-password').focus();
+});
+
+// Auth state listener
+let _dataLoaded = false;
+firebase.auth().onAuthStateChanged(function(user) {
+if (user) {
+document.getElementById('login-screen').style.display = 'none';
+document.getElementById('app-content').style.display = 'block';
+
+// Load data only once after auth
+if (!_dataLoaded) {
+_dataLoaded = true;
 loadMeta();
 loadMarket('us', 'suggestions_us');
 loadMarket('sa', 'suggestions_sa');
 loadArkitaz('arkitaz-us-container', 'consolidation_us', 'us');
 renderPerformancePage();
 renderPortfolioPage();
+}
+} else {
+_dataLoaded = false;
+document.getElementById('login-screen').style.display = 'flex';
+document.getElementById('app-content').style.display = 'none';
+}
+});
 
 </script>
 </body>
