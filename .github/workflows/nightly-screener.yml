@@ -2,7 +2,9 @@ name: Nightly Stock Screener
 
 on:
   schedule:
-    # 1:00 AM Riyadh time = 10:00 PM UTC (AST = UTC+3)
+    - cron: '30 14 * * 1-5'
+    - cron: '45 16 * * 1-5'
+    - cron: '30 19 * * 1-5'
     - cron: '0 22 * * *'
   workflow_dispatch:   # يسمح بالتشغيل اليدوي من GitHub
 
