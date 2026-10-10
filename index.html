@@ -957,6 +957,16 @@ gap: 8px;
 }
 
 #app-content { display: none; }
+
+.trading-levels{background:#0d1117;border:1px solid #30363d;border-radius:10px;padding:1rem;margin-top:1rem}
+.tl-title{color:#8b949e;font-size:.85rem;margin-bottom:.7rem;font-weight:bold}
+.tl-row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid #21262d}
+.tl-row:last-child{border-bottom:none}
+.tl-row span{font-weight:bold;font-family:monospace}
+.tl-row.entry span{color:#58a6ff}
+.tl-row.stop span{color:#f85149}
+.tl-row.t1 span{color:#3fb950}
+.tl-row.t2 span{color:#d2a8ff}
 </style>
 </head>
 <body>
@@ -1333,6 +1343,7 @@ ${data.note ? `<div class="card-note"><span style="opacity:0.5">💡</span> ${da
 <button class="card-buy-btn ${inPf ? 'bought' : ''}" id="buy-btn-${symbol}" onclick="event.stopPropagation(); quickBuy('${symbol}', ${data.close || 0}, '${market}')" title="${inPf ? 'تم الإضافة' : 'أضف للمحفظة'}">${inPf ? '✅' : '🛒'}</button>
 `;
 
+autoRegisterPaperTrade(symbol, data);
 div.onclick = () => openModal(symbol, data, market);
 return div;
 }
@@ -1445,6 +1456,9 @@ document.getElementById('modalInfo').innerHTML = `
 ${data.drop72h?(data.drop72h*100).toFixed(1)+'%':'—'}</div></div>
 <div class="info-card"><div class="info-label">آخر تحديث</div>
 <div class="info-value" style="font-size:12px;font-weight:400">${data.date||'—'}</div></div>`;
+
+const sl={'classical':'📊 كلاسيكي','wyckoff':'🧠 وايكوف','elliott':'📐 إليوت'};
+if(data.entry) document.getElementById('modalInfo').innerHTML+=`<div class="trading-levels"><div class="tl-title">مستويات التداول — ${sl[data.strategy_type]||'📊'}</div><div class="tl-row entry">🎯 الدخول <span>${data.entry}</span></div><div class="tl-row stop">🛑 وقف الخسارة <span>${data.stop_loss}</span></div><div class="tl-row t1">🟢 الهدف 1 <span>${data.target1}</span></div><div class="tl-row t2">🚀 الهدف 2 <span>${data.target2}</span></div></div>`;
 
 const w = data.wyckoff||0, e = data.elliott||0;
 const p = typeof score==='number' ? Math.max(0, 1 - score/0.10) : 0;
@@ -1826,6 +1840,8 @@ document.getElementById('page-'+tab).classList.add('active');
 if (tab === 'performance') renderPerformancePage();
 if (tab === 'portfolio') renderPortfolioPage();
 };
+
+function autoRegisterPaperTrade(sym,data){if(!data.confidence||data.confidence<60)return;const t=JSON.parse(localStorage.getItem('paperTrades')||'{}');if(t[sym])return;t[sym]={sym,entry:data.entry||data.close,stop_loss:data.stop_loss,target1:data.target1,target2:data.target2,strategy:data.strategy_type,confidence:data.confidence,registeredAt:new Date().toISOString(),status:'open'};localStorage.setItem('paperTrades',JSON.stringify(t));}
 
 window.openModal = openModal;
 window.openCloseTrade = openCloseTrade;

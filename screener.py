@@ -185,9 +185,30 @@ def build_note(score, drop, wyckoff, elliott, consolidating, cons_reason):
 # ─── حساب درجة الثقة ─────────────────────────────────────────────
 def confidence_score(prox, wyckoff, elliott):
     prox_score = max(0, 1 - (prox / 0.10))
-    total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)  
+    total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)
     return round(total * 100)
-    return round(total * 100)
+
+def trading_levels(hist, wyckoff, elliott, close):
+    closes=hist["Close"].values; lows=hist["Low"].values
+    strategy="wyckoff" if wyckoff>=0.6 else "elliott" if elliott>=0.6 else "classical"
+    entry=round(float(close),4)
+    if strategy=="wyckoff":
+        stop=round(float(np.min(lows[-10:]))*0.97,4)
+        t1=round(entry*1.15,4)
+        t2=round(entry*1.25,4)
+    elif strategy=="elliott":
+        peak_idx=int(np.argmax(closes[-60:]))
+        peak_val=float(closes[-60:][peak_idx])
+        base_val=float(np.min(closes[-60:][:max(peak_idx,1)]))
+        wave=peak_val-base_val
+        stop=round(float(np.min(lows[-60:]))*0.98,4)
+        t1=round(entry+wave*0.382,4)
+        t2=round(entry+wave*0.618,4)
+    else:
+        stop=round(float(np.min(lows[-20:]))*0.98,4)
+        t1=round(entry*1.10,4)
+        t2=round(entry*1.20,4)
+    return {"strategy_type":strategy,"entry":entry,"stop_loss":stop,"target1":t1,"target2":t2}
 
 # ─── فحص سهم واحد ────────────────────────────────────────────────
 def screen_stock(symbol, market="us"):
@@ -223,6 +244,7 @@ def screen_stock(symbol, market="us"):
         note        = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
         candles     = build_candles(hist)
         close       = round(float(hist["Close"].iloc[-1]), 4)
+        levels      = trading_levels(hist, wyckoff, elliott, close)
 
         print(f"  ✅ {symbol}: سكور={score:.3f} | ثقة={confidence}% | Wyckoff={wyckoff} | Elliott={elliott} | ارتكاز={'✓' if consolidating else '✗'}")
 
@@ -238,6 +260,11 @@ def screen_stock(symbol, market="us"):
             "note":          note,
             "candles":       candles,
             "date":          datetime.now(timezone.utc).strftime("%Y-%m-%d"),
+            "strategy_type": levels["strategy_type"],
+            "entry":         levels["entry"],
+            "stop_loss":     levels["stop_loss"],
+            "target1":       levels["target1"],
+            "target2":       levels["target2"],
         }
 
     except Exception as e:
