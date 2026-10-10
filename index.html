@@ -967,6 +967,55 @@ gap: 8px;
 .tl-row.stop span{color:#f85149}
 .tl-row.t1 span{color:#3fb950}
 .tl-row.t2 span{color:#d2a8ff}
+
+/* Market Toggle */
+.market-toggle {
+display: flex;
+gap: 0;
+margin-bottom: 20px;
+background: var(--surface);
+border-radius: 12px;
+border: 1px solid var(--border);
+overflow: hidden;
+}
+
+.market-toggle-btn {
+flex: 1;
+padding: 12px 20px;
+border: none;
+background: transparent;
+color: var(--text2);
+font-size: 15px;
+font-weight: 700;
+cursor: pointer;
+transition: all 0.25s;
+display: flex;
+align-items: center;
+justify-content: center;
+gap: 8px;
+}
+
+.market-toggle-btn:first-child {
+border-left: 1px solid var(--border);
+}
+
+.market-toggle-btn.active {
+background: linear-gradient(135deg, var(--blue-dim) 0%, rgba(68,138,255,0.05) 100%);
+color: var(--blue);
+}
+
+.market-toggle-btn .mtg-count {
+font-size: 12px;
+background: var(--surface2);
+padding: 2px 8px;
+border-radius: 10px;
+font-weight: 600;
+}
+
+.market-toggle-btn.active .mtg-count {
+background: var(--blue-dim);
+color: var(--blue);
+}
 </style>
 </head>
 <body>
@@ -1028,6 +1077,12 @@ gap: 8px;
 </div>
 </div>
 
+<!-- Market Toggle -->
+<div class="market-toggle">
+<button class="market-toggle-btn active" onclick="switchMarket('us', this)">🇺🇸 السوق الأمريكي <span class="mtg-count" id="mtgCountUS">0</span></button>
+<button class="market-toggle-btn" onclick="switchMarket('sa', this)">🇸🇦 السوق السعودي <span class="mtg-count" id="mtgCountSA">0</span></button>
+</div>
+
 <!-- Filter -->
 <div class="filter-bar">
 <button class="filter-btn active" onclick="filterStocks('all', this)">📋 الكل <span class="count" id="filterAll">0</span></button>
@@ -1038,7 +1093,7 @@ gap: 8px;
 </div>
 
 <!-- US Market -->
-<div class="market-divider">🇺🇸 الأسهم الأمريكية</div>
+<div id="market-us-section">
 
 <div id="us-ready" class="category-section">
 <div class="category-header ready">🎯 جاهز للدخول <span class="category-count" id="us-ready-count">0</span></div>
@@ -1058,9 +1113,10 @@ gap: 8px;
 </div>
 
 <div id="us-loading"><div class="loading"><div class="spinner"></div>جاري تحميل الأسهم الأمريكية...</div></div>
+</div><!-- /market-us-section -->
 
 <!-- SA Market -->
-<div class="market-divider">🇸🇦 السوق السعودي (تداول)</div>
+<div id="market-sa-section" style="display:none">
 
 <div id="sa-ready" class="category-section">
 <div class="category-header ready">🎯 جاهز للدخول <span class="category-count" id="sa-ready-count">0</span></div>
@@ -1080,13 +1136,24 @@ gap: 8px;
 </div>
 
 <div id="sa-loading"><div class="loading"><div class="spinner"></div>جاري تحميل السوق السعودي...</div></div>
+</div><!-- /market-sa-section -->
 </div>
 
-<!-- الارتكاز — أمريكي فقط -->
+<!-- الارتكاز -->
 <div class="page" id="page-arkitaz">
-<div>
+<div class="market-toggle">
+<button class="market-toggle-btn active" onclick="switchArkitazMarket('us', this)">🇺🇸 أمريكي</button>
+<button class="market-toggle-btn" onclick="switchArkitazMarket('sa', this)">🇸🇦 سعودي</button>
+</div>
+<div id="arkitaz-us-wrapper">
 <div class="section-title">🇺🇸 ارتكاز — الأسهم الأمريكية</div>
 <div id="arkitaz-us-container">
+<div class="loading"><div class="spinner"></div>جاري التحميل...</div>
+</div>
+</div>
+<div id="arkitaz-sa-wrapper" style="display:none">
+<div class="section-title">🇸🇦 ارتكاز — السوق السعودي</div>
+<div id="arkitaz-sa-container">
 <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
 </div>
 </div>
@@ -1195,6 +1262,7 @@ let _portfolio = JSON.parse(localStorage.getItem('krm_portfolio') || '[]');
 let _closeTradeId = null;
 let _allStocks = { us: [], sa: [] };
 let _currentFilter = 'all';
+let _currentMarket = 'us';
 
 function showToast(msg) {
 const t = document.getElementById('toast');
@@ -1348,24 +1416,47 @@ div.onclick = () => openModal(symbol, data, market);
 return div;
 }
 
+window.switchMarket = function(market, el) {
+_currentMarket = market;
+document.querySelectorAll('#page-foras .market-toggle-btn').forEach(b => b.classList.remove('active'));
+el.classList.add('active');
+document.getElementById('market-us-section').style.display = market === 'us' ? '' : 'none';
+document.getElementById('market-sa-section').style.display = market === 'sa' ? '' : 'none';
+updateCounts();
+// re-apply filter
+const activeFilter = document.querySelector('.filter-btn.active');
+if (activeFilter) filterStocks(_currentFilter, activeFilter);
+};
+
+window.switchArkitazMarket = function(market, el) {
+document.querySelectorAll('#page-arkitaz .market-toggle-btn').forEach(b => b.classList.remove('active'));
+el.classList.add('active');
+document.getElementById('arkitaz-us-wrapper').style.display = market === 'us' ? '' : 'none';
+document.getElementById('arkitaz-sa-wrapper').style.display = market === 'sa' ? '' : 'none';
+};
+
 function updateCounts() {
-const all = [..._allStocks.us, ..._allStocks.sa];
-const ready = all.filter(s => isReadyToEnter(s)).length;
-const strong = all.filter(s => getCategory(s.confidence || 0) === 'strong').length;
-const medium = all.filter(s => getCategory(s.confidence || 0) === 'medium').length;
-const watch = all.filter(s => getCategory(s.confidence || 0) === 'watch').length;
+const current = _allStocks[_currentMarket] || [];
+const ready = current.filter(s => isReadyToEnter(s)).length;
+const strong = current.filter(s => getCategory(s.confidence || 0) === 'strong').length;
+const medium = current.filter(s => getCategory(s.confidence || 0) === 'medium').length;
+const watch = current.filter(s => getCategory(s.confidence || 0) === 'watch').length;
 
 document.getElementById('sumReady').textContent = ready;
 document.getElementById('sumStrong').textContent = strong;
 document.getElementById('sumMedium').textContent = medium;
 document.getElementById('sumWatch').textContent = watch;
 
-document.getElementById('filterAll').textContent = all.length;
+document.getElementById('filterAll').textContent = current.length;
 document.getElementById('filterReady').textContent = ready;
 document.getElementById('filterStrong').textContent = strong;
 document.getElementById('filterMedium').textContent = medium;
 document.getElementById('filterWatch').textContent = watch;
 
+document.getElementById('mtgCountUS').textContent = _allStocks.us.length;
+document.getElementById('mtgCountSA').textContent = _allStocks.sa.length;
+
+const all = [..._allStocks.us, ..._allStocks.sa];
 document.getElementById('tabCountForas').textContent = all.length;
 document.getElementById('tabCountPortfolio').textContent = _portfolio.filter(p => p.status === 'open').length;
 }
@@ -1375,7 +1466,7 @@ _currentFilter = filter;
 document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
 el.classList.add('active');
 
-['us', 'sa'].forEach(market => {
+const market = _currentMarket;
 ['ready', 'strong', 'medium', 'watch'].forEach(cat => {
 const section = document.getElementById(`${market}-${cat}`);
 if (!section) return;
@@ -1384,7 +1475,6 @@ section.style.display = '';
 } else {
 section.style.display = 'none';
 }
-});
 });
 };
 
@@ -1911,6 +2001,7 @@ loadMeta();
 loadMarket('us', 'suggestions_us');
 loadMarket('sa', 'suggestions_sa');
 loadArkitaz('arkitaz-us-container', 'consolidation_us', 'us');
+loadArkitaz('arkitaz-sa-container', 'consolidation_sa', 'sa');
 renderPerformancePage();
 renderPortfolioPage();
 }
