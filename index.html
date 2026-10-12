@@ -28,6 +28,12 @@ function doLogin() {
   firebase.auth().signInWithEmailAndPassword(e, p)
     .catch(() => { err.textContent = 'خطأ في البريد أو كلمة المرور'; });
 }
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('login-btn').addEventListener('click', doLogin);
+  document.getElementById('login-pass').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') doLogin();
+  });
+});
 </script>
 
 <!-- Firebase -->
@@ -250,7 +256,7 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
     <h2>📈 KRM Stocks</h2>
     <input type="email" id="login-email" placeholder="البريد الإلكتروني" dir="ltr">
     <input type="password" id="login-pass" placeholder="كلمة المرور" dir="ltr">
-    <button onclick="doLogin()">دخول</button>
+    <button id="login-btn">دخول</button>
     <div id="auth-error"></div>
   </div>
 </div>
