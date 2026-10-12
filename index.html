@@ -18,6 +18,7 @@ firebase.initializeApp(_firebaseConfigCompat);
 firebase.auth().onAuthStateChanged(user => {
   if (user) {
     document.getElementById('auth-overlay').style.display = 'none';
+    window._uid = user.uid;
   }
 });
 function doLogin() {
@@ -39,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Firebase -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
@@ -55,7 +56,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 window._db = db;
-window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc };
+window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where };
 </script>
 
 <!-- TradingView Lightweight Charts -->
@@ -105,23 +106,32 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
   .page.active{display:block}
   .section-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
 
-  /* ── Stock list (compact cards) ── */
-  .stocks-list{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+  /* ── Market sub-tabs ── */
+  .market-tabs{display:flex;gap:8px;margin-bottom:16px}
+  .market-tab{padding:7px 18px;border-radius:20px;border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;background:none}
+  .market-tab.active{background:var(--gold);color:#0a0a0f;border-color:var(--gold);font-weight:700}
+  .market-tab:hover:not(.active){border-color:var(--text2);color:var(--text)}
 
-  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:border-color .2s;display:flex;align-items:center;gap:12px}
-  .stock-card:hover{border-color:var(--gold)}
+  .market-panel{display:none}
+  .market-panel.active{display:block}
 
-  .card-symbol{font-size:17px;font-weight:700;color:var(--text);min-width:64px}
-  .card-price{font-size:15px;font-weight:600;color:var(--gold);min-width:64px}
-  .card-note{font-size:12px;color:var(--text2);flex:1;line-height:1.4}
+  /* ── Stock grid (مربعات) ── */
+  .stocks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px}
 
-  .card-right{display:flex;flex-direction:column;align-items:flex-end;gap:6px;min-width:90px}
-  .conf-row{display:flex;align-items:center;gap:6px}
-  .conf-bar{width:50px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
+  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .2s,transform .15s;display:flex;flex-direction:column;gap:8px}
+  .stock-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+
+  .card-symbol{font-size:16px;font-weight:700;color:var(--text)}
+  .card-price{font-size:18px;font-weight:700;color:var(--gold)}
+  .card-note{font-size:11px;color:var(--text2);line-height:1.4;min-height:28px}
+
+  .card-bottom{display:flex;align-items:center;justify-content:space-between;gap:6px}
+  .conf-row{display:flex;align-items:center;gap:4px}
+  .conf-bar{width:36px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
   .conf-fill{height:100%;border-radius:2px}
-  .conf-pct{font-size:12px;font-weight:600;min-width:30px;text-align:left}
+  .conf-pct{font-size:11px;font-weight:600}
 
-  .score-badge{font-size:11px;padding:2px 8px;border-radius:4px;font-weight:600}
+  .score-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
   .score-badge.great{background:rgba(34,197,94,.15);color:var(--green)}
   .score-badge.good{background:rgba(240,180,41,.15);color:var(--gold)}
   .score-badge.ok{background:rgba(136,136,170,.15);color:var(--text2)}
@@ -231,6 +241,11 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
   .status-closed{color:var(--text2);font-size:11px}
   .empty-perf{text-align:center;padding:60px 20px;color:var(--text2)}
 
+  /* Save indicator */
+  .save-indicator{font-size:11px;color:var(--text2);display:inline-block;margin-right:8px}
+  .save-indicator.saving{color:var(--gold)}
+  .save-indicator.saved{color:var(--green)}
+
   /* Close dialog */
   #closeTradeDialog{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center}
   #closeTradeDialog.open{display:flex}
@@ -243,8 +258,7 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
     .tl-grid{grid-template-columns:1fr 1fr}
     .form-row{grid-template-columns:1fr}
     .perf-stats{grid-template-columns:repeat(2,1fr)}
-    .stock-card{flex-wrap:wrap}
-    .card-note{width:100%;order:3}
+    .stocks-grid{grid-template-columns:repeat(2,1fr)}
   }
 </style>
 </head>
@@ -286,6 +300,7 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
         <div class="form-group"><label>هدف السعر (اختياري)</label><input type="number" id="buyTargetD" placeholder="0.00" step="0.01"></div>
       </div>
       <div>
+        <span class="save-indicator" id="saveIndicator"></span>
         <button class="btn-save-buy" onclick="saveBuyDetail()">حفظ الصفقة ✓</button>
         <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">إلغاء</button>
       </div>
@@ -306,33 +321,28 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
 
 <!-- الفرص Tab -->
 <div class="page active" id="page-foras">
-  <div id="foras-us-section">
-    <div class="section-title">🇺🇸 الأسهم الأمريكية</div>
-    <div class="stocks-list" id="grid-us">
+  <!-- Sub-tabs: US / SA -->
+  <div class="market-tabs">
+    <button class="market-tab active" onclick="switchMarket('foras','us',this)">🇺🇸 الأمريكي</button>
+    <button class="market-tab" onclick="switchMarket('foras','sa',this)">🇸🇦 السعودي</button>
+  </div>
+  <div class="market-panel active" id="foras-panel-us">
+    <div class="stocks-grid" id="grid-us">
       <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
     </div>
   </div>
-  <div id="foras-sa-section">
-    <div class="section-title">🇸🇦 السوق السعودي (تداول)</div>
-    <div class="stocks-list" id="grid-sa">
+  <div class="market-panel" id="foras-panel-sa">
+    <div class="stocks-grid" id="grid-sa">
       <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
     </div>
   </div>
 </div>
 
-<!-- الارتكاز Tab -->
+<!-- الارتكاز Tab (أمريكي فقط) -->
 <div class="page" id="page-arkitaz">
-  <div id="arkitaz-us-section" style="margin-bottom:32px">
-    <div class="section-title">🇺🇸 ارتكاز — الأسهم الأمريكية</div>
-    <div id="arkitaz-us-container">
-      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
-    </div>
-  </div>
-  <div id="arkitaz-sa-section">
-    <div class="section-title">🇸🇦 ارتكاز — السوق السعودي</div>
-    <div id="arkitaz-sa-container">
-      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
-    </div>
+  <div class="section-title">🇺🇸 ارتكاز — الأسهم الأمريكية</div>
+  <div id="arkitaz-us-container">
+    <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
   </div>
 </div>
 
@@ -397,8 +407,9 @@ window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, de
 
 // ── Globals ──
 let _currentStock = null;
-let _trades = JSON.parse(localStorage.getItem('krm_trades') || '[]');
+let _trades = [];
 let _closeTradeId = null;
+let _tradesLoaded = false;
 
 // ── Wait for Firebase ──
 async function waitForDB() {
@@ -407,6 +418,14 @@ async function waitForDB() {
     await new Promise(r => setTimeout(r, 100));
   }
   throw new Error('Firebase timeout');
+}
+
+async function waitForUID() {
+  for (let i = 0; i < 100; i++) {
+    if (window._uid) return window._uid;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  throw new Error('Auth timeout');
 }
 
 // ── Helpers ──
@@ -452,7 +471,7 @@ function renderFullChart(container, candles) {
   chart.timeScale().fitContent();
 }
 
-// ── Build compact card ──
+// ── Build compact card (grid style) ──
 function buildCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
@@ -464,7 +483,7 @@ function buildCard(symbol, data, market) {
     <div class="card-symbol">${symbol}</div>
     <div class="card-price">${data.close ? data.close.toFixed(2) : '—'}</div>
     <div class="card-note">${data.note || ''}</div>
-    <div class="card-right">
+    <div class="card-bottom">
       <div class="conf-row">
         <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
         <span class="conf-pct" style="color:${confCol}">${conf}%</span>
@@ -491,6 +510,7 @@ function openDetail(symbol, data, market) {
   if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
   else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
   document.getElementById('buyFormDetail').classList.remove('open');
+  document.getElementById('saveIndicator').textContent = '';
 
   // Stats
   const conf = data.confidence || 0;
@@ -602,13 +622,70 @@ window.detailBuy = function() {
   document.getElementById('buyFormDetail').classList.toggle('open');
 };
 
-window.saveBuyDetail = function() {
+// ── Save trades to Firestore ──
+async function saveTradeToFirestore(trade) {
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc } = window._firestoreOps;
+    await setDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
+  } catch (err) {
+    console.error('Firestore save error:', err);
+  }
+}
+
+async function updateTradeInFirestore(trade) {
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, updateDoc } = window._firestoreOps;
+    await updateDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
+  } catch (err) {
+    console.error('Firestore update error:', err);
+  }
+}
+
+async function deleteTradeFromFirestore(id) {
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, deleteDoc } = window._firestoreOps;
+    await deleteDoc(doc(window._db, 'users', uid, 'trades', id));
+  } catch (err) {
+    console.error('Firestore delete error:', err);
+  }
+}
+
+async function loadTradesFromFirestore() {
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { collection, getDocs } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'trades'));
+    _trades = snap.docs.map(d => d.data());
+    _tradesLoaded = true;
+    renderPerformancePage();
+  } catch (err) {
+    console.error('Firestore load error:', err);
+    // fallback to localStorage
+    _trades = JSON.parse(localStorage.getItem('krm_trades') || '[]');
+    _tradesLoaded = true;
+    renderPerformancePage();
+  }
+}
+
+window.saveBuyDetail = async function() {
   if (!_currentStock) return;
   const price  = parseFloat(document.getElementById('buyPriceD').value);
   const qty    = parseFloat(document.getElementById('buyQtyD').value);
   const date   = document.getElementById('buyDateD').value;
   const target = parseFloat(document.getElementById('buyTargetD').value) || null;
   if (!price || !qty || !date) { alert('يرجى تعبئة سعر الشراء والكمية والتاريخ'); return; }
+
+  const ind = document.getElementById('saveIndicator');
+  ind.textContent = 'جاري الحفظ...';
+  ind.className = 'save-indicator saving';
+
   const trade = {
     id: Date.now().toString(),
     symbol: _currentStock.symbol,
@@ -618,7 +695,13 @@ window.saveBuyDetail = function() {
     status: 'open', closePrice: null, closeDate: null,
   };
   _trades.push(trade);
-  saveTrades();
+
+  await saveTradeToFirestore(trade);
+
+  ind.textContent = '✓ تم الحفظ';
+  ind.className = 'save-indicator saved';
+  setTimeout(() => { ind.textContent = ''; }, 2000);
+
   document.getElementById('buyFormDetail').classList.remove('open');
   const btn = document.getElementById('btnBuyDetail');
   btn.textContent = '✅ تم الشراء';
@@ -634,7 +717,7 @@ window.openCloseTrade = function(id) {
   document.getElementById('closeTradeDialog').classList.add('open');
 };
 
-window.confirmCloseTrade = function() {
+window.confirmCloseTrade = async function() {
   const closePrice = parseFloat(document.getElementById('closePriceInput').value);
   const closeDate = document.getElementById('closeDateInput').value;
   if (!closePrice || !closeDate) { alert('يرجى إدخال السعر والتاريخ'); return; }
@@ -643,22 +726,18 @@ window.confirmCloseTrade = function() {
     trade.closePrice = closePrice;
     trade.closeDate = closeDate;
     trade.status = 'closed';
-    saveTrades();
+    await updateTradeInFirestore(trade);
     renderPerformancePage();
   }
   document.getElementById('closeTradeDialog').classList.remove('open');
 };
 
-window.removeTrade = function(id) {
+window.removeTrade = async function(id) {
   if (!confirm('هل تريد حذف هذه الصفقة؟')) return;
   _trades = _trades.filter(t => t.id !== id);
-  saveTrades();
+  await deleteTradeFromFirestore(id);
   renderPerformancePage();
 };
-
-function saveTrades() {
-  localStorage.setItem('krm_trades', JSON.stringify(_trades));
-}
 
 // ── Performance page ──
 function renderPerformancePage() {
@@ -695,11 +774,7 @@ function renderPerformancePage() {
     return (b.closeDate || b.buyDate) > (a.closeDate || a.buyDate) ? 1 : -1;
   });
 
-  // Store stock data in a map keyed by id to avoid embedding JSON in onclick attributes
-    if (!window._arkitazStockMap) window._arkitazStockMap = {};
-    stocks.forEach(s => { window._arkitazStockMap[s.id + '_' + market] = s; });
-
-    let rows = '';
+  let rows = '';
   sorted.forEach(t => {
     const pct = t.closePrice ? ((t.closePrice - t.buyPrice) / t.buyPrice * 100) : null;
     const pnl = t.closePrice ? ((t.closePrice - t.buyPrice) * t.qty) : null;
@@ -732,7 +807,7 @@ function renderPerformancePage() {
     </table>`;
 }
 
-// ── Load Firestore (الفرص) — no consolidating badge ──
+// ── Load Firestore (الفرص) ──
 async function loadMarket(gridId, collectionName, market) {
   const grid = document.getElementById(gridId);
   try {
@@ -760,7 +835,7 @@ async function loadMarket(gridId, collectionName, market) {
   }
 }
 
-// ── Load Arkitaz (الارتكاز) — from separate collection ──
+// ── Load Arkitaz (الارتكاز) — أمريكي فقط ──
 async function loadArkitaz(containerId, collectionName, market) {
   const container = document.getElementById(containerId);
   try {
@@ -776,6 +851,9 @@ async function loadArkitaz(containerId, collectionName, market) {
     const stocks = [];
     snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
     stocks.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
+
+    if (!window._arkitazStockMap) window._arkitazStockMap = {};
+    stocks.forEach(s => { window._arkitazStockMap[s.id + '_' + market] = s; });
 
     let rows = '';
     stocks.forEach(s => {
@@ -833,6 +911,16 @@ window.switchTab = function(tab, el) {
   document.getElementById('page-' + tab).classList.add('active');
 };
 
+// ── Market sub-tab switch ──
+window.switchMarket = function(page, market, el) {
+  const panels = document.querySelectorAll(`#page-${page} .market-panel`);
+  const tabs = document.querySelectorAll(`#page-${page} .market-tab`);
+  panels.forEach(p => p.classList.remove('active'));
+  tabs.forEach(t => t.classList.remove('active'));
+  document.getElementById(`${page}-panel-${market}`).classList.add('active');
+  el.classList.add('active');
+};
+
 // ── Auto paper trade ──
 function autoRegisterPaperTrade(sym, data) {
   if (!data.confidence || data.confidence < 60) return;
@@ -864,8 +952,7 @@ loadMeta();
 loadMarket('grid-us', 'suggestions_us', 'us');
 loadMarket('grid-sa', 'suggestions_sa', 'sa');
 loadArkitaz('arkitaz-us-container', 'consolidation_us', 'us');
-loadArkitaz('arkitaz-sa-container', 'consolidation_sa', 'sa');
-renderPerformancePage();
+loadTradesFromFirestore();
 
 </script>
 
