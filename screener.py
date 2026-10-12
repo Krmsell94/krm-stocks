@@ -47,6 +47,7 @@ TOP_N         = 999
 
 # ─── طبقة 1: كلاسيكي ─────────────────────────────────────────────
 def proximity_score(hist):
+    """(close - period_low) / (period_high - period_low)"""
     if hist.empty or len(hist) < 20:
         return None
     period_high = hist["High"].max()
@@ -69,77 +70,134 @@ def hourly_drop(ticker_obj):
 
 # ─── طبقة 2: Wyckoff ─────────────────────────────────────────────
 def wyckoff_score(hist):
+    """
+    يكشف التراكم الصامت:
+    - حجم متناقص عند القاع (Accumulation)
+    - سعر يتضيق (Spring احتمالي)
+    يرجع: 0-1 (كلما كان أعلى = تراكم أقوى)
+    """
     if len(hist) < 40:
         return 0.0
+
     closes  = hist["Close"].values
     volumes = hist["Volume"].values
+
+    # آخر 20 يوم مقارنة بـ 20 يوم قبلها
     recent_vol = volumes[-20:].mean()
     prev_vol   = volumes[-40:-20].mean()
+
+    # انخفاض الحجم = تراكم صامت (مو تصريف بحجم عالي)
     vol_declining = recent_vol < prev_vol * 0.85
+
+    # نطاق السعر ضيق آخر 10 أيام
     recent_range = (closes[-10:].max() - closes[-10:].min()) / closes[-10:].mean()
-    tight_range  = recent_range < 0.06
+    tight_range  = recent_range < 0.06  # أقل من 6% تذبذب
+
+    # السعر فوق أدنى نقطة (مو يكسر القاع)
     period_low   = hist["Low"].min()
     above_low    = closes[-1] > period_low * 1.02
+
     score = 0.0
     if vol_declining: score += 0.4
     if tight_range:   score += 0.4
     if above_low:     score += 0.2
+
     return round(score, 2)
 
-# ─── طبقة 3: Elliott Wave ────────────────────────────────────────
+# ─── طبقة 3: Elliott Wave (مبسّط) ───────────────────────────────
 def elliott_score(hist):
+    """
+    يكشف موجة تصحيح (2 أو 4):
+    - هبوط من قمة واضحة
+    - التصحيح لم يكسر قاع الموجة 1
+    - Fibonacci retracement 38-78%
+    يرجع: 0-1
+    """
     if len(hist) < 60:
         return 0.0
+
     closes = hist["Close"].values
+
+    # ابحث عن آخر قمة واضحة (أعلى نقطة في آخر 60 يوم)
     peak_idx = np.argmax(closes[-60:])
     peak_val = closes[-60:][peak_idx]
     current  = closes[-1]
+
+    # لازم يكون في تصحيح (السعر أقل من القمة)
     if current >= peak_val * 0.95:
         return 0.0
+
+    # حساب نسبة التصحيح من القمة
+    # ابحث عن قاع قبل القمة
     if peak_idx < 5:
         return 0.0
+
     base_val = closes[-60:][:peak_idx].min()
     if peak_val <= base_val:
         return 0.0
-    wave_size   = peak_val - base_val
-    correction  = peak_val - current
-    retrace_pct = correction / wave_size
+
+    wave_size    = peak_val - base_val
+    correction   = peak_val - current
+    retrace_pct  = correction / wave_size
+
     score = 0.0
+
+    # Fibonacci 38.2% - 78.6% = منطقة التصحيح الصحية
     if 0.382 <= retrace_pct <= 0.786:
         score += 0.6
+        # 50-61.8% = المنطقة المثالية
         if 0.50 <= retrace_pct <= 0.618:
             score += 0.4
+
     return round(min(score, 1.0), 2)
 
 # ─── فرز الارتكاز ────────────────────────────────────────────────
 def is_consolidating(hist):
+    """
+    معيار فيصل للارتكاز:
+    - نطاق ضيق آخر 7 أيام (أقل من 8% تذبذب)
+    - حجم منخفض (نائم)
+    - عند الدعم (قريب من القاع)
+    - أداء شهري سلبي أو محايد
+    """
     if len(hist) < 30:
         return False, ""
+
     closes  = hist["Close"].values
     volumes = hist["Volume"].values
+
+    # نطاق ضيق آخر 7 أيام
     recent_high  = hist["High"].values[-7:].max()
     recent_low   = hist["Low"].values[-7:].min()
     range_pct    = (recent_high - recent_low) / closes[-7:].mean()
-    tight        = bool(range_pct < 0.08)
+    tight        = range_pct < 0.08
+
+    # حجم منخفض (آخر 7 أيام أقل من المتوسط)
     avg_vol_20   = volumes[-20:].mean()
     recent_vol7  = volumes[-7:].mean()
-    quiet        = bool(recent_vol7 < avg_vol_20 * 0.85)
+    quiet        = recent_vol7 < avg_vol_20 * 0.85
+
+    # عند الدعم (آخر سعر ضمن أدنى 20% من النطاق الشهري)
     month_high   = hist["High"].values[-22:].max()
     month_low    = hist["Low"].values[-22:].min()
     month_range  = month_high - month_low
     if month_range == 0:
         return False, ""
     pos_in_range = (closes[-1] - month_low) / month_range
-    near_support = bool(pos_in_range < 0.25)
+    near_support = pos_in_range < 0.25
+
+    # أداء شهري سلبي أو محايد
     month_perf   = (closes[-1] - closes[-22]) / closes[-22] if len(closes) >= 22 else 0
-    monthly_down = bool(month_perf <= 0.03)
+    monthly_down = month_perf <= 0.03
+
     reasons = []
     if tight:        reasons.append("نطاق ضيق")
     if quiet:        reasons.append("حجم هادئ")
     if near_support: reasons.append("عند الدعم")
     if monthly_down: reasons.append("أداء محايد")
+
     is_cons = tight and quiet and near_support
-    return bool(is_cons), "، ".join(reasons)
+    return is_cons, "، ".join(reasons)
 
 # ─── بناء الشموع ─────────────────────────────────────────────────
 def build_candles(hist):
@@ -162,53 +220,80 @@ def build_candles(hist):
 # ─── بناء الملاحظة ────────────────────────────────────────────────
 def build_note(score, drop, wyckoff, elliott, consolidating, cons_reason):
     parts = []
+
+    # كلاسيكي
     if score < 0.03:
         parts.append("قريب جداً من القاع")
     elif score < 0.06:
         parts.append("قريب من القاع")
     else:
         parts.append("تصحيح معقول")
+
+    # Wyckoff
     if wyckoff >= 0.8:
         parts.append("تراكم قوي 🟢")
     elif wyckoff >= 0.6:
         parts.append("إشارات تراكم")
+
+    # Elliott
     if elliott >= 0.8:
         parts.append("تصحيح فيبوناتشي مثالي 📐")
     elif elliott >= 0.6:
         parts.append("تصحيح صحي")
+
+    # ساعي
     if drop < -0.07:
         parts.append(f"تراجع {drop*100:.1f}%")
     elif abs(drop) < 0.02:
         parts.append("مستقر")
+
     return "، ".join(parts)
 
-# ─── حساب درجة الثقة ─────────────────────────────────────────────
+# ─── حساب درجة الثقة الكلية ──────────────────────────────────────
 def confidence_score(prox, wyckoff, elliott):
-    prox_score = max(0, 1 - (prox / 0.10))
+    """
+    0-100: كلما ارتفع = فرصة أقوى
+    """
+    # عكس proximity (كلما انخفض = أفضل)
+    prox_score = max(0, 1 - (prox / 0.10))  # 0→1, 0.10→0
+
     total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)
     return round(total * 100)
 
+# ─── مستويات التداول ─────────────────────────────────────────────
 def trading_levels(hist, wyckoff, elliott, close):
-    closes=hist["Close"].values; lows=hist["Low"].values
-    strategy="wyckoff" if wyckoff>=0.6 else "elliott" if elliott>=0.6 else "classical"
-    entry=round(float(close),4)
-    if strategy=="wyckoff":
-        stop=round(float(np.min(lows[-10:]))*0.97,4)
-        t1=round(entry*1.15,4)
-        t2=round(entry*1.25,4)
-    elif strategy=="elliott":
-        peak_idx=int(np.argmax(closes[-60:]))
-        peak_val=float(closes[-60:][peak_idx])
-        base_val=float(np.min(closes[-60:][:max(peak_idx,1)]))
-        wave=peak_val-base_val
-        stop=round(float(np.min(lows[-60:]))*0.98,4)
-        t1=round(entry+wave*0.382,4)
-        t2=round(entry+wave*0.618,4)
+    closes = hist["Close"].values
+    lows   = hist["Low"].values
+    if wyckoff >= 0.6:
+        strategy = "wyckoff"
+    elif elliott >= 0.6:
+        strategy = "elliott"
     else:
-        stop=round(float(np.min(lows[-20:]))*0.98,4)
-        t1=round(entry*1.10,4)
-        t2=round(entry*1.20,4)
-    return {"strategy_type":strategy,"entry":entry,"stop_loss":stop,"target1":t1,"target2":t2}
+        strategy = "classical"
+    entry = round(float(close), 4)
+    if strategy == "wyckoff":
+        stop = round(float(np.min(lows[-10:])) * 0.97, 4)
+        t1   = round(entry * 1.15, 4)
+        t2   = round(entry * 1.25, 4)
+    elif strategy == "elliott":
+        peak_idx = int(np.argmax(closes[-60:]))
+        peak_val = float(closes[-60:][peak_idx])
+        base_val = float(np.min(closes[-60:][:max(peak_idx, 1)]))
+        wave     = peak_val - base_val
+        stop     = round(float(np.min(lows[-60:])) * 0.98, 4)
+        t1       = round(entry + wave * 0.382, 4)
+        t2       = round(entry + wave * 0.618, 4)
+    else:
+        stop = round(float(np.min(lows[-20:])) * 0.98, 4)
+        t1   = round(entry * 1.10, 4)
+        t2   = round(entry * 1.20, 4)
+    return {
+        "strategy_type": strategy,
+        "entry":         entry,
+        "stop_loss":     stop,
+        "target1":       t1,
+        "target2":       t2,
+    }
 
 # ─── فحص سهم واحد ────────────────────────────────────────────────
 def screen_stock(symbol, market="us"):
@@ -221,12 +306,14 @@ def screen_stock(symbol, market="us"):
             print(f"  ⚠️  {symbol}: لا بيانات")
             return None
 
+        # حجم (US فقط)
         if market == "us":
             avg_vol = hist["Volume"].tail(20).mean()
             if avg_vol < MIN_VOLUME:
                 print(f"  ❌ {symbol}: حجم منخفض")
                 return None
 
+        # ── الطبقة 1: كلاسيكي ──
         score = proximity_score(hist)
         if score is None or score > MAX_SCORE:
             print(f"  ❌ {symbol}: سكور {score}")
@@ -237,25 +324,46 @@ def screen_stock(symbol, market="us"):
             print(f"  ❌ {symbol}: تراجع ساعي {drop*100:.1f}%")
             return None
 
-        wyckoff     = float(wyckoff_score(hist))
-        elliott     = float(elliott_score(hist))
+        # ── الطبقة 2: Wyckoff ──
+        wyckoff = wyckoff_score(hist)
+
+        # ── الطبقة 3: Elliott ──
+        elliott = elliott_score(hist)
+
+        # ── الارتكاز ──
         consolidating, cons_reason = is_consolidating(hist)
-        confidence  = int(confidence_score(score, wyckoff, elliott))
-        note        = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
-        candles     = build_candles(hist)
-        close       = round(float(hist["Close"].iloc[-1]), 4)
-        levels      = trading_levels(hist, wyckoff, elliott, close)
+
+        # ── درجة الثقة ──
+        confidence = confidence_score(score, wyckoff, elliott)
+
+        note    = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
+        candles = build_candles(hist)
+        close   = round(float(hist["Close"].iloc[-1]), 4)
+        levels  = trading_levels(hist, wyckoff, elliott, close)
+
+        news = []
+        try:
+            raw_news = t.news or []
+            for n in raw_news[:5]:
+                news.append({
+                    "title":     n.get("title", ""),
+                    "publisher": n.get("publisher", ""),
+                    "link":      n.get("link", ""),
+                    "time":      n.get("providerPublishTime", 0),
+                })
+        except:
+            news = []
 
         print(f"  ✅ {symbol}: سكور={score:.3f} | ثقة={confidence}% | Wyckoff={wyckoff} | Elliott={elliott} | ارتكاز={'✓' if consolidating else '✗'}")
 
         return {
-            "score":         float(score),
+            "score":         score,
             "confidence":    confidence,
             "wyckoff":       wyckoff,
             "elliott":       elliott,
             "consolidating": consolidating,
             "consReason":    cons_reason,
-            "drop72h":       float(drop),
+            "drop72h":       drop,
             "close":         close,
             "note":          note,
             "candles":       candles,
@@ -265,6 +373,7 @@ def screen_stock(symbol, market="us"):
             "stop_loss":     levels["stop_loss"],
             "target1":       levels["target1"],
             "target2":       levels["target2"],
+            "news":          news,
         }
 
     except Exception as e:
@@ -288,6 +397,7 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
             if data["consolidating"]:
                 consolidating[sym] = data
 
+    # أفضل N حسب الثقة
     top      = sorted(results.items(), key=lambda x: -x[1]["confidence"])[:TOP_N]
     top_cons = sorted(consolidating.items(), key=lambda x: -x[1]["confidence"])[:TOP_N]
 
@@ -300,7 +410,7 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
     meta_doc = meta_ref.get()
     version  = (meta_doc.to_dict() or {}).get("version", 0) + 1
 
-    col_ref = db.collection(collection_us)
+    col_ref  = db.collection(collection_us)
     for d in col_ref.stream():
         d.reference.delete()
 
@@ -317,7 +427,7 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
     print(f"✅ فرص → Firestore ({collection_us}) v{version}")
 
     # ── حفظ الارتكاز ──
-    meta_cons     = db.collection("meta").document(collection_cons)
+    meta_cons = db.collection("meta").document(collection_cons)
     meta_cons_doc = meta_cons.get()
     version_cons  = (meta_cons_doc.to_dict() or {}).get("version", 0) + 1
 
