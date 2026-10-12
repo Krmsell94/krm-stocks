@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRM Stocks</title>
 
-<!-- Firebase Auth (compat) -->
+<!-- Firebase Auth (compat) --
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
 <script>
@@ -689,7 +689,11 @@ function renderPerformancePage() {
     return (b.closeDate || b.buyDate) > (a.closeDate || a.buyDate) ? 1 : -1;
   });
 
-  let rows = '';
+  // Store stock data in a map keyed by id to avoid embedding JSON in onclick attributes
+    if (!window._arkitazStockMap) window._arkitazStockMap = {};
+    stocks.forEach(s => { window._arkitazStockMap[s.id + '_' + market] = s; });
+
+    let rows = '';
   sorted.forEach(t => {
     const pct = t.closePrice ? ((t.closePrice - t.buyPrice) / t.buyPrice * 100) : null;
     const pnl = t.closePrice ? ((t.closePrice - t.buyPrice) * t.qty) : null;
@@ -774,7 +778,7 @@ async function loadArkitaz(containerId, collectionName, market) {
       const reason = s.consReason || '—';
       const readyBadge = (conf >= 50) ? `<span class="badge badge-gold">جاهز للدخول 🎯</span>` : '';
       rows += `
-        <tr onclick="openDetail('${s.id}', ${JSON.stringify(s).replace(/'/ g, "&#39;")}, '${market}')">
+        <tr onclick="openDetail('${s.id}', window._arkitazStockMap['${s.id}_${market}'], '${market}')">
           <td><b>${s.id}</b> ${readyBadge}</td>
           <td>${s.close ? s.close.toFixed(2) : '—'}</td>
           <td>
