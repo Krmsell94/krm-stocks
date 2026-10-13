@@ -4,414 +4,913 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRM Stocks</title>
-
-<!-- Firebase Auth (compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-<script>
-const _firebaseConfigCompat = {
-  apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
-  authDomain: "krm-stocks.firebaseapp.com",
-  projectId: "krm-stocks",
-};
-firebase.initializeApp(_firebaseConfigCompat);
-firebase.auth().onAuthStateChanged(user => {
-  if (user) {
-    document.getElementById('auth-overlay').style.display = 'none';
-    window._uid = user.uid;
-  }
-});
-function doLogin() {
-  const e   = document.getElementById('login-email').value.trim();
-  const p   = document.getElementById('login-pass').value;
-  const err = document.getElementById('auth-error');
-  err.textContent = '';
-  firebase.auth().signInWithEmailAndPassword(e, p)
-    .catch(() => { err.textContent = 'خطأ في البريد أو كلمة المرور'; });
-}
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('login-btn').addEventListener('click', doLogin);
-  document.getElementById('login-pass').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') doLogin();
-  });
-});
-</script>
-
-<!-- Firebase -->
-<script type="module">
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js';
-import { getFirestore, collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where } from 'https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js';
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
-  authDomain: "krm-stocks.firebaseapp.com",
-  projectId: "krm-stocks",
-  storageBucket: "krm-stocks.firebasestorage.app",
-  messagingSenderId: "317882690506",
-  appId: "1:317882690506:web:790be2a4214f8270bcfd33",
-  measurementId: "G-7KF2KPlJ53"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-window._db = db;
-window._firestoreOps = { collection, getDocs, doc, getDoc, setDoc, updateDoc, deleteDoc, query, where };
-</script>
-
-<!-- TradingView Lightweight Charts -->
-<script src="https://unpkg.com/lightweight-charts@4.1.3/dist/lightweight-charts.standalone.production.js"></script>
-
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --surface: #12121a;
-    --surface2: #1a1a26;
-    --border: #2a2a3a;
-    --text: #f0f0f0;
-    --text2: #8888aa;
-    --gold: #f0b429;
-    --gold2: #c8940f;
-    --green: #22c55e;
-    --red: #ef4444;
-    --blue: #60a5fa;
-    --purple: #a78bfa;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; min-height:100vh; }
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f7;
+  --bg3: #ebebef;
+  --text: #1a1a2e;
+  --text2: #555577;
+  --border: #d0d0e0;
+  --card-bg: #ffffff;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  --green: #16a34a;
+  --red: #dc2626;
+  --gold: #ca8a04;
+  --blue: #2563eb;
+  --sidebar-bg: #f8f8fc;
+  --sidebar-border: #e0e0ee;
+  --tab-active-bg: #1a1a2e;
+  --tab-active-text: #ffffff;
+  --tab-hover: #e8e8f4;
+  --market-btn-bg: #f0f0f8;
+  --market-btn-active: #1a1a2e;
+  --market-btn-active-text: #fff;
+  --badge-ready: #dcfce7;
+  --badge-ready-text: #16a34a;
+}
+[data-theme="dark"] {
+  --bg: #0d0d1a;
+  --bg2: #13131f;
+  --bg3: #1a1a2e;
+  --text: #e8e8ff;
+  --text2: #8888aa;
+  --border: #2a2a3a;
+  --card-bg: #16162a;
+  --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --green: #22c55e;
+  --red: #ef4444;
+  --gold: #f59e0b;
+  --blue: #60a5fa;
+  --sidebar-bg: #111122;
+  --sidebar-border: #2a2a3a;
+  --tab-active-bg: #5555ff;
+  --tab-active-text: #ffffff;
+  --tab-hover: #1e1e30;
+  --market-btn-bg: #1e1e30;
+  --market-btn-active: #5555ff;
+  --market-btn-active-text: #fff;
+  --badge-ready: #14532d;
+  --badge-ready-text: #22c55e;
+}
 
-  /* ── Auth ── */
-  #auth-overlay{position:fixed;inset:0;background:#0a0a0f;display:flex;align-items:center;justify-content:center;z-index:9999}
-  #auth-box{background:#12121a;border:1px solid #f0b42933;border-radius:16px;padding:2.5rem;width:340px;text-align:center}
-  #auth-box h2{color:var(--gold);margin-bottom:1.5rem;font-size:1.5rem;letter-spacing:1px}
-  #auth-box input{width:100%;padding:.75rem 1rem;margin-bottom:.8rem;background:#0a0a0f;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:1rem;box-sizing:border-box}
-  #auth-box input:focus{outline:none;border-color:var(--gold)}
-  #auth-box button{width:100%;padding:.85rem;background:var(--gold);border:none;border-radius:8px;color:#0a0a0f;font-size:1rem;cursor:pointer;font-weight:700;letter-spacing:.5px}
-  #auth-box button:hover{background:var(--gold2)}
-  #auth-error{color:var(--red);margin-top:.8rem;font-size:.9rem;min-height:1.2rem}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
 
-  /* ── Header ── */
-  header{background:var(--surface);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-  .logo{font-size:20px;font-weight:700;color:var(--gold);letter-spacing:1px}
-  .last-update{font-size:12px;color:var(--text2)}
+/* ââ Layout ââ */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
 
-  /* ── Tabs ── */
-  .tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;overflow-x:auto}
-  .tab{padding:12px 18px;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;font-size:14px;font-weight:500;transition:all .2s;white-space:nowrap}
-  .tab.active{color:var(--gold);border-bottom-color:var(--gold)}
-  .tab:hover:not(.active){color:var(--text)}
+/* ââ Sidebar ââ */
+.sidebar {
+  width: 180px;
+  min-width: 180px;
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
 
-  /* ── Pages ── */
-  .page{display:none;padding:20px}
-  .page.active{display:block}
-  .section-title{font-size:15px;font-weight:600;color:var(--text2);margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.sidebar-header {
+  padding: 0 14px 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
 
-  /* ── Market sub-tabs ── */
-  .market-tabs{display:flex;gap:8px;margin-bottom:16px}
-  .market-tab{padding:7px 18px;border-radius:20px;border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:13px;font-weight:500;transition:all .2s;background:none}
-  .market-tab.active{background:var(--gold);color:#0a0a0f;border-color:var(--gold);font-weight:700}
-  .market-tab:hover:not(.active){border-color:var(--text2);color:var(--text)}
+.sidebar-logo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 
-  .market-panel{display:none}
-  .market-panel.active{display:block}
+/* ââ Market selector (above tabs) ââ */
+.market-selector {
+  padding: 14px 10px 10px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+.market-label {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 6px;
+  text-align: center;
+}
+.market-btns {
+  display: flex;
+  gap: 4px;
+}
+.market-btn {
+  flex: 1;
+  padding: 6px 4px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--market-btn-bg);
+  color: var(--text2);
+  font-size: 12px;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+.market-btn.active {
+  background: var(--market-btn-active);
+  color: var(--market-btn-active-text);
+  border-color: var(--market-btn-active);
+  font-weight: 600;
+}
 
-  /* ── Stock grid (مربعات) ── */
-  .stocks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:24px}
+/* ââ Nav tabs ââ */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 14px;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: right;
+}
+.nav-tab:hover { background: var(--tab-hover); color: var(--text); }
+.nav-tab.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  font-weight: 600;
+}
+.nav-tab .tab-icon { font-size: 16px; }
 
-  .stock-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .2s,transform .15s;display:flex;flex-direction:column;gap:8px}
-  .stock-card:hover{border-color:var(--gold);transform:translateY(-2px)}
+/* ââ Dark mode toggle ââ */
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--sidebar-border);
+}
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--market-btn-bg);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 13px;
+  width: 100%;
+  justify-content: center;
+}
+.theme-toggle:hover { background: var(--tab-hover); }
 
-  .card-symbol{font-size:16px;font-weight:700;color:var(--text)}
-  .card-price{font-size:18px;font-weight:700;color:var(--gold)}
-  .card-note{font-size:11px;color:var(--text2);line-height:1.4;min-height:28px}
+/* ââ Main content ââ */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
 
-  .card-bottom{display:flex;align-items:center;justify-content:space-between;gap:6px}
-  .conf-row{display:flex;align-items:center;gap:4px}
-  .conf-bar{width:36px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden}
-  .conf-fill{height:100%;border-radius:2px}
-  .conf-pct{font-size:11px;font-weight:600}
+.page { display: none; }
+.page.active { display: block; }
 
-  .score-badge{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600}
-  .score-badge.great{background:rgba(34,197,94,.15);color:var(--green)}
-  .score-badge.good{background:rgba(240,180,41,.15);color:var(--gold)}
-  .score-badge.ok{background:rgba(136,136,170,.15);color:var(--text2)}
+/* ââ Page header ââ */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+#lastUpdate {
+  font-size: 12px;
+  color: var(--text2);
+}
 
-  /* ── Detail Page (full screen) ── */
-  #detail-page{display:none;position:fixed;inset:0;background:var(--bg);z-index:500;overflow-y:auto}
-  #detail-page.open{display:block}
+/* ââ Cards grid ââ */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
 
-  .detail-header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10}
-  .detail-back{background:none;border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:6px;cursor:pointer;font-size:14px}
-  .detail-back:hover{color:var(--text);border-color:var(--text2)}
-  .detail-symbol{font-size:22px;font-weight:700;color:var(--gold);flex:1}
-  .btn-buy-detail{background:rgba(34,197,94,.15);border:1px solid var(--green);color:var(--green);padding:7px 16px;border-radius:7px;cursor:pointer;font-size:13px;font-weight:600}
-  .btn-buy-detail:hover{background:rgba(34,197,94,.25)}
-  .btn-buy-detail.bought{background:var(--green);color:#0a0a0f}
+/* ââ Stock card (tall rectangle) ââ */
+.stock-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  border-color: var(--blue);
+}
+.card-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.card-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.card-detail-label { color: var(--text2); }
+.card-detail-val { font-weight: 600; color: var(--text); }
+.card-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2px 0;
+}
+.card-note {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.conf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.conf-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.conf-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.conf-pct { font-size: 12px; font-weight: 700; min-width: 32px; text-align: left; }
 
-  .detail-body{padding:16px 20px;max-width:900px;margin:0 auto}
+.badge-ready {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--badge-ready);
+  color: var(--badge-ready-text);
+}
+.badge-wait {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: var(--bg3);
+  color: var(--text2);
+}
 
-  .detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-  .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
-  .stat-label{font-size:11px;color:var(--text2);margin-bottom:4px}
-  .stat-value{font-size:18px;font-weight:700}
+/* ââ Arkitaz card specific ââ */
+.ark-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ark-condition {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.ark-condition .cond-icon { font-size: 12px; }
+.ark-condition .cond-label { color: var(--text2); flex: 1; }
+.ark-condition .cond-val { font-weight: 600; font-size: 11px; }
+.cond-ok { color: var(--green); }
+.cond-warn { color: var(--gold); }
+.cond-bad { color: var(--red); }
 
-  .detail-chart{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px;padding:16px;height:300px}
+/* ââ Empty state ââ */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text2);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
 
-  /* Trading levels */
-  .trading-levels{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
-  .tl-title{color:var(--text2);font-size:12px;margin-bottom:10px;font-weight:600;letter-spacing:.5px}
-  .tl-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-  .tl-item{background:var(--surface2);border-radius:8px;padding:10px 12px}
-  .tl-item-label{font-size:10px;color:var(--text2);margin-bottom:4px}
-  .tl-item-val{font-size:16px;font-weight:700;font-family:monospace}
-  .tl-entry .tl-item-val{color:var(--blue)}
-  .tl-stop .tl-item-val{color:var(--red)}
-  .tl-t1 .tl-item-val{color:var(--green)}
-  .tl-t2 .tl-item-val{color:var(--purple)}
+/* ââ Detail page ââ */
+#detail-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  overflow-y: auto;
+  padding: 20px;
+}
+#detail-page.open { display: block; }
 
-  /* Layer scores */
-  .layer-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
-  .layer-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 12px}
-  .layer-name{font-size:10px;color:var(--text2);margin-bottom:6px;font-weight:600}
-  .layer-val{font-size:20px;font-weight:700}
-  .layer-bar{height:3px;background:var(--border);border-radius:2px;margin-top:6px;overflow:hidden}
-  .layer-fill{height:100%;border-radius:2px}
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.btn-back {
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+}
+.btn-back:hover { background: var(--tab-hover); }
 
-  /* News */
-  .news-section{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px}
-  .news-title{font-size:12px;color:var(--text2);font-weight:600;margin-bottom:10px;letter-spacing:.5px}
-  .news-item{padding:8px 0;border-bottom:1px solid var(--border)}
-  .news-item:last-child{border-bottom:none}
-  .news-item a{color:var(--text);text-decoration:none;font-size:13px;line-height:1.4;display:block;margin-bottom:3px}
-  .news-item a:hover{color:var(--gold)}
-  .news-meta{font-size:11px;color:var(--text2)}
+#detailSymbol { font-size: 24px; font-weight: 700; }
 
-  /* Buy form in detail */
-  .buy-form-detail{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:none}
-  .buy-form-detail.open{display:block}
-  .buy-form-detail h4{color:var(--green);font-size:14px;margin-bottom:12px}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-  .form-group label{display:block;font-size:11px;color:var(--text2);margin-bottom:4px}
-  .form-group input{width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:13px}
-  .form-group input:focus{outline:none;border-color:var(--gold)}
-  .btn-save-buy{background:var(--green);color:#0a0a0f;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;margin-left:8px}
-  .btn-cancel-buy{background:none;border:1px solid var(--border);color:var(--text2);padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px}
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-right: auto;
+}
+.btn-buy {
+  padding: 8px 16px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-buy.bought { background: var(--bg3); color: var(--text2); cursor: default; }
+.btn-tv-link {
+  padding: 8px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
 
-  /* TV link */
-  .tv-link{display:block;background:rgba(96,165,250,.15);border:1px solid var(--blue);color:var(--blue);text-align:center;padding:10px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin-bottom:16px}
-  .tv-link:hover{background:rgba(96,165,250,.25)}
+.detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.stat-value { font-size: 16px; font-weight: 700; }
 
-  /* Arkitaz table */
-  .arkitaz-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:24px}
-  .arkitaz-table th{background:var(--surface2);padding:10px 12px;text-align:right;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)}
-  .arkitaz-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
-  .arkitaz-table tr:hover td{background:var(--surface2);cursor:pointer}
+.tl-title { font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 600; }
+.tl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tl-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.tl-item-label { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+.tl-item-val { font-size: 16px; font-weight: 700; }
+.tl-entry .tl-item-val { color: var(--blue); }
+.tl-stop .tl-item-val { color: var(--red); }
+.tl-t1 .tl-item-val { color: var(--green); }
+.tl-t2 .tl-item-val { color: #a855f7; }
 
-  .badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600}
-  .badge-green{background:rgba(34,197,94,.15);color:var(--green)}
-  .badge-gold{background:rgba(240,180,41,.15);color:var(--gold)}
+.detail-layers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.layer-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.layer-name { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.layer-val { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.layer-bar { height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.layer-fill { height: 100%; border-radius: 4px; }
 
-  .mini-conf-bar{display:inline-flex;align-items:center;gap:4px;font-size:11px}
-  .mini-bar{width:50px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;display:inline-block}
-  .mini-fill{height:100%;border-radius:2px}
+#detailChart {
+  height: 280px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
 
-  /* Loading / Empty */
-  .loading{text-align:center;padding:60px;color:var(--text2)}
-  .spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .empty{text-align:center;padding:60px;color:var(--text2)}
-  .empty-icon{font-size:40px;margin-bottom:12px}
+.buy-form { display: none; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 10px; }
+.buy-form.open { display: block; }
+.buy-form label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 10px; }
+.buy-form input, .buy-form select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.btn-save-buy {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-cancel-buy {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+}
+#saveIndicator { font-size: 13px; color: var(--green); margin-top: 8px; }
 
-  /* Performance */
-  .perf-stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-bottom:24px}
-  .perf-stat{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center}
-  .perf-stat .label{font-size:11px;color:var(--text2);margin-bottom:8px}
-  .perf-stat .value{font-size:24px;font-weight:700}
-  .perf-table{width:100%;border-collapse:collapse;font-size:13px}
-  .perf-table th{background:var(--surface2);padding:10px 12px;text-align:right;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)}
-  .perf-table td{padding:10px 12px;border-bottom:1px solid var(--border)}
-  .perf-table tr:last-child td{border-bottom:none}
-  .pnl-positive{color:var(--green);font-weight:600}
-  .pnl-negative{color:var(--red);font-weight:600}
-  .pnl-neutral{color:var(--text2)}
-  .btn-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:16px;padding:2px 6px;border-radius:4px;opacity:.6;transition:opacity .2s}
-  .btn-remove:hover{opacity:1;background:rgba(239,68,68,.1)}
-  .close-trade-btn{background:rgba(239,68,68,.12);border:1px solid var(--red);color:var(--red);padding:3px 10px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:600}
-  .status-open{color:var(--gold);font-weight:600;font-size:11px}
-  .status-closed{color:var(--text2);font-size:11px}
-  .empty-perf{text-align:center;padding:60px 20px;color:var(--text2)}
+.news-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.news-item a { color: var(--blue); text-decoration: none; font-size: 13px; }
+.news-item a:hover { text-decoration: underline; }
+.news-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.news-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 
-  /* Save indicator */
-  .save-indicator{font-size:11px;color:var(--text2);display:inline-block;margin-right:8px}
-  .save-indicator.saving{color:var(--gold)}
-  .save-indicator.saved{color:var(--green)}
+/* ââ Close Trade Dialog ââ */
+.dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.dialog-overlay.open { display: flex; }
+.dialog-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.dialog-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
 
-  /* Close dialog */
-  #closeTradeDialog{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:300;align-items:center;justify-content:center}
-  #closeTradeDialog.open{display:flex}
-  .dialog-box{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:320px}
-  .dialog-box h4{margin-bottom:16px;font-size:16px}
+/* ââ Performance / Portfolio tables ââ */
+.perf-section { margin-bottom: 24px; }
+.perf-section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.trades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.trades-table th {
+  background: var(--bg2);
+  padding: 10px 12px;
+  text-align: right;
+  color: var(--text2);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.trades-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.trades-table tr:last-child td { border-bottom: none; }
+.trades-table tr:hover td { background: var(--bg2); }
+.pnl-pos { color: var(--green); font-weight: 600; }
+.pnl-neg { color: var(--red); font-weight: 600; }
+.btn-close-trade {
+  padding: 4px 10px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.btn-remove-trade {
+  padding: 4px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 12px;
+}
+.status-open { color: var(--blue); font-weight: 600; }
+.status-closed { color: var(--text2); }
+ .status-profit { color: var(--green); font-weight: 600; }
+.status-loss { color: var(--red); font-weight: 600; }
 
-  @media(max-width:600px){
-    .detail-stats{grid-template-columns:repeat(2,1fr)}
-    .layer-scores{grid-template-columns:repeat(3,1fr)}
-    .tl-grid{grid-template-columns:1fr 1fr}
-    .form-row{grid-template-columns:1fr}
-    .perf-stats{grid-template-columns:repeat(2,1fr)}
-    .stocks-grid{grid-template-columns:repeat(2,1fr)}
-  }
+/* ââ Portfolio manual add ââ */
+.btn-add-portfolio {
+  padding: 8px 16px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.add-portfolio-form {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.add-portfolio-form.open { display: block; }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-grid label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+.form-grid input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+/* ââ News calendar ââ */
+.news-calendar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-title { font-size: 15px; font-weight: 700; }
+.cal-nav-btn {
+  padding: 6px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.cal-nav-btn:hover { background: var(--tab-hover); }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day {
+  border-right: 1px solid var(--border);
+  min-height: 120px;
+}
+.cal-day:last-child { border-right: none; }
+.cal-day-header {
+  background: var(--bg2);
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-day-header.today { color: var(--blue); }
+.cal-events { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+.cal-event {
+  background: var(--bg2);
+  border-right: 3px solid var(--blue);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.cal-event:hover { background: var(--tab-hover); }
+.cal-event-time { color: var(--text2); font-size: 9px; }
+.cal-event-title { color: var(--text); font-weight: 600; line-height: 1.3; }
+.cal-event-impact-high { border-color: var(--red); }
+.cal-event-impact-med { border-color: var(--gold); }
+.cal-event-impact-low { border-color: var(--green); }
+.cal-loading { text-align: center; padding: 40px; color: var(--text2); }
+
+/* ââ Responsive ââ */
+@media (max-width: 700px) {
+  .sidebar { width: 60px; min-width: 60px; }
+  .nav-tab span.tab-label { display: none; }
+  .market-btn span { display: none; }
+  .sidebar-logo span { display: none; }
+  .cal-days { grid-template-columns: 1fr; }
+  .detail-stats { grid-template-columns: 1fr 1fr; }
+  .detail-layers { grid-template-columns: 1fr 1fr; }
+}
 </style>
 </head>
 <body>
+<div class="app-layout">
 
-<!-- Auth Overlay -->
-<div id="auth-overlay">
-  <div id="auth-box">
-    <h2>📈 KRM Stocks</h2>
-    <input type="email" id="login-email" placeholder="البريد الإلكتروني" dir="ltr">
-    <input type="password" id="login-pass" placeholder="كلمة المرور" dir="ltr">
-    <button id="login-btn">دخول</button>
-    <div id="auth-error"></div>
-  </div>
+  <!-- ââ SIDEBAR ââ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">ð <span>KRM</span></div>
+    </div>
+
+    <!-- Market selector -->
+    <div class="market-selector">
+      <div class="market-label">Ø§ÙØ³ÙÙ</div>
+      <div class="market-btns">
+        <button class="market-btn active" id="btnUS" onclick="setMarket('us', this)">ðºð¸ <span>US</span></button>
+        <button class="market-btn" id="btnSA" onclick="setMarket('sa', this)">ð¸ð¦ <span>SA</span></button>
+      </div>
+    </div>
+
+    <!-- Nav tabs -->
+    <nav class="sidebar-nav">
+      <button class="nav-tab active" onclick="switchTab('foras', this)">
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙÙØ±Øµ</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('arkitaz', this)">
+        <span class="tab-icon">ð¯</span>
+        <span class="tab-label">Ø§ÙØ§Ø±ØªÙØ§Ø²</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('performance', this)">
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙØ£Ø¯Ø§Ø¡</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('portfolio', this)">
+        <span class="tab-icon">ð¼</span>
+        <span class="tab-label">ÙØ­ÙØ¸ØªÙ</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('calendar', this)">
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙØ£Ø®Ø¨Ø§Ø±</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="themeIcon">ð</span>
+        <span id="themeLabel">ÙÙÙÙ</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ââ MAIN CONTENT ââ -->
+  <main class="main-content">
+
+    <!-- ââ FORAS PAGE ââ -->
+    <div id="page-foras" class="page active">
+      <div class="page-header">
+        <div class="page-title">ð Ø§ÙÙØ±Øµ</div>
+        <span id="lastUpdate">Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</span>
+      </div>
+      <div class="cards-grid" id="grid-foras"></div>
+    </div>
+
+    <!-- ââ ARKITAZ PAGE ââ -->
+    <div id="page-arkitaz" class="page">
+      <div class="page-header">
+        <div class="page-title">ð¯ Ø§ÙØ§Ø±ØªÙØ§Ø²</div>
+        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + Ø¯Ø¹Ù + MACD</span>
+      </div>
+      <div class="cards-grid" id="grid-arkitaz"></div>
+    </div>
+
+    <!-- ââ PERFORMANCE PAGE ââ -->
+    <div id="page-performance" class="page">
+      <div class="page-header">
+        <div class="page-title">ð Ø§ÙØ£Ø¯Ø§Ø¡</div>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">â¡ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© (Ø§ÙÙØ±Øµ ÙØ§ÙØ§Ø±ØªÙØ§Ø²)</div>
+        <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
+        <table class="trades-table">
+          <thead>
+            <tr>
+              <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
+              <th>Ø§ÙÙØ¯Ù1</th><th>Ø§ÙÙØ¯Ù2</th><th>Ø§ÙÙÙÙ</th>
+              <th>Ø§ÙØ­Ø§ÙØ©</th><th>Ø±Ø¨Ø­/Ø®Ø³Ø§Ø±Ø©</th><th></th>
+            </tr>
+          </thead>
+          <tbody id="perf-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ââ PORTFOLIO PAGE ââ -->
+    <div id="page-portfolio" class="page">
+      <div class="page-header">
+        <div class="page-title">ð¼ ÙØ­ÙØ¸ØªÙ</div>
+      </div>
+      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ Ø¥Ø¶Ø§ÙØ© ØµÙÙØ© ÙØ¯ÙÙØ©</button>
+      <div class="add-portfolio-form" id="addPortfolioForm">
+        <div class="form-grid">
+          <div>
+            <label>Ø§ÙØ³ÙÙ</label>
+            <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label>Ø³Ø¹Ø± Ø§ÙØ¯Ø®ÙÙ</label>
+            <input id="pf-entry" type="number" step="0.01" placeholder="1.50">
+          </div>
+          <div>
+            <label>Ø§ÙÙÙÙØ©</label>
+            <input id="pf-qty" type="number" placeholder="100">
+          </div>
+          <div>
+            <label>ØªØ§Ø±ÙØ® Ø§ÙØ¯Ø®ÙÙ</label>
+            <input id="pf-date" type="date">
+          </div>
+          <div>
+            <label>Ø§ÙÙØ¯Ù 1</label>
+            <input id="pf-t1" type="number" step="0.01" placeholder="2.00">
+          </div>
+          <div>
+            <label>ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</label>
+            <input id="pf-sl" type="number" step="0.01" placeholder="1.20">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
+        </div>
+      </div>
+      <table class="trades-table">
+        <thead>
+          <tr>
+            <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙÙÙÙØ©</th>
+            <th>Ø§ÙÙØ¯Ù</th><th>Ø§ÙÙÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
+            <th>Ø§ÙØ­Ø§ÙØ©</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="portfolio-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ââ CALENDAR PAGE ââ -->
+    <div id="page-calendar" class="page">
+      <div class="page-header">
+        <div class="page-title">ð Ø§ÙØ£Ø®Ø¨Ø§Ø± Ø§ÙØ£Ø³Ø¨ÙØ¹ÙØ©</div>
+      </div>
+      <div class="news-calendar">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calPrevWeek()">â Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙØ³Ø§Ø¨Ù</button>
+          <div class="cal-title" id="calWeekLabel">ÙØ°Ø§ Ø§ÙØ£Ø³Ø¨ÙØ¹</div>
+          <button class="cal-nav-btn" onclick="calNextWeek()">Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙÙØ§Ø¯Ù â¶</button>
+        </div>
+        <div class="cal-days" id="calDaysGrid"></div>
+      </div>
+    </div>
+
+  </main>
 </div>
 
-<!-- Detail Page (full screen) -->
+<!-- ââ DETAIL PAGE ââ -->
 <div id="detail-page">
   <div class="detail-header">
-    <button class="detail-back" onclick="closeDetail()">← رجوع</button>
-    <div class="detail-symbol" id="detailSymbol">—</div>
-    <button class="btn-buy-detail" id="btnBuyDetail" onclick="detailBuy()">🛒 شراء</button>
-  </div>
-  <div class="detail-body">
-    <div class="detail-stats" id="detailStats"></div>
-    <div class="detail-chart" id="detailChart"></div>
-    <div class="trading-levels" id="detailLevels"></div>
-    <div class="layer-scores" id="detailLayers"></div>
-    <div class="news-section" id="detailNews"></div>
-    <a class="tv-link" id="detailTvLink" href="#" target="_blank">📊 افتح في TradingView</a>
-    <div class="buy-form-detail" id="buyFormDetail">
-      <h4>🛒 تسجيل صفقة شراء</h4>
-      <div class="form-row">
-        <div class="form-group"><label>سعر الشراء</label><input type="number" id="buyPriceD" placeholder="0.00" step="0.01"></div>
-        <div class="form-group"><label>عدد الأسهم</label><input type="number" id="buyQtyD" placeholder="100" step="1"></div>
-      </div>
-      <div class="form-row">
-        <div class="form-group"><label>تاريخ الشراء</label><input type="date" id="buyDateD"></div>
-        <div class="form-group"><label>هدف السعر (اختياري)</label><input type="number" id="buyTargetD" placeholder="0.00" step="0.01"></div>
-      </div>
-      <div>
-        <span class="save-indicator" id="saveIndicator"></span>
-        <button class="btn-save-buy" onclick="saveBuyDetail()">حفظ الصفقة ✓</button>
-        <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">إلغاء</button>
-      </div>
+    <button class="btn-back" onclick="closeDetail()">â Ø±Ø¬ÙØ¹</button>
+    <div id="detailSymbol"></div>
+    <div class="detail-actions">
+      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">ð Ø´Ø±Ø§Ø¡</button>
+      <a id="detailTvLink" class="btn-tv-link" target="_blank">ð TradingView</a>
     </div>
+  </div>
+
+  <div class="detail-stats" id="detailStats"></div>
+  <div id="detailLevels"></div>
+  <div class="detail-layers" id="detailLayers"></div>
+  <div id="detailChart"></div>
+  <div id="detailNews"></div>
+
+  <div class="buy-form" id="buyFormDetail">
+    <label>ØªØ§Ø±ÙØ® Ø§ÙØ´Ø±Ø§Ø¡</label>
+    <input type="date" id="buyDateD">
+    <label>Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡</label>
+    <input type="number" id="buyPriceD" step="0.01">
+    <label>Ø¹Ø¯Ø¯ Ø§ÙØ£Ø³ÙÙ</label>
+    <input type="number" id="buyQtyD" placeholder="100">
+    <button class="btn-save-buy" onclick="saveBuyDetail()">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
+    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">Ø¥ÙØºØ§Ø¡</button>
+    <div id="saveIndicator"></div>
   </div>
 </div>
 
-<header>
-  <div class="logo">📈 KRM Stocks</div>
-  <div class="last-update" id="lastUpdate">جاري التحميل...</div>
-</header>
-
-<div class="tabs">
-  <div class="tab active" onclick="switchTab('foras', this)">🔥 الفرص</div>
-  <div class="tab" onclick="switchTab('arkitaz', this)">🎯 الارتكاز</div>
-  <div class="tab" onclick="switchTab('performance', this)">📊 اختبار الأداء</div>
-</div>
-
-<!-- الفرص Tab -->
-<div class="page active" id="page-foras">
-  <!-- Sub-tabs: US / SA -->
-  <div class="market-tabs">
-    <button class="market-tab active" onclick="switchMarket('foras','us',this)">🇺🇸 الأمريكي</button>
-    <button class="market-tab" onclick="switchMarket('foras','sa',this)">🇸🇦 السعودي</button>
-  </div>
-  <div class="market-panel active" id="foras-panel-us">
-    <div class="stocks-grid" id="grid-us">
-      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
-    </div>
-  </div>
-  <div class="market-panel" id="foras-panel-sa">
-    <div class="stocks-grid" id="grid-sa">
-      <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
-    </div>
-  </div>
-</div>
-
-<!-- الارتكاز Tab (أمريكي فقط) -->
-<div class="page" id="page-arkitaz">
-  <div class="section-title">🇺🇸 ارتكاز — الأسهم الأمريكية</div>
-  <div id="arkitaz-us-container">
-    <div class="loading"><div class="spinner"></div>جاري التحميل...</div>
-  </div>
-</div>
-
-<!-- اختبار الأداء Tab -->
-<div class="page" id="page-performance">
-  <div class="perf-stats" id="perfStats">
-    <div class="perf-stat">
-      <div class="label">إجمالي الصفقات</div>
-      <div class="value" id="statTotal">—</div>
-    </div>
-    <div class="perf-stat">
-      <div class="label">صفقات رابحة</div>
-      <div class="value" style="color:var(--green)" id="statWins">—</div>
-    </div>
-    <div class="perf-stat">
-      <div class="label">صفقات خاسرة</div>
-      <div class="value" style="color:var(--red)" id="statLosses">—</div>
-    </div>
-    <div class="perf-stat">
-      <div class="label">نسبة النجاح</div>
-      <div class="value" id="statWinRate">—</div>
-    </div>
-    <div class="perf-stat">
-      <div class="label">متوسط الربح</div>
-      <div class="value" style="color:var(--green)" id="statAvgWin">—</div>
-    </div>
-    <div class="perf-stat">
-      <div class="label">إجمالي الأرباح/الخسائر</div>
-      <div class="value" id="statTotalPnL">—</div>
-    </div>
-  </div>
-  <div class="section-title">سجل الصفقات</div>
-  <div id="perfTableContainer">
-    <div class="empty-perf">
-      <div class="empty-icon">📋</div>
-      <div>لا توجد صفقات مسجلة بعد</div>
-      <div style="font-size:12px;margin-top:8px;color:var(--text2)">اضغط "شراء 🛒" على أي سهم لتسجيل صفقة وتتبع أدائها</div>
-    </div>
-  </div>
-</div>
-
-<!-- Close Trade Dialog -->
-<div id="closeTradeDialog">
+<!-- ââ CLOSE TRADE DIALOG ââ -->
+<div id="closeTradeDialog" class="dialog-overlay">
   <div class="dialog-box">
-    <h4>إغلاق الصفقة 🏁</h4>
-    <div class="form-group" style="margin-bottom:16px">
-      <label>سعر الإغلاق</label>
-      <input type="number" id="closePriceInput" placeholder="0.00" step="0.01" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
+    <div class="dialog-title">Ø¥ØºÙØ§Ù Ø§ÙØµÙÙØ©</div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù</label>
+      <input type="number" id="closePriceInput" step="0.01" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
-    <div class="form-group" style="margin-bottom:16px">
-      <label>تاريخ الإغلاق</label>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">ØªØ§Ø±ÙØ® Ø§ÙØ¥ØºÙØ§Ù</label>
       <input type="date" id="closeDateInput" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">تأكيد الإغلاق</button>
-      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">إلغاء</button>
+      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">ØªØ£ÙÙØ¯ Ø§ÙØ¥ØºÙØ§Ù</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
     </div>
   </div>
 </div>
 
+<!-- ââ Firebase ââ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+const app = initializeApp({
+  apiKey: "AIzaSyBuTPkpGCeBl6HPxIxrD0__K1KXBCHl6gw",
+  authDomain: "krm-stocks.firebaseapp.com",
+  projectId: "krm-stocks",
+  storageBucket: "krm-stocks.appspot.com",
+  messagingSenderId: "908147806508",
+  appId: "1:908147806508:web:be9c49e1d6e23c5c91c3c1"
+});
+
+const db = getFirestore(app);
+const auth = getAuth(app);
+
+window._db = db;
+window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
+
+signInAnonymously(auth);
+onAuthStateChanged(auth, user => {
+  if (user) window._uid = user.uid;
+});
+</script>
+
+<!-- ââ Main Script ââ -->
 <script type="module">
 
-// ── Globals ──
+// ââ Globals ââ
 let _currentStock = null;
 let _trades = [];
+let _portfolioTrades = [];
 let _closeTradeId = null;
-let _tradesLoaded = false;
+let _currentMarket = 'us';
+let _calWeekOffset = 0;
 
-// ── Wait for Firebase ──
+// ââ Wait helpers ââ
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
     if (window._db) return;
@@ -419,7 +918,6 @@ async function waitForDB() {
   }
   throw new Error('Firebase timeout');
 }
-
 async function waitForUID() {
   for (let i = 0; i < 100; i++) {
     if (window._uid) return window._uid;
@@ -428,39 +926,88 @@ async function waitForUID() {
   throw new Error('Auth timeout');
 }
 
-// ── Helpers ──
+// ââ Theme ââ
+window.toggleTheme = function() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('themeIcon').textContent = 'ð';
+    document.getElementById('themeLabel').textContent = 'ÙÙÙÙ';
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = 'âï¸';
+    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
+    localStorage.setItem('theme', 'dark');
+  }
+};
+(function() {
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = 'âï¸';
+    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
+  }
+})();
+
+// ââ Market switch ââ
+window.setMarket = function(market, el) {
+  _currentMarket = market;
+  document.querySelectorAll('.market-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  reloadCurrentTab();
+};
+
+function reloadCurrentTab() {
+  const activeTab = document.querySelector('.nav-tab.active');
+  if (!activeTab) return;
+  const fn = activeTab.getAttribute('onclick');
+  if (fn && fn.includes('foras')) loadForas();
+  else if (fn && fn.includes('arkitaz')) loadArkitaz();
+  else if (fn && fn.includes('performance')) loadPerformance();
+  else if (fn && fn.includes('portfolio')) loadPortfolio();
+}
+
+// ââ Tab switch ââ
+window.switchTab = function(tab, el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+  if (tab === 'foras') loadForas();
+  else if (tab === 'arkitaz') loadArkitaz();
+  else if (tab === 'performance') loadPerformance();
+  else if (tab === 'portfolio') loadPortfolio();
+  else if (tab === 'calendar') loadCalendar();
+};
+
+// ââ Helpers ââ
 function confColor(v) {
   if (v >= 70) return 'var(--green)';
   if (v >= 40) return 'var(--gold)';
   return 'var(--red)';
 }
-
-function scoreClass(score) {
-  if (score < 0.03) return 'great';
-  if (score < 0.08) return 'good';
-  return 'ok';
+function rsiColor(v) {
+  if (!v) return 'var(--text2)';
+  if (v >= 23 && v <= 27) return 'var(--green)';
+  if (v < 23 || (v > 27 && v <= 35)) return 'var(--gold)';
+  return 'var(--red)';
 }
 
-function scoreLabel(score) {
-  if (score < 0.03) return '🟢 ممتاز';
-  if (score < 0.08) return '🟡 جيد';
-  return '⚪ مقبول';
-}
-
-// ── Charts ──
+// ââ Chart ââ
 function renderFullChart(container, candles) {
   container.innerHTML = '';
   if (!candles || !candles.length) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø¨ÙØ§ÙØ§Øª Ø§ÙØ´Ø§Ø±Øª Ø³ØªÙØ¶Ø§Ù ØªÙÙØ§Ø¦ÙØ§Ù</div></div>';
     return;
   }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   const chart = LightweightCharts.createChart(container, {
     width: container.clientWidth || 700,
     height: 268,
-    layout: { background: { color: 'transparent' }, textColor: '#8888aa' },
-    grid: { vertLines: { color: '#2a2a3a' }, horzLines: { color: '#2a2a3a' } },
-    rightPriceScale: { borderColor: '#2a2a3a' },
-    timeScale: { borderColor: '#2a2a3a', timeVisible: true },
+    layout: { background: { color: 'transparent' }, textColor: isDark ? '#8888aa' : '#555577' },
+    grid: { vertLines: { color: isDark ? '#2a2a3a' : '#e0e0ee' }, horzLines: { color: isDark ? '#2a2a3a' : '#e0e0ee' } },
+    rightPriceScale: { borderColor: isDark ? '#2a2a3a' : '#e0e0ee' },
+    timeScale: { borderColor: isDark ? '#2a2a3a' : '#e0e0ee', timeVisible: true },
   });
   const series = chart.addCandlestickSeries({
     upColor: '#22c55e', downColor: '#ef4444',
@@ -471,32 +1018,446 @@ function renderFullChart(container, candles) {
   chart.timeScale().fitContent();
 }
 
-// ── Build compact card (grid style) ──
-function buildCard(symbol, data, market) {
+// ââ Build FORAS card (tall rectangle with key levels) ââ
+function buildForasCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
   const conf = data.confidence || 0;
   const confCol = confColor(conf);
-  const cls = scoreClass(data.score || 1);
-  const lbl = scoreLabel(data.score || 1);
+  const isReady = conf >= 60;
+
   div.innerHTML = `
-    <div class="card-symbol">${symbol}</div>
-    <div class="card-price">${data.close ? data.close.toFixed(2) : '—'}</div>
-    <div class="card-note">${data.note || ''}</div>
-    <div class="card-bottom">
-      <div class="conf-row">
-        <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
-        <span class="conf-pct" style="color:${confCol}">${conf}%</span>
-      </div>
-      <span class="score-badge ${cls}">${lbl}</span>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="card-symbol">${symbol}</div>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'â Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
     </div>
+    <div class="card-price">$${data.close ? data.close.toFixed(2) : 'â'}</div>
+    <hr class="card-divider">
+    <div class="ark-conditions">
+      <div class="card-detail-row">
+        <span class="card-detail-label">ð¯ Ø¯Ø®ÙÙ</span>
+        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? '$'+data.entry : 'â'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">ð ÙÙÙ</span>
+        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : 'â'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">ð¢ ÙØ¯Ù 1</span>
+        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? '$'+data.target1 : 'â'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">ð ÙØ¯Ù 2</span>
+        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? '$'+data.target2 : 'â'}</span>
+      </div>
+    </div>
+    <hr class="card-divider">
+    <div class="conf-row">
+      <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
+      <span class="conf-pct" style="color:${confCol}">${conf}%</span>
+    </div>
+    <div class="card-note">${data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
   autoRegisterPaperTrade(symbol, data);
   return div;
 }
 
-// ── Detail page ──
+// ââ Build ARKITAZ card (tall rectangle with conditions) ââ
+function buildArkitazCard(symbol, data, market) {
+  const div = document.createElement('div');
+  div.className = 'stock-card';
+  const conf = data.confidence || 0;
+  const confCol = confColor(conf);
+
+  const rsi = data.rsi;
+  const rsiOk = rsi && rsi >= 23 && rsi <= 27;
+  const macdOk = data.macd_improving;
+  const maOk = data.ma_recovering;
+  const supportOk = data.has_support;
+  const candleOk = data.bullish_candle;
+
+  const rsiLabel = rsi ? rsi.toFixed(1) : 'â';
+  const rsiCol = rsiColor(rsi);
+
+  const checkIcon = (ok) => ok ? 'â' : (ok === false ? 'â' : 'âª');
+
+  const isReady = conf >= 50 || (rsiOk && supportOk);
+
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div class="card-symbol">${symbol}</div>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'ð¯ Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
+    </div>
+    <div class="card-price">$${data.close ? data.close.toFixed(2) : 'â'}</div>
+    <hr class="card-divider">
+    <div class="ark-conditions">
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(rsiOk)}</span>
+        <span class="cond-label">RSI</span>
+        <span class="cond-val" style="color:${rsiCol}">${rsiLabel}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(macdOk)}</span>
+        <span class="cond-label">MACD</span>
+        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'ÙØªØ­Ø³Ù' : 'Ø¶Ø¹ÙÙ'}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(maOk)}</span>
+        <span class="cond-label">Ø§ÙÙØªÙØ³Ø·Ø§Øª</span>
+        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'ÙØ³ØªØ¹ÙØ¯' : 'ØªØ­ØªÙØ§'}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(supportOk)}</span>
+        <span class="cond-label">Ø¯Ø¹Ù ÙØ§Ø¸Ø­</span>
+        <span class="cond-val">${data.support_level ? '$'+data.support_level : (supportOk ? 'ÙØ¹Ù' : 'â')}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(candleOk)}</span>
+        <span class="cond-label">Ø´ÙØ¹Ø© Ø¥ÙØ¬Ø§Ø¨ÙØ©</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'ÙØ¹Ù' : 'â'}</span>
+      </div>
+    </div>
+    <hr class="card-divider">
+    <div class="conf-row">
+      <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
+      <span class="conf-pct" style="color:${confCol}">${conf}%</span>
+    </div>
+    <div class="card-note">${data.consReason || data.note || ''}</div>
+  `;
+  div.onclick = () => openDetail(symbol, data, market);
+  return div;
+}
+
+// ââ Load FORAS ââ
+async function loadForas() {
+  const grid = document.getElementById('grid-foras');
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
+  try {
+    await waitForDB();
+    const { getDocs, collection } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
+    const snap = await getDocs(collection(window._db, collName));
+    grid.innerHTML = '';
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ ÙØ±Øµ</div>'; return; }
+    snap.forEach(d => {
+      const data = d.data();
+      if (data.confidence >= 40 || data.entry) {
+        grid.appendChild(buildForasCard(d.id, data, _currentMarket));
+      }
+    });
+    loadMeta();
+  } catch(err) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
+  }
+}
+
+// ââ Load ARKITAZ ââ
+async function loadArkitaz() {
+  const grid = document.getElementById('grid-arkitaz');
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
+  try {
+    await waitForDB();
+    const { getDocs, collection } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'consolidation_sa' : 'consolidation_us';
+    const snap = await getDocs(collection(window._db, collName));
+    grid.innerHTML = '';
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ Ø£Ø³ÙÙ Ø§Ø±ØªÙØ§Ø²</div>'; return; }
+    snap.forEach(d => {
+      grid.appendChild(buildArkitazCard(d.id, d.data(), _currentMarket));
+    });
+  } catch(err) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
+  }
+}
+
+// ââ Load meta ââ
+async function loadMeta() {
+  try {
+    await waitForDB();
+    const { doc, getDoc } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
+    const metaDoc = await getDoc(doc(window._db, 'meta', collName));
+    const d = metaDoc.data();
+    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«: ' + d.lastRun : '';
+  } catch {}
+}
+
+// ââ Auto-register paper trade (for performance tab) ââ
+function autoRegisterPaperTrade(sym, data) {
+  if (!data.confidence || data.confidence < 60) return;
+  const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+  if (trades[sym]) return;
+  trades[sym] = {
+    id: sym + '_' + Date.now(),
+    sym, symbol: sym,
+    entry: data.entry || data.close,
+    stop_loss: data.stop_loss,
+    target1: data.target1,
+    target2: data.target2,
+    strategy: data.strategy_type || 'auto',
+    confidence: data.confidence,
+    registeredAt: new Date().toISOString(),
+    status: 'open',
+    source: 'auto'
+  };
+  localStorage.setItem('paperTrades', JSON.stringify(trades));
+}
+
+// ââ Load Performance (auto trades) ââ
+async function loadPerformance() {
+  const tbody = document.getElementById('perf-tbody');
+  tbody.innerHTML = '';
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'trades'));
+    _trades = [];
+    snap.forEach(d => _trades.push({...d.data(), id: d.id}));
+    // Also local auto trades
+    const localTrades = Object.values(JSON.parse(localStorage.getItem('paperTrades') || '{}'));
+    const allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
+    renderPerfTable(allAutoTrades, tbody);
+    renderPerfSummary(allAutoTrades);
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">Ø®Ø·Ø£ ÙÙ Ø§ÙØªØ­ÙÙÙ</td></tr>`;
+  }
+}
+
+function renderPerfTable(trades, tbody) {
+  tbody.innerHTML = '';
+  if (!trades.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© Ø¨Ø¹Ø¯</td></tr>';
+    return;
+  }
+  trades.forEach(t => {
+    const pnl = t.close_price && t.entry ? ((t.close_price - t.entry) / t.entry * 100).toFixed(2) : null;
+    const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
+    const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' :
+      (pnl > 0 ? '<span class="status-profit">Ø±Ø¨Ø­</span>' : '<span class="status-loss">Ø®Ø³Ø§Ø±Ø©</span>');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${t.sym || t.symbol}</strong></td>
+      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : 'â'}</td>
+      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : 'â'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
+      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : 'â'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
+      <td>${statusLabel}</td>
+      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : 'â'}</td>
+      <td>
+        ${t.status === 'open' ? `<button class="btn-close-trade" onclick="openCloseTrade('${t.id || t.sym}')">Ø¥ØºÙØ§Ù</button>` : ''}
+        <button class="btn-remove-trade" onclick="removeTrade('${t.id || t.sym}')" style="margin-top:2px">Ø­Ø°Ù</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderPerfSummary(trades) {
+  const el = document.getElementById('perf-summary');
+  const total = trades.length;
+  const closed = trades.filter(t => t.status !== 'open');
+  const wins = closed.filter(t => t.close_price && t.entry && t.close_price > t.entry);
+  el.innerHTML = `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
+      <div style="font-size:11px;color:var(--text2)">Ø¥Ø¬ÙØ§ÙÙ</div>
+      <div style="font-size:20px;font-weight:700">${total}</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
+      <div style="font-size:11px;color:var(--text2)">ÙÙØªÙØ­Ø©</div>
+      <div style="font-size:20px;font-weight:700;color:var(--blue)">${trades.filter(t => t.status === 'open').length}</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
+      <div style="font-size:11px;color:var(--text2)">Ø±Ø¨Ø­</div>
+      <div style="font-size:20px;font-weight:700;color:var(--green)">${wins.length}</div>
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
+      <div style="font-size:11px;color:var(--text2)">Ø®Ø³Ø§Ø±Ø©</div>
+      <div style="font-size:20px;font-weight:700;color:var(--red)">${closed.length - wins.length}</div>
+    </div>
+  `;
+}
+
+// ââ Portfolio (manual) ââ
+window.toggleAddPortfolio = function() {
+  document.getElementById('addPortfolioForm').classList.toggle('open');
+  document.getElementById('pf-date').valueAsDate = new Date();
+};
+
+window.savePortfolioTrade = async function() {
+  const sym = document.getElementById('pf-sym').value.trim().toUpperCase();
+  const entry = parseFloat(document.getElementById('pf-entry').value);
+  const qty = parseInt(document.getElementById('pf-qty').value);
+  const date = document.getElementById('pf-date').value;
+  const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
+  const sl = parseFloat(document.getElementById('pf-sl').value) || null;
+  if (!sym || !entry || !qty) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø§ÙØ³ÙÙ ÙØ§ÙØ³Ø¹Ø± ÙØ§ÙÙÙÙØ©'); return; }
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc } = window._firestoreOps;
+    const id = sym + '_manual_' + Date.now();
+    const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
+    await setDoc(doc(window._db, 'users', uid, 'portfolio', id), trade);
+    _portfolioTrades.push(trade);
+    document.getElementById('addPortfolioForm').classList.remove('open');
+    loadPortfolio();
+  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
+};
+
+async function loadPortfolio() {
+  const tbody = document.getElementById('portfolio-tbody');
+  tbody.innerHTML = '';
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
+    _portfolioTrades = [];
+    snap.forEach(d => _portfolioTrades.push({...d.data(), id: d.id}));
+    if (!_portfolioTrades.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª â Ø£Ø¶Ù ØµÙÙØ© ÙØ¯ÙÙØ©</td></tr>';
+      return;
+    }
+    _portfolioTrades.forEach(t => {
+      const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' : '<span class="status-closed">ÙØºÙÙØ©</span>';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${t.symbol || t.sym}</strong></td>
+        <td>$${Number(t.entry).toFixed(2)}</td>
+        <td>${t.qty || 'â'}</td>
+        <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
+        <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
+        <td style="font-size:11px">${t.date || 'â'}</td>
+        <td>${statusLabel}</td>
+        <td>
+          <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">Ø­Ø°Ù</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">Ø®Ø·Ø£ ÙÙ Ø§ÙØªØ­ÙÙÙ</td></tr>`;
+  }
+}
+
+window.removePortfolioTrade = async function(id) {
+  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, deleteDoc } = window._firestoreOps;
+    await deleteDoc(doc(window._db, 'users', uid, 'portfolio', id));
+    loadPortfolio();
+  } catch {}
+};
+
+// ââ News Calendar ââ
+const DAY_NAMES = ['Ø§ÙØ£Ø­Ø¯','Ø§ÙØ§Ø«ÙÙÙ','Ø§ÙØ«ÙØ§Ø«Ø§Ø¡','Ø§ÙØ£Ø±Ø¨Ø¹Ø§Ø¡','Ø§ÙØ®ÙÙØ³','Ø§ÙØ¬ÙØ¹Ø©','Ø§ÙØ³Ø¨Øª'];
+
+function getWeekStart(offset = 0) {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const sun = new Date(now);
+  sun.setDate(now.getDate() - day + (offset * 7));
+  sun.setHours(0,0,0,0);
+  return sun;
+}
+
+async function loadCalendar() {
+  const grid = document.getElementById('calDaysGrid');
+  const weekStart = getWeekStart(_calWeekOffset);
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  const fmt = (d) => d.toLocaleDateString('ar-SA', {month:'short',day:'numeric'});
+  document.getElementById('calWeekLabel').textContent = `${fmt(weekStart)} â ${fmt(new Date(weekEnd.getTime()-86400000))}`;
+
+  grid.innerHTML = '<div class="cal-loading">â³ Ø¬Ø§Ø±Ù ØªØ­ÙÙÙ Ø§ÙØ£Ø®Ø¨Ø§Ø±...</div>';
+
+  try {
+    // Fetch economic calendar from a CORS-friendly source
+    const startStr = weekStart.toISOString().split('T')[0];
+    const endStr = new Date(weekEnd.getTime()-86400000).toISOString().split('T')[0];
+
+    // Use Investing.com/Forexfactory via a proxy or build static data
+    // For now we build the grid and show placeholder; real data needs backend
+    grid.innerHTML = '';
+
+    const today = new Date();
+    today.setHours(0,0,0,0);
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(weekStart);
+      day.setDate(weekStart.getDate() + i);
+      const isToday = day.getTime() === today.getTime();
+      const dayEl = document.createElement('div');
+      dayEl.className = 'cal-day';
+      dayEl.innerHTML = `
+        <div class="cal-day-header ${isToday ? 'today' : ''}">
+          ${DAY_NAMES[day.getDay()]}
+          <br><span style="font-size:10px">${day.getDate()}/${day.getMonth()+1}</span>
+        </div>
+        <div class="cal-events" id="cal-events-${i}">
+          <div style="font-size:10px;color:var(--text2);text-align:center;padding:8px">â</div>
+        </div>
+      `;
+      grid.appendChild(dayEl);
+    }
+
+    // Try to load from Firestore 'news_calendar' if available
+    await loadCalendarFromFirestore(weekStart);
+
+  } catch(err) {
+    grid.innerHTML = `<div class="cal-loading">â ï¸ Ø®Ø·Ø£: ${err.message}</div>`;
+  }
+}
+
+async function loadCalendarFromFirestore(weekStart) {
+  try {
+    await waitForDB();
+    const { getDocs, collection, query, where } = window._firestoreOps;
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+
+    const startStr = weekStart.toISOString().split('T')[0];
+    const endStr = weekEnd.toISOString().split('T')[0];
+
+    const snap = await getDocs(query(
+      collection(window._db, 'economic_calendar'),
+      where('date', '>=', startStr),
+      where('date', '<', endStr)
+    ));
+
+    if (snap.empty) return;
+
+    snap.forEach(d => {
+      const ev = d.data();
+      const evDate = new Date(ev.date);
+      const dayIdx = Math.floor((evDate - weekStart) / 86400000);
+      if (dayIdx < 0 || dayIdx > 6) return;
+      const evContainer = document.getElementById('cal-events-' + dayIdx);
+      if (!evContainer) return;
+      // Clear placeholder
+      if (evContainer.querySelector('[style*="â"]')) evContainer.innerHTML = '';
+      const impactClass = ev.impact === 'high' ? 'cal-event-impact-high' : ev.impact === 'medium' ? 'cal-event-impact-med' : 'cal-event-impact-low';
+      const evEl = document.createElement('div');
+      evEl.className = `cal-event ${impactClass}`;
+      evEl.innerHTML = `
+        <div class="cal-event-time">${ev.time || ''} ${ev.country || ''}</div>
+        <div class="cal-event-title">${ev.event || ev.title || ''}</div>
+      `;
+      evContainer.appendChild(evEl);
+    });
+  } catch {}
+}
+
+window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
+window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
+
+// ââ Detail page ââ
 function openDetail(symbol, data, market) {
   _currentStock = { symbol, data, market };
   document.getElementById('detailSymbol').textContent = symbol;
@@ -504,110 +1465,121 @@ function openDetail(symbol, data, market) {
   const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
   document.getElementById('detailTvLink').href = `https://www.tradingview.com/chart/?symbol=${tvSuffix}`;
 
-  // Buy button state
   const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
   const btn = document.getElementById('btnBuyDetail');
-  if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
-  else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
+  if (openTrade) { btn.textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø¡'; btn.classList.add('bought'); }
+  else { btn.textContent = 'ð Ø´Ø±Ø§Ø¡'; btn.classList.remove('bought'); }
   document.getElementById('buyFormDetail').classList.remove('open');
   document.getElementById('saveIndicator').textContent = '';
 
-  // Stats
   const conf = data.confidence || 0;
-  const pctScore = typeof data.score === 'number' ? (data.score * 100).toFixed(1) + '%' : '—';
   document.getElementById('detailStats').innerHTML = `
     <div class="stat-box">
-      <div class="stat-label">القرب من القاع</div>
-      <div class="stat-value" style="color:${data.score < 0.03 ? 'var(--green)' : data.score < 0.08 ? 'var(--gold)' : 'var(--text)'}">${pctScore}</div>
+      <div class="stat-label">Ø§ÙØ³Ø¹Ø± Ø§ÙØ­Ø§ÙÙ</div>
+      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">مستوى الثقة</div>
+      <div class="stat-label">ÙØ³ØªÙÙ Ø§ÙØ«ÙØ©</div>
       <div class="stat-value" style="color:${confColor(conf)}">${conf}%</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">آخر سعر</div>
-      <div class="stat-value" style="color:var(--gold)">${data.close ? data.close.toFixed(2) : '—'}</div>
+      <div class="stat-label">RSI</div>
+      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">انخفاض 72 ساعة</div>
-      <div class="stat-value" style="color:${(data.drop72h||0) < -0.05 ? 'var(--red)' : 'var(--text2)'}">
-        ${data.drop72h ? (data.drop72h*100).toFixed(1)+'%' : '—'}
-      </div>
+      <div class="stat-label">ÙÙØ·Ø© Ø§ÙØ¯Ø®ÙÙ</div>
+      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">آخر تحديث</div>
-      <div class="stat-value" style="font-size:13px;font-weight:400">${data.date || '—'}</div>
+      <div class="stat-label">ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div>
+      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">ملاحظة</div>
-      <div class="stat-value" style="font-size:11px;font-weight:400;line-height:1.4">${data.note || '—'}</div>
+      <div class="stat-label">Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«</div>
+      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || 'â'}</div>
     </div>
   `;
 
-  // Trading levels
-  const sl = {'classical':'📊 كلاسيكي','wyckoff':'🧠 وايكوف','elliott':'📐 إليوت'};
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
-      <div class="tl-title">مستويات التداول — ${sl[data.strategy_type] || '📊 تقني'}</div>
+      <div class="tl-title">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ</div>
       <div class="tl-grid">
-        <div class="tl-item tl-entry"><div class="tl-item-label">🎯 نقطة الدخول</div><div class="tl-item-val">${data.entry}</div></div>
-        <div class="tl-item tl-stop"><div class="tl-item-label">🛑 وقف الخسارة</div><div class="tl-item-val">${data.stop_loss}</div></div>
-        <div class="tl-item tl-t1"><div class="tl-item-label">🟢 الهدف الأول</div><div class="tl-item-val">${data.target1}</div></div>
-        <div class="tl-item tl-t2"><div class="tl-item-label">🚀 الهدف الثاني</div><div class="tl-item-val">${data.target2}</div></div>
+        <div class="tl-item tl-entry"><div class="tl-item-label">ð¯ ÙÙØ·Ø© Ø§ÙØ¯Ø®ÙÙ</div><div class="tl-item-val">$${data.entry}</div></div>
+        <div class="tl-item tl-stop"><div class="tl-item-label">ð ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div><div class="tl-item-val">$${data.stop_loss}</div></div>
+        <div class="tl-item tl-t1"><div class="tl-item-label">ð¢ Ø§ÙÙØ¯Ù Ø§ÙØ£ÙÙ</div><div class="tl-item-val">$${data.target1}</div></div>
+        <div class="tl-item tl-t2"><div class="tl-item-label">ð Ø§ÙÙØ¯Ù Ø§ÙØ«Ø§ÙÙ</div><div class="tl-item-val">$${data.target2 || 'â'}</div></div>
       </div>`;
   } else {
-    document.getElementById('detailLevels').innerHTML = '<div class="tl-title">مستويات التداول — ستُضاف بعد التحديث</div>';
+    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ Ø³ØªÙØ¸Ø§Ù Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div>';
   }
 
-  // Layer scores
-  const w = data.wyckoff || 0;
-  const e = data.elliott || 0;
-  const p = typeof data.score === 'number' ? Math.max(0, 1 - data.score / 0.10) : 0;
-  document.getElementById('detailLayers').innerHTML = `
-    <div class="layer-card">
-      <div class="layer-name">📊 كلاسيكي</div>
-      <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
-      <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div>
-    </div>
-    <div class="layer-card">
-      <div class="layer-name">🌊 وايكوف</div>
-      <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
-      <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div>
-    </div>
-    <div class="layer-card">
-      <div class="layer-name">🌀 إليوت</div>
-      <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
-      <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div>
-    </div>
-  `;
+  // Arkitaz conditions in detail
+  if (data.rsi || data.consReason) {
+    const rsi = data.rsi;
+    const rsiOk = rsi && rsi >= 23 && rsi <= 27;
+    document.getElementById('detailLayers').innerHTML = `
+      <div class="layer-card">
+        <div class="layer-name">ð RSI</div>
+        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : 'â'}</div>
+        <div style="font-size:10px;color:var(--text2)">${rsiOk ? 'â ÙÙ Ø§ÙÙÙØ·ÙØ© Ø§ÙÙØ«Ø§ÙÙØ© 23-27' : rsi < 23 ? 'â ï¸ ÙÙØ®ÙØ¶ Ø¬Ø¯Ø§Ù' : rsi > 35 ? 'â ÙÙÙ Ø§ÙÙØ³ØªÙØ¯Ù' : 'ð¡ ÙØ±ÙÙ'}</div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">ð MACD</div>
+        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? 'âï¸' : 'â'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'ÙØªØ­Ø³Ù â' : 'ÙÙØªØ¸Ø± ØªØ£ÙÙØ¯'}</div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">ã½ï¸ Ø§ÙÙØªÙØ³Ø·Ø§Øª</div>
+        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? 'âï¸' : 'âï¸'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'ÙØ³ØªØ¹ÙØ¯ â' : 'ØªØ­Øª Ø§ÙÙØªÙØ³Ø·Ø§Øª'}</div>
+      </div>
+    `;
+  } else {
+    const w = data.wyckoff || 0;
+    const e = data.elliott || 0;
+    const p = typeof data.score === 'number' ? Math.max(0, 1 - data.score / 0.10) : 0;
+    document.getElementById('detailLayers').innerHTML = `
+      <div class="layer-card">
+        <div class="layer-name">ð ÙÙØ§Ø³ÙÙÙ</div>
+        <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">ð ÙØ§ÙÙÙÙ</div>
+        <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">ð Ø¥ÙÙÙØª</div>
+        <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div>
+      </div>
+    `;
+  }
 
-  // News
   const news = data.news || [];
   const newsEl = document.getElementById('detailNews');
   if (news.length) {
     const newsHtml = news.map(n => {
       const d = n.time ? new Date(n.time * 1000).toLocaleDateString('ar-SA') : '';
-      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' · ' + d : ''}</div></div>`;
+      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' Â· ' + d : ''}</div></div>`;
     }).join('');
-    newsEl.innerHTML = `<div class="news-title">📰 آخر الأخبار</div>${newsHtml}`;
+    newsEl.innerHTML = `<div class="news-title">ð° Ø¢Ø®Ø± Ø§ÙØ£Ø®Ø¨Ø§Ø±</div>${newsHtml}`;
     newsEl.style.display = '';
   } else {
     newsEl.style.display = 'none';
   }
 
-  // Chart
   const chartDiv = document.getElementById('detailChart');
   chartDiv.innerHTML = '';
   if (data.candles && data.candles.length) {
     setTimeout(() => renderFullChart(chartDiv, data.candles), 50);
   } else {
-    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">الشارت سيظهر بعد التحديث</div></div>';
+    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø§ÙØ´Ø§Ø±Øª Ø³ÙØ¸ÙØ± Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div></div>';
   }
 
-  // Pre-fill buy form
   document.getElementById('buyDateD').valueAsDate = new Date();
   if (data.close) document.getElementById('buyPriceD').value = data.close.toFixed(2);
-
   document.getElementById('detail-page').classList.add('open');
   window.scrollTo(0, 0);
 }
@@ -615,346 +1587,94 @@ function openDetail(symbol, data, market) {
 window.closeDetail = function() {
   document.getElementById('detail-page').classList.remove('open');
 };
-
 window.detailBuy = function() {
   const openTrade = _trades.find(t => _currentStock && t.symbol === _currentStock.symbol && t.status === 'open');
   if (openTrade) return;
   document.getElementById('buyFormDetail').classList.toggle('open');
 };
 
-// ── Save trades to Firestore ──
-async function saveTradeToFirestore(trade) {
+// ââ Save buy ââ
+window.saveBuyDetail = async function() {
+  if (!_currentStock) return;
+  const { symbol, data, market } = _currentStock;
+  const price = parseFloat(document.getElementById('buyPriceD').value);
+  const qty = parseInt(document.getElementById('buyQtyD').value) || 0;
+  const date = document.getElementById('buyDateD').value;
+  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡'); return; }
+  const trade = {
+    id: symbol + '_' + Date.now(),
+    symbol, sym: symbol, market,
+    entry: price, qty, date,
+    stop_loss: data.stop_loss,
+    target1: data.target1,
+    target2: data.target2,
+    confidence: data.confidence,
+    strategy: data.strategy_type || 'manual',
+    registeredAt: new Date().toISOString(),
+    status: 'open',
+    source: 'auto'
+  };
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, setDoc } = window._firestoreOps;
     await setDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
-  } catch (err) {
-    console.error('Firestore save error:', err);
+    _trades.push(trade);
+    document.getElementById('saveIndicator').textContent = 'â ØªÙ Ø§ÙØ­ÙØ¸';
+    document.getElementById('buyFormDetail').classList.remove('open');
+    document.getElementById('btnBuyDetail').textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø¡';
+    document.getElementById('btnBuyDetail').classList.add('bought');
+  } catch(err) {
+    document.getElementById('saveIndicator').textContent = 'â ' + err.message;
   }
-}
+};
 
-async function updateTradeInFirestore(trade) {
+// ââ Close trade ââ
+window.openCloseTrade = function(id) {
+  _closeTradeId = id;
+  document.getElementById('closeDateInput').valueAsDate = new Date();
+  document.getElementById('closeTradeDialog').classList.add('open');
+};
+window.confirmCloseTrade = async function() {
+  const price = parseFloat(document.getElementById('closePriceInput').value);
+  const date = document.getElementById('closeDateInput').value;
+  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, updateDoc } = window._firestoreOps;
-    await updateDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
-  } catch (err) {
-    console.error('Firestore update error:', err);
-  }
-}
+    await updateDoc(doc(window._db, 'users', uid, 'trades', _closeTradeId), {
+      status: 'closed', close_price: price, close_date: date
+    });
+    document.getElementById('closeTradeDialog').classList.remove('open');
+    loadPerformance();
+  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
+};
 
-async function deleteTradeFromFirestore(id) {
+window.removeTrade = async function(id) {
+  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, deleteDoc } = window._firestoreOps;
     await deleteDoc(doc(window._db, 'users', uid, 'trades', id));
-  } catch (err) {
-    console.error('Firestore delete error:', err);
-  }
-}
-
-async function loadTradesFromFirestore() {
-  try {
-    await waitForDB();
-    const uid = await waitForUID();
-    const { collection, getDocs } = window._firestoreOps;
-    const snap = await getDocs(collection(window._db, 'users', uid, 'trades'));
-    _trades = snap.docs.map(d => d.data());
-    _tradesLoaded = true;
-    renderPerformancePage();
-  } catch (err) {
-    console.error('Firestore load error:', err);
-    // fallback to localStorage
-    _trades = JSON.parse(localStorage.getItem('krm_trades') || '[]');
-    _tradesLoaded = true;
-    renderPerformancePage();
-  }
-}
-
-window.saveBuyDetail = async function() {
-  if (!_currentStock) return;
-  const price  = parseFloat(document.getElementById('buyPriceD').value);
-  const qty    = parseFloat(document.getElementById('buyQtyD').value);
-  const date   = document.getElementById('buyDateD').value;
-  const target = parseFloat(document.getElementById('buyTargetD').value) || null;
-  if (!price || !qty || !date) { alert('يرجى تعبئة سعر الشراء والكمية والتاريخ'); return; }
-
-  const ind = document.getElementById('saveIndicator');
-  ind.textContent = 'جاري الحفظ...';
-  ind.className = 'save-indicator saving';
-
-  const trade = {
-    id: Date.now().toString(),
-    symbol: _currentStock.symbol,
-    market: _currentStock.market,
-    buyPrice: price, qty, buyDate: date, target,
-    confidence: _currentStock.data.confidence || 0,
-    status: 'open', closePrice: null, closeDate: null,
-  };
-  _trades.push(trade);
-
-  await saveTradeToFirestore(trade);
-
-  ind.textContent = '✓ تم الحفظ';
-  ind.className = 'save-indicator saved';
-  setTimeout(() => { ind.textContent = ''; }, 2000);
-
-  document.getElementById('buyFormDetail').classList.remove('open');
-  const btn = document.getElementById('btnBuyDetail');
-  btn.textContent = '✅ تم الشراء';
-  btn.classList.add('bought');
-  renderPerformancePage();
+    // Also remove from local
+    const lt = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+    Object.keys(lt).forEach(k => { if (lt[k].id === id || k === id) delete lt[k]; });
+    localStorage.setItem('paperTrades', JSON.stringify(lt));
+    loadPerformance();
+  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
 };
 
-// ── Close trade ──
-window.openCloseTrade = function(id) {
-  _closeTradeId = id;
-  document.getElementById('closePriceInput').value = '';
-  document.getElementById('closeDateInput').valueAsDate = new Date();
-  document.getElementById('closeTradeDialog').classList.add('open');
-};
+// ââ Init ââ
+loadForas();
 
-window.confirmCloseTrade = async function() {
-  const closePrice = parseFloat(document.getElementById('closePriceInput').value);
-  const closeDate = document.getElementById('closeDateInput').value;
-  if (!closePrice || !closeDate) { alert('يرجى إدخال السعر والتاريخ'); return; }
-  const trade = _trades.find(t => t.id === _closeTradeId);
-  if (trade) {
-    trade.closePrice = closePrice;
-    trade.closeDate = closeDate;
-    trade.status = 'closed';
-    await updateTradeInFirestore(trade);
-    renderPerformancePage();
-  }
-  document.getElementById('closeTradeDialog').classList.remove('open');
-};
-
-window.removeTrade = async function(id) {
-  if (!confirm('هل تريد حذف هذه الصفقة؟')) return;
-  _trades = _trades.filter(t => t.id !== id);
-  await deleteTradeFromFirestore(id);
-  renderPerformancePage();
-};
-
-// ── Performance page ──
-function renderPerformancePage() {
-  const closed = _trades.filter(t => t.status === 'closed');
-  let totalPnL = 0, wins = 0, losses = 0, sumWin = 0;
-  closed.forEach(t => {
-    const pct = ((t.closePrice - t.buyPrice) / t.buyPrice) * 100;
-    totalPnL += (t.closePrice - t.buyPrice) * t.qty;
-    if (pct > 0) { wins++; sumWin += pct; } else losses++;
-  });
-
-  const total = _trades.length;
-  const winRate = closed.length > 0 ? ((wins / closed.length) * 100).toFixed(0) + '%' : '—';
-  const avgWin = wins > 0 ? '+' + (sumWin / wins).toFixed(1) + '%' : '—';
-  const pnlStr = totalPnL !== 0 ? (totalPnL >= 0 ? '+' : '') + totalPnL.toFixed(0) : '—';
-
-  document.getElementById('statTotal').textContent = total || '—';
-  document.getElementById('statWins').textContent = wins || '—';
-  document.getElementById('statLosses').textContent = losses || '—';
-  document.getElementById('statWinRate').textContent = winRate;
-  document.getElementById('statAvgWin').textContent = avgWin;
-  document.getElementById('statTotalPnL').textContent = pnlStr;
-  document.getElementById('statTotalPnL').style.color = totalPnL >= 0 ? 'var(--green)' : 'var(--red)';
-
-  const container = document.getElementById('perfTableContainer');
-  if (!_trades.length) {
-    container.innerHTML = `<div class="empty-perf"><div class="empty-icon">📋</div><div>لا توجد صفقات مسجلة بعد</div><div style="font-size:12px;margin-top:8px">اضغط "شراء 🛒" على أي سهم لتسجيل صفقة</div></div>`;
-    return;
-  }
-
-  const sorted = [..._trades].sort((a, b) => {
-    if (a.status === 'open' && b.status !== 'open') return -1;
-    if (b.status === 'open' && a.status !== 'open') return 1;
-    return (b.closeDate || b.buyDate) > (a.closeDate || a.buyDate) ? 1 : -1;
-  });
-
-  let rows = '';
-  sorted.forEach(t => {
-    const pct = t.closePrice ? ((t.closePrice - t.buyPrice) / t.buyPrice * 100) : null;
-    const pnl = t.closePrice ? ((t.closePrice - t.buyPrice) * t.qty) : null;
-    const pctStr = pct !== null ? (pct >= 0 ? `<span class="pnl-positive">+${pct.toFixed(1)}%</span>` : `<span class="pnl-negative">${pct.toFixed(1)}%</span>`) : '<span class="pnl-neutral">—</span>';
-    const pnlStr2 = pnl !== null ? (pnl >= 0 ? `<span class="pnl-positive">+${pnl.toFixed(0)}</span>` : `<span class="pnl-negative">${pnl.toFixed(0)}</span>`) : '<span class="pnl-neutral">—</span>';
-    const statusBadge = t.status === 'open' ? `<span class="status-open">🟡 مفتوحة</span>` : `<span class="status-closed">✅ مغلقة</span>`;
-    const action = t.status === 'open' ? `<button class="close-trade-btn" onclick="openCloseTrade('${t.id}')">إغلاق</button>` : '';
-    rows += `
-      <tr>
-        <td><b>${t.symbol}</b> <small style="color:var(--text2)">${t.market === 'sa' ? '🇸🇦' : '🇺🇸'}</small></td>
-        <td>${t.buyDate || '—'}</td>
-        <td>${t.buyPrice.toFixed(2)}</td>
-        <td>${t.closePrice ? t.closePrice.toFixed(2) : '—'}</td>
-        <td>${t.qty}</td>
-        <td>${pctStr}</td>
-        <td>${pnlStr2}</td>
-        <td>${t.confidence}%</td>
-        <td>${statusBadge}</td>
-        <td>${action} <button class="btn-remove" onclick="removeTrade('${t.id}')" title="حذف">🗑</button></td>
-      </tr>`;
-  });
-
-  container.innerHTML = `
-    <table class="perf-table">
-      <thead><tr>
-        <th>السهم</th><th>تاريخ الشراء</th><th>سعر الشراء</th><th>سعر الإغلاق</th>
-        <th>الكمية</th><th>التغير %</th><th>الأرباح/الخسائر</th><th>الثقة</th><th>الحالة</th><th>إجراء</th>
-      </tr></thead>
-      <tbody>${rows}</tbody>
-    </table>`;
-}
-
-// ── Load Firestore (الفرص) ──
-async function loadMarket(gridId, collectionName, market) {
-  const grid = document.getElementById(gridId);
-  try {
-    await waitForDB();
-    const { collection, getDocs } = window._firestoreOps;
-    const snap = await getDocs(collection(window._db, collectionName));
-
-    if (snap.empty) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد بيانات حالياً</div>';
-      return;
-    }
-
-    const stocks = [];
-    snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
-    stocks.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
-
-    grid.innerHTML = '';
-    for (const s of stocks) {
-      const card = buildCard(s.id, s, market);
-      grid.appendChild(card);
-    }
-  } catch (err) {
-    console.error(err);
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ في التحميل: ${err.message}</div>`;
-  }
-}
-
-// ── Load Arkitaz (الارتكاز) — أمريكي فقط ──
-async function loadArkitaz(containerId, collectionName, market) {
-  const container = document.getElementById(containerId);
-  try {
-    await waitForDB();
-    const { collection, getDocs } = window._firestoreOps;
-    const snap = await getDocs(collection(window._db, collectionName));
-
-    if (snap.empty) {
-      container.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div>لا توجد أسهم ارتكاز الآن<br><small style="font-size:12px;margin-top:8px;display:block">سيتم تحديث البيانات تلقائياً بعد إغلاق السوق</small></div>';
-      return;
-    }
-
-    const stocks = [];
-    snap.forEach(d => { if (d.id !== 'meta') stocks.push({ id: d.id, ...d.data() }); });
-    stocks.sort((a, b) => (b.confidence || 0) - (a.confidence || 0));
-
-    if (!window._arkitazStockMap) window._arkitazStockMap = {};
-    stocks.forEach(s => { window._arkitazStockMap[s.id + '_' + market] = s; });
-
-    let rows = '';
-    stocks.forEach(s => {
-      const conf = s.confidence || 0;
-      const col = confColor(conf);
-      const reason = s.consReason || '—';
-      const readyBadge = (conf >= 50) ? `<span class="badge badge-gold">جاهز للدخول 🎯</span>` : '';
-      rows += `
-        <tr onclick="openDetail('${s.id}', window._arkitazStockMap['${s.id}_${market}'], '${market}')">
-          <td><b>${s.id}</b> ${readyBadge}</td>
-          <td>${s.close ? s.close.toFixed(2) : '—'}</td>
-          <td>
-            <div class="mini-conf-bar">
-              <div class="mini-bar"><div class="mini-fill" style="width:${conf}%;background:${col}"></div></div>
-              <span style="color:${col};font-size:11px">${conf}%</span>
-            </div>
-          </td>
-          <td style="font-size:11px;color:var(--text2)">${reason}</td>
-          <td>${s.date || '—'}</td>
-        </tr>`;
-    });
-
-    container.innerHTML = `
-      <table class="arkitaz-table">
-        <thead><tr>
-          <th>السهم</th><th>السعر</th><th>مستوى الثقة</th><th>سبب الارتكاز</th><th>التاريخ</th>
-        </tr></thead>
-        <tbody>${rows}</tbody>
-      </table>`;
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
-  }
-}
-
-// ── Load meta ──
-async function loadMeta() {
-  try {
-    await waitForDB();
-    const { doc, getDoc } = window._firestoreOps;
-    const metaUS = await getDoc(doc(window._db, 'meta', 'suggestions_us'));
-    const metaSA = await getDoc(doc(window._db, 'meta', 'suggestions_sa'));
-    const us = metaUS.data();
-    const sa = metaSA.data();
-    const date = us?.lastRun || sa?.lastRun || '—';
-    document.getElementById('lastUpdate').textContent = `آخر تحديث: ${date}`;
-  } catch {}
-}
-
-// ── Tab switch ──
-window.switchTab = function(tab, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('page-' + tab).classList.add('active');
-};
-
-// ── Market sub-tab switch ──
-window.switchMarket = function(page, market, el) {
-  const panels = document.querySelectorAll(`#page-${page} .market-panel`);
-  const tabs = document.querySelectorAll(`#page-${page} .market-tab`);
-  panels.forEach(p => p.classList.remove('active'));
-  tabs.forEach(t => t.classList.remove('active'));
-  document.getElementById(`${page}-panel-${market}`).classList.add('active');
-  el.classList.add('active');
-};
-
-// ── Auto paper trade ──
-function autoRegisterPaperTrade(sym, data) {
-  if (!data.confidence || data.confidence < 60) return;
-  const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
-  if (trades[sym]) return;
-  trades[sym] = {
-    sym,
-    entry:        data.entry || data.close,
-    stop_loss:    data.stop_loss,
-    target1:      data.target1,
-    target2:      data.target2,
-    strategy:     data.strategy_type,
-    confidence:   data.confidence,
-    registeredAt: new Date().toISOString(),
-    status:       'open'
-  };
-  localStorage.setItem('paperTrades', JSON.stringify(trades));
-}
-
-// ── Expose globals ──
 window.openDetail = openDetail;
-window.openCloseTrade = openCloseTrade;
-window.removeTrade = removeTrade;
-window.confirmCloseTrade = confirmCloseTrade;
-window.saveBuyDetail = saveBuyDetail;
-
-// ── Init ──
-loadMeta();
-loadMarket('grid-us', 'suggestions_us', 'us');
-loadMarket('grid-sa', 'suggestions_sa', 'sa');
-loadArkitaz('arkitaz-us-container', 'consolidation_us', 'us');
-loadTradesFromFirestore();
+window.openCloseTrade = window.openCloseTrade;
+window.removeTrade = window.removeTrade;
+window.confirmCloseTrade = window.confirmCloseTrade;
+window.saveBuyDetail = window.saveBuyDetail;
 
 </script>
-
 </body>
 </html>
