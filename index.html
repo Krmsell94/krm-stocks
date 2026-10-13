@@ -64,13 +64,13 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* ââ Layout ââ */
+/* ── Layout ── */
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* ââ Sidebar ââ */
+/* ── Sidebar ── */
 .sidebar {
   width: 180px;
   min-width: 180px;
@@ -99,7 +99,7 @@ body {
   gap: 6px;
 }
 
-/* ââ Market selector (above tabs) ââ */
+/* ── Market selector (above tabs) ── */
 .market-selector {
   padding: 14px 10px 10px;
   border-bottom: 1px solid var(--sidebar-border);
@@ -133,7 +133,7 @@ body {
   font-weight: 600;
 }
 
-/* ââ Nav tabs ââ */
+/* ── Nav tabs ── */
 .sidebar-nav {
   flex: 1;
   padding: 10px 10px;
@@ -164,7 +164,7 @@ body {
 }
 .nav-tab .tab-icon { font-size: 16px; }
 
-/* ââ Dark mode toggle ââ */
+/* ── Dark mode toggle ── */
 .sidebar-footer {
   padding: 12px 10px;
   border-top: 1px solid var(--sidebar-border);
@@ -185,7 +185,7 @@ body {
 }
 .theme-toggle:hover { background: var(--tab-hover); }
 
-/* ââ Main content ââ */
+/* ── Main content ── */
 .main-content {
   flex: 1;
   padding: 20px;
@@ -195,7 +195,7 @@ body {
 .page { display: none; }
 .page.active { display: block; }
 
-/* ââ Page header ââ */
+/* ── Page header ── */
 .page-header {
   display: flex;
   align-items: center;
@@ -211,14 +211,14 @@ body {
   color: var(--text2);
 }
 
-/* ââ Cards grid ââ */
+/* ── Cards grid ── */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
 }
 
-/* ââ Stock card (tall rectangle) ââ */
+/* ── Stock card (tall rectangle) ── */
 .stock-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -297,7 +297,7 @@ body {
   color: var(--text2);
 }
 
-/* ââ Arkitaz card specific ââ */
+/* ── Arkitaz card specific ── */
 .ark-conditions {
   display: flex;
   flex-direction: column;
@@ -316,7 +316,7 @@ body {
 .cond-warn { color: var(--gold); }
 .cond-bad { color: var(--red); }
 
-/* ââ Empty state ââ */
+/* ── Empty state ── */
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -324,7 +324,7 @@ body {
 }
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
-/* ââ Detail page ââ */
+/* ── Detail page ── */
 #detail-page {
   display: none;
   position: fixed;
@@ -485,7 +485,7 @@ body {
 .news-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
 .news-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 
-/* ââ Close Trade Dialog ââ */
+/* ── Close Trade Dialog ── */
 .dialog-overlay {
   display: none;
   position: fixed;
@@ -506,7 +506,7 @@ body {
 }
 .dialog-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
 
-/* ââ Performance / Portfolio tables ââ */
+/* ── Performance / Portfolio tables ── */
 .perf-section { margin-bottom: 24px; }
 .perf-section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 .trades-table {
@@ -551,10 +551,10 @@ body {
 }
 .status-open { color: var(--blue); font-weight: 600; }
 .status-closed { color: var(--text2); }
- .status-profit { color: var(--green); font-weight: 600; }
+.status-profit { color: var(--green); font-weight: 600; }
 .status-loss { color: var(--red); font-weight: 600; }
 
-/* ââ Portfolio manual add ââ */
+/* ── Portfolio manual add ── */
 .btn-add-portfolio {
   padding: 8px 16px;
   background: var(--blue);
@@ -591,7 +591,7 @@ body {
   font-size: 14px;
 }
 
-/* ââ News calendar ââ */
+/* ── News calendar ── */
 .news-calendar {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -651,7 +651,7 @@ body {
 .cal-event-impact-low { border-color: var(--green); }
 .cal-loading { text-align: center; padding: 40px; color: var(--text2); }
 
-/* ââ Responsive ââ */
+/* ── Responsive ── */
 @media (max-width: 700px) {
   .sidebar { width: 60px; min-width: 60px; }
   .nav-tab span.tab-label { display: none; }
@@ -664,90 +664,91 @@ body {
 </style>
 </head>
 <body>
+
 <div class="app-layout">
 
-  <!-- ââ SIDEBAR ââ -->
+  <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo">ð <span>KRM</span></div>
+      <div class="sidebar-logo">📈 <span>KRM</span></div>
     </div>
 
     <!-- Market selector -->
     <div class="market-selector">
-      <div class="market-label">Ø§ÙØ³ÙÙ</div>
+      <div class="market-label">السوق</div>
       <div class="market-btns">
-        <button class="market-btn active" id="btnUS" onclick="setMarket('us', this)">ðºð¸ <span>US</span></button>
-        <button class="market-btn" id="btnSA" onclick="setMarket('sa', this)">ð¸ð¦ <span>SA</span></button>
+        <button class="market-btn active" id="btnUS" onclick="setMarket('us', this)">🇺🇸 <span>US</span></button>
+        <button class="market-btn" id="btnSA" onclick="setMarket('sa', this)">🇸🇦 <span>SA</span></button>
       </div>
     </div>
 
     <!-- Nav tabs -->
     <nav class="sidebar-nav">
       <button class="nav-tab active" onclick="switchTab('foras', this)">
-        <span class="tab-icon">ð</span>
-        <span class="tab-label">Ø§ÙÙØ±Øµ</span>
+        <span class="tab-icon">🚀</span>
+        <span class="tab-label">الفرص</span>
       </button>
       <button class="nav-tab" onclick="switchTab('arkitaz', this)">
-        <span class="tab-icon">ð¯</span>
-        <span class="tab-label">Ø§ÙØ§Ø±ØªÙØ§Ø²</span>
+        <span class="tab-icon">🎯</span>
+        <span class="tab-label">الارتكاز</span>
       </button>
       <button class="nav-tab" onclick="switchTab('performance', this)">
-        <span class="tab-icon">ð</span>
-        <span class="tab-label">Ø§ÙØ£Ø¯Ø§Ø¡</span>
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">الأداء</span>
       </button>
       <button class="nav-tab" onclick="switchTab('portfolio', this)">
-        <span class="tab-icon">ð¼</span>
-        <span class="tab-label">ÙØ­ÙØ¸ØªÙ</span>
+        <span class="tab-icon">💼</span>
+        <span class="tab-label">محفظتي</span>
       </button>
       <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="tab-icon">ð</span>
-        <span class="tab-label">Ø§ÙØ£Ø®Ø¨Ø§Ø±</span>
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">الأخبار</span>
       </button>
     </nav>
 
     <div class="sidebar-footer">
       <button class="theme-toggle" onclick="toggleTheme()">
-        <span id="themeIcon">ð</span>
-        <span id="themeLabel">ÙÙÙÙ</span>
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">ليلي</span>
       </button>
     </div>
   </aside>
 
-  <!-- ââ MAIN CONTENT ââ -->
+  <!-- ══ MAIN CONTENT ══ -->
   <main class="main-content">
 
-    <!-- ââ FORAS PAGE ââ -->
+    <!-- ── FORAS PAGE ── -->
     <div id="page-foras" class="page active">
       <div class="page-header">
-        <div class="page-title">ð Ø§ÙÙØ±Øµ</div>
-        <span id="lastUpdate">Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</span>
+        <div class="page-title">🚀 الفرص</div>
+        <span id="lastUpdate">جاري التحميل...</span>
       </div>
       <div class="cards-grid" id="grid-foras"></div>
     </div>
 
-    <!-- ââ ARKITAZ PAGE ââ -->
+    <!-- ── ARKITAZ PAGE ── -->
     <div id="page-arkitaz" class="page">
       <div class="page-header">
-        <div class="page-title">ð¯ Ø§ÙØ§Ø±ØªÙØ§Ø²</div>
-        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + Ø¯Ø¹Ù + MACD</span>
+        <div class="page-title">🎯 الارتكاز</div>
+        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + دعم + MACD</span>
       </div>
       <div class="cards-grid" id="grid-arkitaz"></div>
     </div>
 
-    <!-- ââ PERFORMANCE PAGE ââ -->
+    <!-- ── PERFORMANCE PAGE ── -->
     <div id="page-performance" class="page">
       <div class="page-header">
-        <div class="page-title">ð Ø§ÙØ£Ø¯Ø§Ø¡</div>
+        <div class="page-title">📊 الأداء</div>
       </div>
       <div class="perf-section">
-        <div class="perf-section-title">â¡ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© (Ø§ÙÙØ±Øµ ÙØ§ÙØ§Ø±ØªÙØ§Ø²)</div>
+        <div class="perf-section-title">⚡ صفقات تلقائية (الفرص والارتكاز)</div>
         <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
         <table class="trades-table">
           <thead>
             <tr>
-              <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
-              <th>Ø§ÙÙØ¯Ù1</th><th>Ø§ÙÙØ¯Ù2</th><th>Ø§ÙÙÙÙ</th>
-              <th>Ø§ÙØ­Ø§ÙØ©</th><th>Ø±Ø¨Ø­/Ø®Ø³Ø§Ø±Ø©</th><th></th>
+              <th>السهم</th><th>الدخول</th><th>التاريخ</th>
+              <th>الهدف1</th><th>الهدف2</th><th>الوقف</th>
+              <th>الحالة</th><th>ربح/خسارة</th><th></th>
             </tr>
           </thead>
           <tbody id="perf-tbody"></tbody>
@@ -755,66 +756,66 @@ body {
       </div>
     </div>
 
-    <!-- ââ PORTFOLIO PAGE ââ -->
+    <!-- ── PORTFOLIO PAGE ── -->
     <div id="page-portfolio" class="page">
       <div class="page-header">
-        <div class="page-title">ð¼ ÙØ­ÙØ¸ØªÙ</div>
+        <div class="page-title">💼 محفظتي</div>
       </div>
-      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ Ø¥Ø¶Ø§ÙØ© ØµÙÙØ© ÙØ¯ÙÙØ©</button>
-      <div class="add-portfolio-form" id="addPortfolioForm">
+      <button class="btn-add-portfolio" onclick="toggleAddPortFolio()">+ إضافة صفقة يدوية</button>
+      <div class="add-portfolio-form" id="addPortFolioForm">
         <div class="form-grid">
           <div>
-            <label>Ø§ÙØ³ÙÙ</label>
+            <label>السهم</label>
             <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
           </div>
           <div>
-            <label>Ø³Ø¹Ø± Ø§ÙØ¯Ø®ÙÙ</label>
+            <label>سعر الدخول</label>
             <input id="pf-entry" type="number" step="0.01" placeholder="1.50">
           </div>
           <div>
-            <label>Ø§ÙÙÙÙØ©</label>
+            <label>الكمية</label>
             <input id="pf-qty" type="number" placeholder="100">
           </div>
           <div>
-            <label>ØªØ§Ø±ÙØ® Ø§ÙØ¯Ø®ÙÙ</label>
+            <label>تاريخ الدخول</label>
             <input id="pf-date" type="date">
           </div>
           <div>
-            <label>Ø§ÙÙØ¯Ù 1</label>
+            <label>الهدف 1</label>
             <input id="pf-t1" type="number" step="0.01" placeholder="2.00">
           </div>
           <div>
-            <label>ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</label>
+            <label>وقف الخسارة</label>
             <input id="pf-sl" type="number" step="0.01" placeholder="1.20">
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
-          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
+          <button class="btn-save-buy" onclick="savePortFolioTrade()" style="flex:1">حفظ الصفقة</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortFolio()" style="flex:1">إلغاء</button>
         </div>
       </div>
       <table class="trades-table">
         <thead>
           <tr>
-            <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙÙÙÙØ©</th>
-            <th>Ø§ÙÙØ¯Ù</th><th>Ø§ÙÙÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
-            <th>Ø§ÙØ­Ø§ÙØ©</th><th></th>
+            <th>السهم</th><th>الدخول</th><th>الكمية</th>
+            <th>الهدف</th><th>الوقف</th><th>التاريخ</th>
+            <th>الحالة</th><th></th>
           </tr>
         </thead>
         <tbody id="portfolio-tbody"></tbody>
       </table>
     </div>
 
-    <!-- ââ CALENDAR PAGE ââ -->
+    <!-- ── CALENDAR PAGE ── -->
     <div id="page-calendar" class="page">
       <div class="page-header">
-        <div class="page-title">ð Ø§ÙØ£Ø®Ø¨Ø§Ø± Ø§ÙØ£Ø³Ø¨ÙØ¹ÙØ©</div>
+        <div class="page-title">📅 الأخبار الأسبوعية</div>
       </div>
       <div class="news-calendar">
         <div class="cal-header">
-          <button class="cal-nav-btn" onclick="calPrevWeek()">â Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙØ³Ø§Ø¨Ù</button>
-          <div class="cal-title" id="calWeekLabel">ÙØ°Ø§ Ø§ÙØ£Ø³Ø¨ÙØ¹</div>
-          <button class="cal-nav-btn" onclick="calNextWeek()">Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙÙØ§Ø¯Ù â¶</button>
+          <button class="cal-nav-btn" onclick="calPrevWeek()">◀ الأسبوع السابق</button>
+          <div class="cal-title" id="calWeekLabel">هذا الأسبوع</div>
+          <button class="cal-nav-btn" onclick="calNextWeek()">الأسبوع القادم ▶</button>
         </div>
         <div class="cal-days" id="calDaysGrid"></div>
       </div>
@@ -823,14 +824,14 @@ body {
   </main>
 </div>
 
-<!-- ââ DETAIL PAGE ââ -->
+<!-- ══ DETAIL PAGE ══ -->
 <div id="detail-page">
   <div class="detail-header">
-    <button class="btn-back" onclick="closeDetail()">â Ø±Ø¬ÙØ¹</button>
+    <button class="btn-back" onclick="closeDetail()">← رجوع</button>
     <div id="detailSymbol"></div>
     <div class="detail-actions">
-      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">ð Ø´Ø±Ø§Ø¡</button>
-      <a id="detailTvLink" class="btn-tv-link" target="_blank">ð TradingView</a>
+      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">🛒 شراء</button>
+      <a id="detailTvLink" class="btn-tv-link" target="_blank">📈 TradingView</a>
     </div>
   </div>
 
@@ -841,38 +842,38 @@ body {
   <div id="detailNews"></div>
 
   <div class="buy-form" id="buyFormDetail">
-    <label>ØªØ§Ø±ÙØ® Ø§ÙØ´Ø±Ø§Ø¡</label>
+    <label>تاريخ الشراء</label>
     <input type="date" id="buyDateD">
-    <label>Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡</label>
+    <label>سعر الشراء</label>
     <input type="number" id="buyPriceD" step="0.01">
-    <label>Ø¹Ø¯Ø¯ Ø§ÙØ£Ø³ÙÙ</label>
+    <label>عدد الأسهم</label>
     <input type="number" id="buyQtyD" placeholder="100">
-    <button class="btn-save-buy" onclick="saveBuyDetail()">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
-    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">Ø¥ÙØºØ§Ø¡</button>
+    <button class="btn-save-buy" onclick="saveBuyDetail()">حفظ الصفقة</button>
+    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">إلغاء</button>
     <div id="saveIndicator"></div>
   </div>
 </div>
 
-<!-- ââ CLOSE TRADE DIALOG ââ -->
+<!-- ══ CLOSE TRADE DG�LOG ══ -->
 <div id="closeTradeDialog" class="dialog-overlay">
   <div class="dialog-box">
-    <div class="dialog-title">Ø¥ØºÙØ§Ù Ø§ÙØµÙÙØ©</div>
+    <div class="dialog-title">إغلاق الصفقة</div>
     <div style="margin-bottom:10px">
-      <label style="font-size:12px;color:var(--text2)">Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù</label>
+      <label style="font-size:12px;color:var(--text2)">سعر الإغلاق</label>
       <input type="number" id="closePriceInput" step="0.01" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
     <div style="margin-bottom:10px">
-      <label style="font-size:12px;color:var(--text2)">ØªØ§Ø±ÙØ® Ø§ÙØ¥ØºÙØ§Ù</label>
+      <label style="font-size:12px;color:var(--text2)">تاريخ الإغلاق</label>
       <input type="date" id="closeDateInput" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">ØªØ£ÙÙØ¯ Ø§ÙØ¥ØºÙØ§Ù</button>
-      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
+      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">تأكيد الإغلاق</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">إلغاء</button>
     </div>
   </div>
 </div>
 
-<!-- ââ Firebase ââ -->
+<!-- ══ Firebase ══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -899,10 +900,10 @@ onAuthStateChanged(auth, user => {
 });
 </script>
 
-<!-- ââ Main Script ââ -->
+<!-- ══ Main Script ══ -->
 <script type="module">
 
-// ââ Globals ââ
+// ── Globals ──
 let _currentStock = null;
 let _trades = [];
 let _portfolioTrades = [];
@@ -910,7 +911,7 @@ let _closeTradeId = null;
 let _currentMarket = 'us';
 let _calWeekOffset = 0;
 
-// ââ Wait helpers ââ
+// ── Wait helpers ──
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
     if (window._db) return;
@@ -926,30 +927,30 @@ async function waitForUID() {
   throw new Error('Auth timeout');
 }
 
-// ââ Theme ââ
+// ── Theme ──
 window.toggleTheme = function() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (isDark) {
     document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeIcon').textContent = 'ð';
-    document.getElementById('themeLabel').textContent = 'ÙÙÙÙ';
+    document.getElementById('themeIcon').textContent = '🌙';
+    document.getElementById('themeLabel').textContent = 'ليلي';
     localStorage.setItem('theme', 'light');
   } else {
     document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeIcon').textContent = 'âï¸';
-    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
+    document.getElementById('themeIcon').textContent = '☀️';
+    document.getElementById('themeLabel').textContent = 'نهاري';
     localStorage.setItem('theme', 'dark');
   }
 };
 (function() {
   if (localStorage.getItem('theme') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeIcon').textContent = 'âï¸';
-    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
+    document.getElementById('themeIcon').textContent = '☀️';
+    document.getElementById('themeLabel').textContent = 'نهاري';
   }
 })();
 
-// ââ Market switch ââ
+// ── Market switch ──
 window.setMarket = function(market, el) {
   _currentMarket = market;
   document.querySelectorAll('.market-btn').forEach(b => b.classList.remove('active'));
@@ -967,7 +968,7 @@ function reloadCurrentTab() {
   else if (fn && fn.includes('portfolio')) loadPortfolio();
 }
 
-// ââ Tab switch ââ
+// ── Tab switch ──
 window.switchTab = function(tab, el) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -980,7 +981,7 @@ window.switchTab = function(tab, el) {
   else if (tab === 'calendar') loadCalendar();
 };
 
-// ââ Helpers ââ
+// ── Helpers ──
 function confColor(v) {
   if (v >= 70) return 'var(--green)';
   if (v >= 40) return 'var(--gold)';
@@ -993,11 +994,11 @@ function rsiColor(v) {
   return 'var(--red)';
 }
 
-// ââ Chart ââ
+// ── Chart ──
 function renderFullChart(container, candles) {
   container.innerHTML = '';
   if (!candles || !candles.length) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø¨ÙØ§ÙØ§Øª Ø§ÙØ´Ø§Ø±Øª Ø³ØªÙØ¶Ø§Ù ØªÙÙØ§Ø¦ÙØ§Ù</div></div>';
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
     return;
   }
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1018,7 +1019,7 @@ function renderFullChart(container, candles) {
   chart.timeScale().fitContent();
 }
 
-// ââ Build FORAS card (tall rectangle with key levels) ââ
+// ── Build FORAS card (tall rectangle with key levels) ──
 function buildForasCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
@@ -1029,26 +1030,26 @@ function buildForasCard(symbol, data, market) {
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'â Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '✅ جاهز' : '⏳ انتظار'}|/span>
     </div>
-    <div class="card-price">$${data.close ? data.close.toFixed(2) : 'â'}</div>
+    <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
     <hr class="card-divider">
     <div class="ark-conditions">
       <div class="card-detail-row">
-        <span class="card-detail-label">ð¯ Ø¯Ø®ÙÙ</span>
-        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? '$'+data.entry : 'â'}</span>
+        <span class="card-detail-label">🎯 دخول</span>
+        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? '$'+data.entry : '—'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">ð ÙÙÙ</span>
-        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : 'â'}</span>
+        <span class="card-detail-label">🛑 وقف</span>
+        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">ð¢ ÙØ¯Ù 1</span>
-        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? '$'+data.target1 : 'â'}</span>
+        <span class="card-detail-label">🟢 هدف 1</span>
+        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? '$'+data.target1 : '—'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">ð ÙØ¯Ù 2</span>
-        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? '$'+data.target2 : 'â'}</span>
+        <span class="card-detail-label">🚀 هدف 2</span>
+        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? '$'+data.target2 : '—'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1063,7 +1064,7 @@ function buildForasCard(symbol, data, market) {
   return div;
 }
 
-// ââ Build ARKITAZ card (tall rectangle with conditions) ââ
+// ── Build ARKITAZ card (tall rectangle with conditions) ──
 function buildArkitazCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
@@ -1077,19 +1078,19 @@ function buildArkitazCard(symbol, data, market) {
   const supportOk = data.has_support;
   const candleOk = data.bullish_candle;
 
-  const rsiLabel = rsi ? rsi.toFixed(1) : 'â';
+  const rsiLabel = rsi ? rsi.toFixed(1) : '—';
   const rsiCol = rsiColor(rsi);
 
-  const checkIcon = (ok) => ok ? 'â' : (ok === false ? 'â' : 'âª');
+  const checkIcon = (ok) => ok ? '✅' : (ok === false ? '❌' : '⚪');
 
   const isReady = conf >= 50 || (rsiOk && supportOk);
 
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'ð¯ Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '🎯 جاهز' : '⏳ انتظار'}</span>
     </div>
-    <div class="card-price">$${data.close ? data.close.toFixed(2) : 'â'}</div>
+    <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
     <hr class="card-divider">
     <div class="ark-conditions">
       <div class="ark-condition">
@@ -1100,22 +1101,22 @@ function buildArkitazCard(symbol, data, market) {
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(macdOk)}</span>
         <span class="cond-label">MACD</span>
-        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'ÙØªØ­Ø³Ù' : 'Ø¶Ø¹ÙÙ'}</span>
+        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'يتحسن' : 'ضعيف'}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(maOk)}</span>
-        <span class="cond-label">Ø§ÙÙØªÙØ³Ø·Ø§Øª</span>
-        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'ÙØ³ØªØ¹ÙØ¯' : 'ØªØ­ØªÙØ§'}</span>
+        <span class="cond-label">المتوسطات</span>
+        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'يستعيد' : 'تحتها'}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(supportOk)}</span>
-        <span class="cond-label">Ø¯Ø¹Ù ÙØ§Ø¸Ø­</span>
-        <span class="cond-val">${data.support_level ? '$'+data.support_level : (supportOk ? 'ÙØ¹Ù' : 'â')}</span>
+        <span class="cond-label">دعم واظح</span>
+        <span class="cond-val">${data.support_level ? '$'+data.support_level : (supportOk ? 'نعم' : '—')}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(candleOk)}</span>
-        <span class="cond-label">Ø´ÙØ¹Ø© Ø¥ÙØ¬Ø§Ø¨ÙØ©</span>
-        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'ÙØ¹Ù' : 'â'}</span>
+        <span class="cond-label">شمعة إيجابية</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نعم' : '—'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1129,17 +1130,17 @@ function buildArkitazCard(symbol, data, market) {
   return div;
 }
 
-// ââ Load FORAS ââ
+// ── Load FORAS ──
 async function loadForas() {
   const grid = document.getElementById('grid-foras');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ ÙØ±Øµ</div>'; return; }
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص</div>'; return; }
     snap.forEach(d => {
       const data = d.data();
       if (data.confidence >= 40 || data.entry) {
@@ -1148,30 +1149,30 @@ async function loadForas() {
     });
     loadMeta();
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
 
-// ââ Load ARKITAZ ââ
+// ── Load ARKITAZ ──
 async function loadArkitaz() {
   const grid = document.getElementById('grid-arkitaz');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'consolidation_sa' : 'consolidation_us';
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ Ø£Ø³ÙÙ Ø§Ø±ØªÙØ§Ø²</div>'; return; }
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>'; return; }
     snap.forEach(d => {
       grid.appendChild(buildArkitazCard(d.id, d.data(), _currentMarket));
     });
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
 
-// ââ Load meta ââ
+// ── Load meta ──
 async function loadMeta() {
   try {
     await waitForDB();
@@ -1179,11 +1180,11 @@ async function loadMeta() {
     const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
     const metaDoc = await getDoc(doc(window._db, 'meta', collName));
     const d = metaDoc.data();
-    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«: ' + d.lastRun : '';
+    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'آخر تحديث: ' + d.lastRun : '';
   } catch {}
 }
 
-// ââ Auto-register paper trade (for performance tab) ââ
+// ── Auto-register paper trade (for performance tab) ──
 function autoRegisterPaperTrade(sym, data) {
   if (!data.confidence || data.confidence < 60) return;
   const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
@@ -1204,7 +1205,7 @@ function autoRegisterPaperTrade(sym, data) {
   localStorage.setItem('paperTrades', JSON.stringify(trades));
 }
 
-// ââ Load Performance (auto trades) ââ
+// ── Load Performance (auto trades) ──
 async function loadPerformance() {
   const tbody = document.getElementById('perf-tbody');
   tbody.innerHTML = '';
@@ -1221,34 +1222,34 @@ async function loadPerformance() {
     renderPerfTable(allAutoTrades, tbody);
     renderPerfSummary(allAutoTrades);
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">Ø®Ø·Ø£ ÙÙ Ø§ÙØªØ­ÙÙÙ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
   }
 }
 
 function renderPerfTable(trades, tbody) {
   tbody.innerHTML = '';
   if (!trades.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© Ø¨Ø¹Ø¯</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات تلقائية بعد</td></tr>';
     return;
   }
   trades.forEach(t => {
     const pnl = t.close_price && t.entry ? ((t.close_price - t.entry) / t.entry * 100).toFixed(2) : null;
     const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
-    const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' :
-      (pnl > 0 ? '<span class="status-profit">Ø±Ø¨Ø­</span>' : '<span class="status-loss">Ø®Ø³Ø§Ø±Ø©</span>');
+    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' :
+      (pnl > 0 ? '<span class="status-profit">ربح</span>' : '<span class="status-loss">خسارة</span>');
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${t.sym || t.symbol}</strong></td>
-      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : 'â'}</td>
-      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : 'â'}</td>
-      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
-      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : 'â'}</td>
-      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
+      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : '—'}</td>
+      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : '—'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
+      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : '—'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
       <td>${statusLabel}</td>
-      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : 'â'}</td>
+      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : '—'}</td>
       <td>
-        ${t.status === 'open' ? `<button class="btn-close-trade" onclick="openCloseTrade('${t.id || t.sym}')">Ø¥ØºÙØ§Ù</button>` : ''}
-        <button class="btn-remove-trade" onclick="removeTrade('${t.id || t.sym}')" style="margin-top:2px">Ø­Ø°Ù</button>
+        ${t.status === 'open' ? `<button class="btn-close-trade" onclick="openCloseTrade('${t.id || t.sym}')">إغلاق</button>` : ''}
+        <button class="btn-remove-trade" onclick="removeTrade('${t.id || t.sym}')" style="margin-top:2px">حذف</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1262,25 +1263,25 @@ function renderPerfSummary(trades) {
   const wins = closed.filter(t => t.close_price && t.entry && t.close_price > t.entry);
   el.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">Ø¥Ø¬ÙØ§ÙÙ</div>
+      <div style="font-size:11px;color:var(--text2)">إجمالي</div>
       <div style="font-size:20px;font-weight:700">${total}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">ÙÙØªÙØ­Ø©</div>
+      <div style="font-size:11px;color:var(--text2)">مفتوحة</div>
       <div style="font-size:20px;font-weight:700;color:var(--blue)">${trades.filter(t => t.status === 'open').length}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">Ø±Ø¨Ø­</div>
+      <div style="font-size:11px;color:var(--text2)">ربح</div>
       <div style="font-size:20px;font-weight:700;color:var(--green)">${wins.length}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">Ø®Ø³Ø§Ø±Ø©</div>
+      <div style="font-size:11px;color:var(--text2)">خسارة</div>
       <div style="font-size:20px;font-weight:700;color:var(--red)">${closed.length - wins.length}</div>
     </div>
   `;
 }
 
-// ââ Portfolio (manual) ââ
+// ── Portfolio (manual) ──
 window.toggleAddPortfolio = function() {
   document.getElementById('addPortfolioForm').classList.toggle('open');
   document.getElementById('pf-date').valueAsDate = new Date();
@@ -1293,7 +1294,7 @@ window.savePortfolioTrade = async function() {
   const date = document.getElementById('pf-date').value;
   const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
   const sl = parseFloat(document.getElementById('pf-sl').value) || null;
-  if (!sym || !entry || !qty) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø§ÙØ³ÙÙ ÙØ§ÙØ³Ø¹Ø± ÙØ§ÙÙÙÙØ©'); return; }
+  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1304,7 +1305,7 @@ window.savePortfolioTrade = async function() {
     _portfolioTrades.push(trade);
     document.getElementById('addPortfolioForm').classList.remove('open');
     loadPortfolio();
-  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
+  } catch(err) { alert('خطأ: ' + err.message); }
 };
 
 async function loadPortfolio() {
@@ -1318,33 +1319,33 @@ async function loadPortfolio() {
     _portfolioTrades = [];
     snap.forEach(d => _portfolioTrades.push({...d.data(), id: d.id}));
     if (!_portfolioTrades.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª â Ø£Ø¶Ù ØµÙÙØ© ÙØ¯ÙÙØ©</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
       return;
     }
     _portfolioTrades.forEach(t => {
-      const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' : '<span class="status-closed">ÙØºÙÙØ©</span>';
+      const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td><strong>${t.symbol || t.sym}</strong></td>
         <td>$${Number(t.entry).toFixed(2)}</td>
-        <td>${t.qty || 'â'}</td>
-        <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
-        <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
-        <td style="font-size:11px">${t.date || 'â'}</td>
+        <td>${t.qty || '—'}</td>
+        <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
+        <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
+        <td style="font-size:11px">${t.date || '—'}</td>
         <td>${statusLabel}</td>
         <td>
-          <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">Ø­Ø°Ù</button>
+          <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">حذف</button>
         </td>
       `;
       tbody.appendChild(tr);
     });
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">Ø®Ø·Ø£ ÙÙ Ø§ÙØªØ­ÙÙÙ</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
   }
 }
 
 window.removePortfolioTrade = async function(id) {
-  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
+  if (!confirm('حذف هذه الصفقة؟')) return;
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1354,8 +1355,8 @@ window.removePortfolioTrade = async function(id) {
   } catch {}
 };
 
-// ââ News Calendar ââ
-const DAY_NAMES = ['Ø§ÙØ£Ø­Ø¯','Ø§ÙØ§Ø«ÙÙÙ','Ø§ÙØ«ÙØ§Ø«Ø§Ø¡','Ø§ÙØ£Ø±Ø¨Ø¹Ø§Ø¡','Ø§ÙØ®ÙÙØ³','Ø§ÙØ¬ÙØ¹Ø©','Ø§ÙØ³Ø¨Øª'];
+// ── News Calendar ──
+const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمصة','السبت'];
 
 function getWeekStart(offset = 0) {
   const now = new Date();
@@ -1373,9 +1374,9 @@ async function loadCalendar() {
   weekEnd.setDate(weekStart.getDate() + 7);
 
   const fmt = (d) => d.toLocaleDateString('ar-SA', {month:'short',day:'numeric'});
-  document.getElementById('calWeekLabel').textContent = `${fmt(weekStart)} â ${fmt(new Date(weekEnd.getTime()-86400000))}`;
+  document.getElementById('calWeekLabel').textContent = `${fmt(weekStart)} — ${fmt(new Date(weekEnd.getTime()-86400000))}`;
 
-  grid.innerHTML = '<div class="cal-loading">â³ Ø¬Ø§Ø±Ù ØªØ­ÙÙÙ Ø§ÙØ£Ø®Ø¨Ø§Ø±...</div>';
+  grid.innerHTML = '<div class="cal-loading">⏳ جاري تحميل الأخبار...</div>';
 
   try {
     // Fetch economic calendar from a CORS-friendly source
@@ -1401,7 +1402,7 @@ async function loadCalendar() {
           <br><span style="font-size:10px">${day.getDate()}/${day.getMonth()+1}</span>
         </div>
         <div class="cal-events" id="cal-events-${i}">
-          <div style="font-size:10px;color:var(--text2);text-align:center;padding:8px">â</div>
+          <div style="font-size:10px;color:var(--text2);text-align:center;padding:8px">—</div>
         </div>
       `;
       grid.appendChild(dayEl);
@@ -1411,7 +1412,7 @@ async function loadCalendar() {
     await loadCalendarFromFirestore(weekStart);
 
   } catch(err) {
-    grid.innerHTML = `<div class="cal-loading">â ï¸ Ø®Ø·Ø£: ${err.message}</div>`;
+    grid.innerHTML = `<div class="cal-loading">⚠️ خطأ: ${err.message}</div>`;
   }
 }
 
@@ -1441,7 +1442,7 @@ async function loadCalendarFromFirestore(weekStart) {
       const evContainer = document.getElementById('cal-events-' + dayIdx);
       if (!evContainer) return;
       // Clear placeholder
-      if (evContainer.querySelector('[style*="â"]')) evContainer.innerHTML = '';
+      if (evContainer.querySelector('[style*="—"]')) evContainer.innerHTML = '';
       const impactClass = ev.impact === 'high' ? 'cal-event-impact-high' : ev.impact === 'medium' ? 'cal-event-impact-med' : 'cal-event-impact-low';
       const evEl = document.createElement('div');
       evEl.className = `cal-event ${impactClass}`;
@@ -1457,7 +1458,7 @@ async function loadCalendarFromFirestore(weekStart) {
 window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
 window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
 
-// ââ Detail page ââ
+// ── Detail page ──
 function openDetail(symbol, data, market) {
   _currentStock = { symbol, data, market };
   document.getElementById('detailSymbol').textContent = symbol;
@@ -1467,50 +1468,50 @@ function openDetail(symbol, data, market) {
 
   const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
   const btn = document.getElementById('btnBuyDetail');
-  if (openTrade) { btn.textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø¡'; btn.classList.add('bought'); }
-  else { btn.textContent = 'ð Ø´Ø±Ø§Ø¡'; btn.classList.remove('bought'); }
+  if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
+  else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
   document.getElementById('buyFormDetail').classList.remove('open');
   document.getElementById('saveIndicator').textContent = '';
 
   const conf = data.confidence || 0;
   document.getElementById('detailStats').innerHTML = `
     <div class="stat-box">
-      <div class="stat-label">Ø§ÙØ³Ø¹Ø± Ø§ÙØ­Ø§ÙÙ</div>
-      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : 'â'}</div>
+      <div class="stat-label">السعر الحالي</div>
+      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : '—'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">ÙØ³ØªÙÙ Ø§ÙØ«ÙØ©</div>
+      <div class="stat-label">مستوى الثقة</div>
       <div class="stat-value" style="color:${confColor(conf)}">${conf}%</div>
     </div>
     <div class="stat-box">
       <div class="stat-label">RSI</div>
-      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : 'â'}</div>
+      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : '—'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">ÙÙØ·Ø© Ø§ÙØ¯Ø®ÙÙ</div>
-      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : 'â'}</div>
+      <div class="stat-label">نقطة الدخول</div>
+      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : '—'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div>
-      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : 'â'}</div>
+      <div class="stat-label">وقف الخسارة</div>
+      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«</div>
-      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || 'â'}</div>
+      <div class="stat-label">آخر تحديث</div>
+      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || '—'}</div>
     </div>
   `;
 
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
-      <div class="tl-title">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ</div>
+      <div class="tl-title">مستويات التداول</div>
       <div class="tl-grid">
-        <div class="tl-item tl-entry"><div class="tl-item-label">ð¯ ÙÙØ·Ø© Ø§ÙØ¯Ø®ÙÙ</div><div class="tl-item-val">$${data.entry}</div></div>
-        <div class="tl-item tl-stop"><div class="tl-item-label">ð ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div><div class="tl-item-val">$${data.stop_loss}</div></div>
-        <div class="tl-item tl-t1"><div class="tl-item-label">ð¢ Ø§ÙÙØ¯Ù Ø§ÙØ£ÙÙ</div><div class="tl-item-val">$${data.target1}</div></div>
-        <div class="tl-item tl-t2"><div class="tl-item-label">ð Ø§ÙÙØ¯Ù Ø§ÙØ«Ø§ÙÙ</div><div class="tl-item-val">$${data.target2 || 'â'}</div></div>
+        <div class="tl-item tl-entry"><div class="tl-item-label">🎯 نقطة الدخول</div><div class="tl-item-val">$${data.entry}</div></div>
+        <div class="tl-item tl-stop"><div class="tl-item-label">🛑 وقف الخسارة</div><div class="tl-item-val">$${data.stop_loss}</div></div>
+        <div class="tl-item tl-t1"><div class="tl-item-label">🟢 الهدف الأول</div><div class="tl-item-val">$${data.target1}</div></div>
+        <div class="tl-item tl-t2"><div class="tl-item-label">🚀 الهدف الثاني</div><div class="tl-item-val">$${data.target2 || '—'}</div></div>
       </div>`;
   } else {
-    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ Ø³ØªÙØ¸Ø§Ù Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div>';
+    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُظاف بعد التحديث</div>';
   }
 
   // Arkitaz conditions in detail
@@ -1519,19 +1520,19 @@ function openDetail(symbol, data, market) {
     const rsiOk = rsi && rsi >= 23 && rsi <= 27;
     document.getElementById('detailLayers').innerHTML = `
       <div class="layer-card">
-        <div class="layer-name">ð RSI</div>
-        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : 'â'}</div>
-        <div style="font-size:10px;color:var(--text2)">${rsiOk ? 'â ÙÙ Ø§ÙÙÙØ·ÙØ© Ø§ÙÙØ«Ø§ÙÙØ© 23-27' : rsi < 23 ? 'â ï¸ ÙÙØ®ÙØ¶ Ø¬Ø¯Ø§Ù' : rsi > 35 ? 'â ÙÙÙ Ø§ÙÙØ³ØªÙØ¯Ù' : 'ð¡ ÙØ±ÙÙ'}</div>
+        <div class="layer-name">📊 RSI</div>
+        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : '—'}</div>
+        <div style="font-size:10px;color:var(--text2)">${rsiOk ? '✅ في المنطقة المثالية 23-27' : rsi < 23 ? '⚠️ منخفض جداً' : rsi > 35 ? '❌ فوق المستهدف' : '🟡 قريب'}</div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">ð MACD</div>
-        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? 'âï¸' : 'â'}</div>
-        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'ÙØªØ­Ø³Ù â' : 'ÙÙØªØ¸Ø± ØªØ£ÙÙØ¯'}</div>
+        <div class="layer-name">📈 MACD</div>
+        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? '↗️' : '—'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'يتحسن ✅' : 'ينتظر تأكيد'}</div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">ã½ï¸ Ø§ÙÙØªÙØ³Ø·Ø§Øª</div>
-        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? 'âï¸' : 'âï¸'}</div>
-        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'ÙØ³ØªØ¹ÙØ¯ â' : 'ØªØ­Øª Ø§ÙÙØªÙØ³Ø·Ø§Øª'}</div>
+        <div class="layer-name">〽️ المتوسطات</div>
+        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? '↗️' : '↘️'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'يستعيد ✅' : 'تحت المتوسطات'}</div>
       </div>
     `;
   } else {
@@ -1540,17 +1541,17 @@ function openDetail(symbol, data, market) {
     const p = typeof data.score === 'number' ? Math.max(0, 1 - data.score / 0.10) : 0;
     document.getElementById('detailLayers').innerHTML = `
       <div class="layer-card">
-        <div class="layer-name">ð ÙÙØ§Ø³ÙÙÙ</div>
+        <div class="layer-name">📊 كلاسيكي</div>
         <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">ð ÙØ§ÙÙÙÙ</div>
+        <div class="layer-name">🌊 وايكوف</div>
         <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">ð Ø¥ÙÙÙØª</div>
+        <div class="layer-name">🌀 إليوت</div>
         <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div>
       </div>
@@ -1562,9 +1563,9 @@ function openDetail(symbol, data, market) {
   if (news.length) {
     const newsHtml = news.map(n => {
       const d = n.time ? new Date(n.time * 1000).toLocaleDateString('ar-SA') : '';
-      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' Â· ' + d : ''}</div></div>`;
+      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' · ' + d : ''}</div></div>`;
     }).join('');
-    newsEl.innerHTML = `<div class="news-title">ð° Ø¢Ø®Ø± Ø§ÙØ£Ø®Ø¨Ø§Ø±</div>${newsHtml}`;
+    newsEl.innerHTML = `<div class="news-title">📰 آخر الأخبار</div>${newsHtml}`;
     newsEl.style.display = '';
   } else {
     newsEl.style.display = 'none';
@@ -1575,7 +1576,7 @@ function openDetail(symbol, data, market) {
   if (data.candles && data.candles.length) {
     setTimeout(() => renderFullChart(chartDiv, data.candles), 50);
   } else {
-    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø§ÙØ´Ø§Ø±Øª Ø³ÙØ¸ÙØ± Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div></div>';
+    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">الشارت سيظهر بعد التحديث</div></div>';
   }
 
   document.getElementById('buyDateD').valueAsDate = new Date();
@@ -1593,14 +1594,14 @@ window.detailBuy = function() {
   document.getElementById('buyFormDetail').classList.toggle('open');
 };
 
-// ââ Save buy ââ
+// ── Save buy ──
 window.saveBuyDetail = async function() {
   if (!_currentStock) return;
   const { symbol, data, market } = _currentStock;
   const price = parseFloat(document.getElementById('buyPriceD').value);
   const qty = parseInt(document.getElementById('buyQtyD').value) || 0;
   const date = document.getElementById('buyDateD').value;
-  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡'); return; }
+  if (!price) { alert('يرجى إدخال سعر الشراء'); return; }
   const trade = {
     id: symbol + '_' + Date.now(),
     symbol, sym: symbol, market,
@@ -1620,16 +1621,16 @@ window.saveBuyDetail = async function() {
     const { doc, setDoc } = window._firestoreOps;
     await setDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
     _trades.push(trade);
-    document.getElementById('saveIndicator').textContent = 'â ØªÙ Ø§ÙØ­ÙØ¸';
+    document.getElementById('saveIndicator').textContent = '✅ تم الحفظ';
     document.getElementById('buyFormDetail').classList.remove('open');
-    document.getElementById('btnBuyDetail').textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø¡';
+    document.getElementById('btnBuyDetail').textContent = '✅ تم الشراء';
     document.getElementById('btnBuyDetail').classList.add('bought');
   } catch(err) {
-    document.getElementById('saveIndicator').textContent = 'â ' + err.message;
+    document.getElementById('saveIndicator').textContent = '❌ ' + err.message;
   }
 };
 
-// ââ Close trade ââ
+// ── Close trade ──
 window.openCloseTrade = function(id) {
   _closeTradeId = id;
   document.getElementById('closeDateInput').valueAsDate = new Date();
@@ -1638,7 +1639,7 @@ window.openCloseTrade = function(id) {
 window.confirmCloseTrade = async function() {
   const price = parseFloat(document.getElementById('closePriceInput').value);
   const date = document.getElementById('closeDateInput').value;
-  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù'); return; }
+  if (!price) { alert('يرجى إدخال سعر الإغلاق'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1648,11 +1649,11 @@ window.confirmCloseTrade = async function() {
     });
     document.getElementById('closeTradeDialog').classList.remove('open');
     loadPerformance();
-  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
+  } catch(err) { alert('خطأ: ' + err.message); }
 };
 
 window.removeTrade = async function(id) {
-  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
+  if (!confirm('حذف هذه الصفقة؟')) return;
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1663,10 +1664,10 @@ window.removeTrade = async function(id) {
     Object.keys(lt).forEach(k => { if (lt[k].id === id || k === id) delete lt[k]; });
     localStorage.setItem('paperTrades', JSON.stringify(lt));
     loadPerformance();
-  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
+  } catch(err) { alert('خطأ: ' + err.message); }
 };
 
-// ââ Init ââ
+// ── Init ──
 loadForas();
 
 window.openDetail = openDetail;
