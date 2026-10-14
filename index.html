@@ -1483,21 +1483,33 @@ async function translateText(text) {
 async function loadTranslatedNews(container, isDark) {
   const statusEl = document.getElementById('news-status');
   try {
-    // rss2json: converts RSS to JSON with CORS headers — no proxy needed
-    const rssUrl = encodeURIComponent('https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC,^IXIC&region=US&lang=en-US');
-    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}&count=15`;
-    const resp = await fetch(apiUrl);
-    const json = await resp.json();
+    // Try multiple RSS feeds via rss2json until one works
+    const RSS_FEEDS = [
+      { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', name: 'CNBC' },
+      { url: 'https://feeds.marketwatch.com/marketwatch/topstories/', name: 'MarketWatch' },
+      { url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069', name: 'CNBC Markets' },
+      { url: 'https://www.investing.com/rss/news_25.rss', name: 'Investing.com' },
+    ];
 
-    if (!json.items || !json.items.length) throw new Error('لا توجد أخبار');
-
-    // map to unified shape
-    const items = json.items.slice(0, 15).map(it => ({
-      title: it.title || '',
-      link: it.link || '#',
-      pubDate: it.pubDate || '',
-      source: it.author || (json.feed && json.feed.title) || 'Yahoo Finance'
-    }));
+    let items = [];
+    let feedName = 'Finance News';
+    for (const feed of RSS_FEEDS) {
+      try {
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=15`;
+        const resp = await fetch(apiUrl);
+        const json = await resp.json();
+        if (json.status === 'ok' && json.items && json.items.length) {
+          items = json.items.slice(0, 15).map(it => ({
+            title: it.title || '',
+            link: it.link || '#',
+            pubDate: it.pubDate || '',
+            source: feed.name
+          }));
+          feedName = feed.name;
+          break;
+        }
+      } catch(e) {}
+    }
 
     if (!items.length) throw new Error('لا توجد أخبار');
 
