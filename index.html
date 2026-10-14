@@ -1495,7 +1495,7 @@ async function loadTranslatedNews(container, isDark) {
     let feedName = 'Finance News';
     for (const feed of RSS_FEEDS) {
       try {
-        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}&count=15`;
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
         const resp = await fetch(apiUrl);
         const json = await resp.json();
         if (json.status === 'ok' && json.items && json.items.length) {
