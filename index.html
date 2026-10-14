@@ -762,7 +762,7 @@ body {
         <div class="page-title">💼 محفظتي</div>
       </div>
       <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
-      <div class="add-portfolio-form" id="addPortFolioForm">
+      <div class="add-portfolio-form" id="addPortfolioForm">
         <div class="form-grid">
           <div>
             <label>السهم</label>
@@ -791,7 +791,7 @@ body {
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">حفظ الصفقة</button>
-          <button class="btn-cancel-buy" onclick="toggleAddPortFolio()" style="flex:1">إلغاء</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">إلغاء</button>
         </div>
       </div>
       <table class="trades-table">
@@ -911,6 +911,36 @@ let _closeTradeId = null;
 let _currentMarket = 'us';
 let _calWeekOffset = 0;
 
+// ── Halal Universe (قائمة الأسهم الحلال) ──
+const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
+
+const HALAL_SA = new Set("1020,1111,1120,1140,1150,1182,1183,1201,1202,1210,1211,1212,1213,1214,1301,1302,1303,1304,1320,1321,1322,1323,1324,1810,1820,1830,1831,1832,1833,1834,1835,2001,2010,2020,2030,2040,2050,2060,2070,2080,2081,2082,2083,2084,2090,2100,2110,2120,2130,2140,2150,2160,2170,2180,2190,2200,2210,2220,2222,2223,2230,2240,2250,2270,2280,2281,2282,2283,2284,2285,2286,2287,2288,2290,2300,2310,2320,2330,2340,2350,2360,2370,2380,2381,2382,3002,3003,3004,3005,3007,3008,3010,3020,3030,3040,3050,3060,3080,3090,3091,3092,4001,4002,4003,4004,4005,4006,4007,4008,4009,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4030,4031,4040,4050,4051,4061,4070,4071,4080,4081,4082,4083,4090,4100,4110,4130,4140,4141,4142,4143,4144,4145,4146,4147,4148,4150,4161,4162,4163,4164,4165,4170,4180,4190,4191,4192,4193,4194,4200,4210,4220,4230,4240,4250,4260,4261,4262,4263,4264,4265,4270,4290,4291,4292,4300,4310,4320,4321,4322,4323,4324,4325,4326,4327,4328,5110,6001,6002,6004,6010,6012,6013,6014,6015,6016,6017,6018,6019,6020,6022,6040,6050,6060,6070,6090,7010,7020,7030,7040,7200,7201,7202,7203,7204,7205,7211,8313".split(','));
+
+function isHalal(sym, market) {
+  if (market === 'sa') return HALAL_SA.has(String(sym));
+  return HALAL_US.has(String(sym).toUpperCase());
+}
+
+// بداية الارتداد: RSI 30-50 + شمعة خضراء أخيرة (close > open) + حجم تداول أعلى من المتوسط
+function isStartOfRebound(data) {
+  const rsi = data.rsi;
+  // RSI in rebound zone 30-50
+  if (!rsi || rsi < 28 || rsi > 52) return false;
+  // Last candle green (if candle data available)
+  if (data.candles && data.candles.length >= 2) {
+    const last = data.candles[data.candles.length - 1];
+    if (last.close <= last.open) return false; // red candle = still falling
+    // Volume above average (if available)
+    if (last.volume) {
+      const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.volume || 0), 0) / 20;
+      if (avgVol > 0 && last.volume < avgVol * 0.8) return false; // low volume
+    }
+  }
+  // Additional check: not in freefall (score / confidence must be positive)
+  if (data.confidence !== undefined && data.confidence < 30) return false;
+  return true;
+}
+
 // ── Wait helpers ──
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
@@ -933,7 +963,7 @@ window.toggleTheme = function() {
   if (isDark) {
     document.documentElement.removeAttribute('data-theme');
     document.getElementById('themeIcon').textContent = '🌙';
-    document.getElementById('themeLabel').textContent = 'ليمي';
+    document.getElementById('themeLabel').textContent = 'ليلي';
     localStorage.setItem('theme', 'light');
   } else {
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -1110,13 +1140,13 @@ function buildArkitazCard(symbol, data, market) {
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(supportOk)}</span>
-        <span class="cond-label">دعم واظح</span>
+        <span class="cond-label">دعم واضح</span>
         <span class="cond-val">${data.support_level ? '$'+data.support_level : (supportOk ? 'نعم' : '—')}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(candleOk)}</span>
         <span class="cond-label">شمعة إيجابية</span>
-        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نصم' : '—'}</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نعم' : '—'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1141,12 +1171,17 @@ async function loadForas() {
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
     if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص</div>'; return; }
+    let count = 0;
     snap.forEach(d => {
       const data = d.data();
-      if (data.confidence >= 40 || data.entry) {
+      if (isHalal(d.id, _currentMarket) && isStartOfRebound(data)) {
         grid.appendChild(buildForasCard(d.id, data, _currentMarket));
+        count++;
       }
     });
+    if (count === 0) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div>لا توجد أسهم في بداية الارتداد حالياً</div>';
+    }
     loadMeta();
   } catch(err) {
     grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
@@ -1156,7 +1191,7 @@ async function loadForas() {
 // ── Load ARKITAZ ──
 async function loadArkitaz() {
   const grid = document.getElementById('grid-arkitaz');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري اقتحميل...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
@@ -1164,9 +1199,16 @@ async function loadArkitaz() {
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
     if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>'; return; }
+    let count = 0;
     snap.forEach(d => {
-      grid.appendChild(buildArkitazCard(d.id, d.data(), _currentMarket));
+      if (isHalal(d.id, _currentMarket)) {
+        grid.appendChild(buildArkitazCard(d.id, d.data(), _currentMarket));
+        count++;
+      }
     });
+    if (count === 0) {
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز حلال حالياً</div>';
+    }
   } catch(err) {
     grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
@@ -1294,7 +1336,7 @@ window.savePortfolioTrade = async function() {
   const date = document.getElementById('pf-date').value;
   const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
   const sl = parseFloat(document.getElementById('pf-sl').value) || null;
-  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر وافكمية'); return; }
+  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1340,7 +1382,7 @@ async function loadPortfolio() {
       tbody.appendChild(tr);
     });
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في اقتحميل</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
   }
 }
 
@@ -1369,90 +1411,77 @@ function getWeekStart(offset = 0) {
 
 async function loadCalendar() {
   const grid = document.getElementById('calDaysGrid');
-  const weekStart = getWeekStart(_calWeekOffset);
-  const weekEnd = new Date(weekStart);
-  weekEnd.setDate(weekStart.getDate() + 7);
 
-  const fmt = (d) => d.toLocaleDateString('ar-SA', {month:'short',day:'numeric'});
-  document.getElementById('calWeekLabel').textContent = `${fmt(weekStart)} — ${fmt(new Date(weekEnd.getTime()-86400000))}`;
+  // Replace calendar grid with TradingView widgets
+  grid.innerHTML = '';
+  grid.style.display = 'block';
 
-  grid.innerHTML = '<div class="cal-loading">⏳ جاري تحميل الأخبار...</div>';
+  // Hide the prev/next week buttons and label — TradingView widget handles navigation
+  const calHeaderEl = document.querySelector('.cal-header');
+  if (calHeaderEl) calHeaderEl.style.display = 'none';
 
-  try {
-    // Fetch economic calendar from a CORS-friendly source
-    const startStr = weekStart.toISOString().split('T')[0];
-    const endStr = new Date(weekEnd.getTime()-86400000).toISOString().split('T')[0];
+  // Create wrapper for widgets
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
+  grid.appendChild(wrapper);
 
-    // Use Investing.com/Forexfactory via a proxy or build static data
-    // For now we build the grid and show placeholder; real data needs backend
-    grid.innerHTML = '';
+  // ── Economic Calendar Widget ──
+  const calSection = document.createElement('div');
+  calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📅 التقويم الاقتصادي</div>`;
+  const calWidgetDiv = document.createElement('div');
+  calWidgetDiv.className = 'tradingview-widget-container';
+  calWidgetDiv.style.cssText = 'border-radius:12px;overflow:hidden;';
+  const calWidgetInner = document.createElement('div');
+  calWidgetInner.className = 'tradingview-widget-container__widget';
+  calWidgetDiv.appendChild(calWidgetInner);
+  calSection.appendChild(calWidgetDiv);
+  wrapper.appendChild(calSection);
 
-    const today = new Date();
-    today.setHours(0,0,0,0);
+  // Load economic calendar script
+  const calScript = document.createElement('script');
+  calScript.type = 'text/javascript';
+  calScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-events.js';
+  calScript.async = true;
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  calScript.innerHTML = JSON.stringify({
+    "colorTheme": isDark ? "dark" : "light",
+    "isTransparent": false,
+    "width": "100%",
+    "height": "450",
+    "locale": "ar_AE",
+    "importanceFilter": "-1,0,1",
+    "countryFilter": "us,sa"
+  });
+  calWidgetDiv.appendChild(calScript);
 
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(weekStart);
-      day.setDate(weekStart.getDate() + i);
-      const isToday = day.getTime() === today.getTime();
-      const dayEl = document.createElement('div');
-      dayEl.className = 'cal-day';
-      dayEl.innerHTML = `
-        <div class="cal-day-header ${isToday ? 'today' : ''}">
-          ${DAY_NAMES[day.getDay()]}
-          <br><span style="font-size:10px">${day.getDate()}/${day.getMonth()+1}</span>
-        </div>
-        <div class="cal-events" id="cal-events-${i}">
-          <div style="font-size:10px;color:var(--text2);text-align:center;padding:8px">—</div>
-        </div>
-      `;
-      grid.appendChild(dayEl);
-    }
+  // ── News Widget ──
+  const newsSection = document.createElement('div');
+  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار</div>`;
+  const newsWidgetDiv = document.createElement('div');
+  newsWidgetDiv.className = 'tradingview-widget-container';
+  newsWidgetDiv.style.cssText = 'border-radius:12px;overflow:hidden;';
+  const newsWidgetInner = document.createElement('div');
+  newsWidgetInner.className = 'tradingview-widget-container__widget';
+  newsWidgetDiv.appendChild(newsWidgetInner);
+  newsSection.appendChild(newsWidgetDiv);
+  wrapper.appendChild(newsSection);
 
-    // Try to load from Firestore 'news_calendar' if available
-    await loadCalendarFromFirestore(weekStart);
-
-  } catch(err) {
-    grid.innerHTML = `<div class="cal-loading">⚠️ خطأ: ${err.message}</div>`;
-  }
-}
-
-async function loadCalendarFromFirestore(weekStart) {
-  try {
-    await waitForDB();
-    const { getDocs, collection, query, where } = window._firestoreOps;
-    const weekEnd = new Date(weekStart);
-    weekEnd.setDate(weekStart.getDate() + 7);
-
-    const startStr = weekStart.toISOString().split('T')[0];
-    const endStr = weekEnd.toISOString().split('T')[0];
-
-    const snap = await getDocs(query(
-      collection(window._db, 'economic_calendar'),
-      where('date', '>=', startStr),
-      where('date', '<', endStr)
-    ));
-
-    if (snap.empty) return;
-
-    snap.forEach(d => {
-      const ev = d.data();
-      const evDate = new Date(ev.date);
-      const dayIdx = Math.floor((evDate - weekStart) / 86400000);
-      if (dayIdx < 0 || dayIdx > 6) return;
-      const evContainer = document.getElementById('cal-events-' + dayIdx);
-      if (!evContainer) return;
-      // Clear placeholder
-      if (evContainer.querySelector('[style*="—"]')) evContainer.innerHTML = '';
-      const impactClass = ev.impact === 'high' ? 'cal-event-impact-high' : ev.impact === 'medium' ? 'cal-event-impact-med' : 'cal-event-impact-low';
-      const evEl = document.createElement('div');
-      evEl.className = `cal-event ${impactClass}`;
-      evEl.innerHTML = `
-        <div class="cal-event-time">${ev.time || ''} ${ev.country || ''}</div>
-        <div class="cal-event-title">${ev.event || ev.title || ''}</div>
-      `;
-      evContainer.appendChild(evEl);
-    });
-  } catch {}
+  // Load news timeline script
+  const newsScript = document.createElement('script');
+  newsScript.type = 'text/javascript';
+  newsScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
+  newsScript.async = true;
+  newsScript.innerHTML = JSON.stringify({
+    "feedMode": "market",
+    "market": "stock",
+    "colorTheme": isDark ? "dark" : "light",
+    "isTransparent": false,
+    "displayMode": "regular",
+    "width": "100%",
+    "height": "400",
+    "locale": "ar_AE"
+  });
+  newsWidgetDiv.appendChild(newsScript);
 }
 
 window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
@@ -1511,7 +1540,7 @@ function openDetail(symbol, data, market) {
         <div class="tl-item tl-t2"><div class="tl-item-label">🚀 الهدف الثاني</div><div class="tl-item-val">$${data.target2 || '—'}</div></div>
       </div>`;
   } else {
-    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُظاف بعد التحديث</div>';
+    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُضاف بعد التحديث</div>';
   }
 
   // Arkitaz conditions in detail
