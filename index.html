@@ -761,7 +761,7 @@ body {
       <div class="page-header">
         <div class="page-title">💼 محفظتي</div>
       </div>
-      <button class="btn-add-portfolio" onclick="toggleAddPortFolio()">+ إضافة صفقة يدوية</button>
+      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
       <div class="add-portfolio-form" id="addPortFolioForm">
         <div class="form-grid">
           <div>
@@ -790,7 +790,7 @@ body {
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn-save-buy" onclick="savePortFolioTrade()" style="flex:1">حفظ الصفقة</button>
+          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">حفظ الصفقة</button>
           <button class="btn-cancel-buy" onclick="toggleAddPortFolio()" style="flex:1">إلغاء</button>
         </div>
       </div>
@@ -854,7 +854,7 @@ body {
   </div>
 </div>
 
-<!-- ══ CLOSE TRADE DG�LOG ══ -->
+<!-- ══ CLOSE TRADE DIALOG ══ -->
 <div id="closeTradeDialog" class="dialog-overlay">
   <div class="dialog-box">
     <div class="dialog-title">إغلاق الصفقة</div>
@@ -933,7 +933,7 @@ window.toggleTheme = function() {
   if (isDark) {
     document.documentElement.removeAttribute('data-theme');
     document.getElementById('themeIcon').textContent = '🌙';
-    document.getElementById('themeLabel').textContent = 'ليلي';
+    document.getElementById('themeLabel').textContent = 'ليمي';
     localStorage.setItem('theme', 'light');
   } else {
     document.documentElement.setAttribute('data-theme', 'dark');
@@ -1030,7 +1030,7 @@ function buildForasCard(symbol, data, market) {
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '✅ جاهز' : '⏳ انتظار'}|/span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '✅ جاهز' : '⏳ انتظار'}</span>
     </div>
     <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
     <hr class="card-divider">
@@ -1116,7 +1116,7 @@ function buildArkitazCard(symbol, data, market) {
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(candleOk)}</span>
         <span class="cond-label">شمعة إيجابية</span>
-        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نعم' : '—'}</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نصم' : '—'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1156,7 +1156,7 @@ async function loadForas() {
 // ── Load ARKITAZ ──
 async function loadArkitaz() {
   const grid = document.getElementById('grid-arkitaz');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري اقتحميل...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
@@ -1294,7 +1294,7 @@ window.savePortfolioTrade = async function() {
   const date = document.getElementById('pf-date').value;
   const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
   const sl = parseFloat(document.getElementById('pf-sl').value) || null;
-  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
+  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر وافكمية'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1340,7 +1340,7 @@ async function loadPortfolio() {
       tbody.appendChild(tr);
     });
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في اقتحميل</td></tr>`;
   }
 }
 
@@ -1356,7 +1356,7 @@ window.removePortfolioTrade = async function(id) {
 };
 
 // ── News Calendar ──
-const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمصة','السبت'];
+const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 
 function getWeekStart(offset = 0) {
   const now = new Date();
