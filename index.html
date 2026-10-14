@@ -1483,13 +1483,21 @@ async function translateText(text) {
 async function loadTranslatedNews(container, isDark) {
   const statusEl = document.getElementById('news-status');
   try {
-    // Use AllOrigins CORS proxy to fetch Finviz RSS
-    const rssUrl = encodeURIComponent('https://finviz.com/news_feed.ashx?v=3');
-    const proxyUrl = `https://api.allorigins.win/get?url=${rssUrl}`;
-    const resp = await fetch(proxyUrl);
+    // rss2json: converts RSS to JSON with CORS headers — no proxy needed
+    const rssUrl = encodeURIComponent('https://feeds.finance.yahoo.com/rss/2.0/headline?s=^GSPC,^IXIC&region=US&lang=en-US');
+    const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${rssUrl}&count=15`;
+    const resp = await fetch(apiUrl);
     const json = await resp.json();
-    const xml = new DOMParser().parseFromString(json.contents, 'text/xml');
-    const items = Array.from(xml.querySelectorAll('item')).slice(0, 15);
+
+    if (!json.items || !json.items.length) throw new Error('لا توجد أخبار');
+
+    // map to unified shape
+    const items = json.items.slice(0, 15).map(it => ({
+      title: it.title || '',
+      link: it.link || '#',
+      pubDate: it.pubDate || '',
+      source: it.author || (json.feed && json.feed.title) || 'Yahoo Finance'
+    }));
 
     if (!items.length) throw new Error('لا توجد أخبار');
 
@@ -1501,16 +1509,16 @@ async function loadTranslatedNews(container, isDark) {
     const textColor = isDark ? '#c8d0e8' : '#2a2f45';
     const subColor = isDark ? '#6b7299' : '#8a90a8';
 
-    // Translate all titles in parallel (batch of 15)
-    const titles = items.map(it => it.querySelector('title')?.textContent || '');
+    // Translate all titles in parallel
+    const titles = items.map(it => it.title);
     const translated = await Promise.all(titles.map(t => translateText(t)));
 
     if (statusEl) statusEl.textContent = '';
 
     items.forEach((item, i) => {
-      const link = item.querySelector('link')?.textContent || '#';
-      const pubDate = item.querySelector('pubDate')?.textContent || '';
-      const source = item.querySelector('source')?.textContent || '';
+      const link = item.link;
+      const pubDate = item.pubDate;
+      const source = item.source;
       const dateStr = pubDate ? new Date(pubDate).toLocaleString('ar-SA', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
 
       const card = document.createElement('a');
