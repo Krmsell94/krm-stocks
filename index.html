@@ -1454,34 +1454,84 @@ async function loadCalendar() {
   });
   calWidgetDiv.appendChild(calScript);
 
-  // ── News Widget ──
+  // ── News Section (Arabic translated headlines) ──
   const newsSection = document.createElement('div');
-  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار</div>`;
-  const newsWidgetDiv = document.createElement('div');
-  newsWidgetDiv.className = 'tradingview-widget-container';
-  newsWidgetDiv.style.cssText = 'border-radius:12px;overflow:hidden;';
-  const newsWidgetInner = document.createElement('div');
-  newsWidgetInner.className = 'tradingview-widget-container__widget';
-  newsWidgetDiv.appendChild(newsWidgetInner);
-  newsSection.appendChild(newsWidgetDiv);
+  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار <span id="news-status" style="font-weight:400;font-size:11px;opacity:.6"></span></div>`;
+  const newsListEl = document.createElement('div');
+  newsListEl.id = 'news-list';
+  newsListEl.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+  newsListEl.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⏳ جاري تحميل الأخبار...</div>';
+  newsSection.appendChild(newsListEl);
   wrapper.appendChild(newsSection);
 
-  // Load news timeline script
-  const newsScript = document.createElement('script');
-  newsScript.type = 'text/javascript';
-  newsScript.src = 'https://s3.tradingview.com/external-embedding/embed-widget-timeline.js';
-  newsScript.async = true;
-  newsScript.innerHTML = JSON.stringify({
-    "feedMode": "market",
-    "market": "stock",
-    "colorTheme": isDark ? "dark" : "light",
-    "isTransparent": false,
-    "displayMode": "regular",
-    "width": "100%",
-    "height": "400",
-    "locale": "ar_AE"
-  });
-  newsWidgetDiv.appendChild(newsScript);
+  // Fetch & translate news headlines
+  loadTranslatedNews(newsListEl, isDark);
+}
+
+async function translateText(text) {
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ar`;
+    const r = await fetch(url);
+    const j = await r.json();
+    if (j.responseStatus === 200 && j.responseData && j.responseData.translatedText) {
+      return j.responseData.translatedText;
+    }
+  } catch(e) {}
+  return text; // fallback to original
+}
+
+async function loadTranslatedNews(container, isDark) {
+  const statusEl = document.getElementById('news-status');
+  try {
+    // Use AllOrigins CORS proxy to fetch Finviz RSS
+    const rssUrl = encodeURIComponent('https://finviz.com/news_feed.ashx?v=3');
+    const proxyUrl = `https://api.allorigins.win/get?url=${rssUrl}`;
+    const resp = await fetch(proxyUrl);
+    const json = await resp.json();
+    const xml = new DOMParser().parseFromString(json.contents, 'text/xml');
+    const items = Array.from(xml.querySelectorAll('item')).slice(0, 15);
+
+    if (!items.length) throw new Error('لا توجد أخبار');
+
+    container.innerHTML = '';
+    if (statusEl) statusEl.textContent = '(جاري الترجمة...)';
+
+    const bg = isDark ? '#1e2130' : '#f4f6fb';
+    const border = isDark ? '#2a2f45' : '#e0e4ef';
+    const textColor = isDark ? '#c8d0e8' : '#2a2f45';
+    const subColor = isDark ? '#6b7299' : '#8a90a8';
+
+    // Translate all titles in parallel (batch of 15)
+    const titles = items.map(it => it.querySelector('title')?.textContent || '');
+    const translated = await Promise.all(titles.map(t => translateText(t)));
+
+    if (statusEl) statusEl.textContent = '';
+
+    items.forEach((item, i) => {
+      const link = item.querySelector('link')?.textContent || '#';
+      const pubDate = item.querySelector('pubDate')?.textContent || '';
+      const source = item.querySelector('source')?.textContent || '';
+      const dateStr = pubDate ? new Date(pubDate).toLocaleString('ar-SA', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+
+      const card = document.createElement('a');
+      card.href = link;
+      card.target = '_blank';
+      card.rel = 'noopener';
+      card.style.cssText = `display:block;background:${bg};border:1px solid ${border};border-radius:10px;padding:12px 14px;text-decoration:none;transition:opacity .15s;`;
+      card.onmouseenter = () => card.style.opacity = '0.8';
+      card.onmouseleave = () => card.style.opacity = '1';
+      card.innerHTML = `
+        <div style="font-size:13px;font-weight:600;color:${textColor};line-height:1.5;margin-bottom:4px;direction:rtl;text-align:right">${translated[i]}</div>
+        <div style="font-size:11px;color:${subColor};direction:rtl;text-align:right">${source ? source + ' · ' : ''}${dateStr}</div>
+        <div style="font-size:11px;color:${subColor};direction:ltr;text-align:left;margin-top:2px;opacity:.7">${titles[i]}</div>
+      `;
+      container.appendChild(card);
+    });
+
+  } catch(err) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبار: ${err.message}</div>`;
+    if (statusEl) statusEl.textContent = '';
+  }
 }
 
 window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
