@@ -110,28 +110,57 @@ body {
   margin-bottom: 6px;
   text-align: center;
 }
-.market-btns {
+/* ── Market picker ── */
+.market-picker {
+  position: relative;
+}
+.market-picker-btn {
   display: flex;
+  align-items: center;
   gap: 4px;
-}
-.market-btn {
-  flex: 1;
-  padding: 6px 4px;
+  padding: 5px 8px;
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: 8px;
   background: var(--market-btn-bg);
-  color: var(--text2);
-  font-size: 12px;
+  color: var(--text);
+  font-size: 18px;
   cursor: pointer;
-  text-align: center;
-  transition: all 0.2s;
+  transition: background 0.2s;
+  white-space: nowrap;
 }
-.market-btn.active {
-  background: var(--market-btn-active);
-  color: var(--market-btn-active-text);
-  border-color: var(--market-btn-active);
-  font-weight: 600;
+.market-picker-btn:hover { background: var(--bg3); }
+.market-picker-btn .arrow {
+  font-size: 9px;
+  opacity: 0.5;
+  margin-right: 2px;
 }
+.market-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 200;
+  overflow: hidden;
+  min-width: 110px;
+}
+.market-dropdown.open { display: block; }
+.market-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--text);
+}
+.market-option:hover { background: var(--bg3); }
+.market-option.selected { font-weight: 700; color: var(--blue); }
+.market-option .flag { font-size: 18px; }
 
 /* ── Nav tabs ── */
 .sidebar-nav {
@@ -655,7 +684,7 @@ body {
 @media (max-width: 700px) {
   .sidebar { width: 60px; min-width: 60px; }
   .nav-tab span.tab-label { display: none; }
-  .market-btn span { display: none; }
+  .market-picker-btn .arrow { display: none; }
   .sidebar-logo span { display: none; }
   .cal-days { grid-template-columns: 1fr; }
   .detail-stats { grid-template-columns: 1fr 1fr; }
@@ -674,11 +703,17 @@ body {
     </div>
 
     <!-- Market selector -->
-    <div class="market-selector">
-      <div class="market-label">السوق</div>
-      <div class="market-btns">
-        <button class="market-btn active" id="btnUS" onclick="setMarket('us', this)">🇺🇸 <span>US</span></button>
-        <button class="market-btn" id="btnSA" onclick="setMarket('sa', this)">🇸🇦 <span>SA</span></button>
+    <div class="market-picker" id="marketPicker">
+      <button class="market-picker-btn" id="marketPickerBtn" onclick="toggleMarketDropdown()">
+        <span id="marketFlag">🇺🇸</span><span class="arrow">▼</span>
+      </button>
+      <div class="market-dropdown" id="marketDropdown">
+        <div class="market-option selected" id="optUS" onclick="setMarket('us');closeMarketDropdown()">
+          <span class="flag">🇺🇸</span> أمريكا
+        </div>
+        <div class="market-option" id="optSA" onclick="setMarket('sa');closeMarketDropdown()">
+          <span class="flag">🇸🇦</span> السعودية
+        </div>
       </div>
     </div>
 
@@ -981,10 +1016,24 @@ window.toggleTheme = function() {
 })();
 
 // ── Market switch ──
-window.setMarket = function(market, el) {
+// ── Market picker dropdown ──
+window.toggleMarketDropdown = function() {
+  document.getElementById('marketDropdown').classList.toggle('open');
+};
+window.closeMarketDropdown = function() {
+  document.getElementById('marketDropdown').classList.remove('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#marketPicker')) closeMarketDropdown();
+});
+
+window.setMarket = function(market) {
   _currentMarket = market;
-  document.querySelectorAll('.market-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+  // update flag icon
+  document.getElementById('marketFlag').textContent = market === 'us' ? '🇺🇸' : '🇸🇦';
+  // update selected state in dropdown
+  document.getElementById('optUS').classList.toggle('selected', market === 'us');
+  document.getElementById('optSA').classList.toggle('selected', market === 'sa');
   reloadCurrentTab();
 };
 
