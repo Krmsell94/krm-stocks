@@ -929,9 +929,22 @@ const auth = getAuth(app);
 window._db = db;
 window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
 
-signInAnonymously(auth);
+function getOrCreateLocalUID() {
+  let uid = localStorage.getItem('_krm_uid');
+  if (!uid) {
+    uid = 'local_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    localStorage.setItem('_krm_uid', uid);
+  }
+  return uid;
+}
+signInAnonymously(auth).catch(() => {
+  window._uid = getOrCreateLocalUID();
+});
 onAuthStateChanged(auth, user => {
-  if (user) window._uid = user.uid;
+  if (user) {
+    window._uid = user.uid;
+    localStorage.setItem('_krm_uid', user.uid);
+  }
 });
 </script>
 
@@ -1378,6 +1391,15 @@ window.toggleAddPortfolio = function() {
   document.getElementById('pf-date').valueAsDate = new Date();
 };
 
+// ── Portfolio localStorage helpers ──
+const LS_PORT_KEY = '_krm_portfolio';
+function lsPortLoad() {
+  try { return JSON.parse(localStorage.getItem(LS_PORT_KEY) || '{}'); } catch { return {}; }
+}
+function lsPortSave(map) {
+  try { localStorage.setItem(LS_PORT_KEY, JSON.stringify(map)); } catch {}
+}
+
 window.savePortfolioTrade = async function() {
   const sym = document.getElementById('pf-sym').value.trim().toUpperCase();
   const entry = parseFloat(document.getElementById('pf-entry').value);
@@ -1386,64 +1408,73 @@ window.savePortfolioTrade = async function() {
   const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
   const sl = parseFloat(document.getElementById('pf-sl').value) || null;
   if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
+  const id = sym + '_manual_' + Date.now();
+  const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
+  const map = lsPortLoad();
+  map[id] = trade;
+  lsPortSave(map);
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, setDoc } = window._firestoreOps;
-    const id = sym + '_manual_' + Date.now();
-    const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
     await setDoc(doc(window._db, 'users', uid, 'portfolio', id), trade);
-    _portfolioTrades.push(trade);
-    document.getElementById('addPortfolioForm').classList.remove('open');
-    loadPortfolio();
-  } catch(err) { alert('خطأ: ' + err.message); }
+  } catch {}
+  document.getElementById('addPortfolioForm').classList.remove('open');
+  loadPortfolio();
 };
 
 async function loadPortfolio() {
   const tbody = document.getElementById('portfolio-tbody');
   tbody.innerHTML = '';
+  const lsMap = lsPortLoad();
+  let trades = Object.values(lsMap);
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { getDocs, collection } = window._firestoreOps;
     const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
-    _portfolioTrades = [];
-    snap.forEach(d => _portfolioTrades.push({...d.data(), id: d.id}));
-    if (!_portfolioTrades.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
-      return;
-    }
-    _portfolioTrades.forEach(t => {
-      const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${t.symbol || t.sym}</strong></td>
-        <td>$${Number(t.entry).toFixed(2)}</td>
-        <td>${t.qty || '—'}</td>
-        <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
-        <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
-        <td style="font-size:11px">${t.date || '—'}</td>
-        <td>${statusLabel}</td>
-        <td>
-          <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">حذف</button>
-        </td>
-      `;
-      tbody.appendChild(tr);
-    });
-  } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
+    const fsMap = {};
+    snap.forEach(d => { fsMap[d.id] = {...d.data(), id: d.id}; });
+    const merged = {...lsMap, ...fsMap};
+    lsPortSave(merged);
+    trades = Object.values(merged);
+  } catch {}
+  _portfolioTrades = trades;
+  if (!trades.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
+    return;
   }
+  trades.forEach(t => {
+    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${t.symbol || t.sym}</strong></td>
+      <td>$${Number(t.entry).toFixed(2)}</td>
+      <td>${t.qty || '—'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
+      <td style="font-size:11px">${t.date || '—'}</td>
+      <td>${statusLabel}</td>
+      <td>
+        <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 }
 
 window.removePortfolioTrade = async function(id) {
   if (!confirm('حذف هذه الصفقة؟')) return;
+  const map = lsPortLoad();
+  delete map[id];
+  lsPortSave(map);
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, deleteDoc } = window._firestoreOps;
     await deleteDoc(doc(window._db, 'users', uid, 'portfolio', id));
-    loadPortfolio();
   } catch {}
+  loadPortfolio();
 };
 
 // ── News Calendar ──
