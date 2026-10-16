@@ -921,11 +921,10 @@ function isHalal(sym, market) {
   return HALAL_US.has(String(sym).toUpperCase());
 }
 
-// بداية الارتداد: RSI 25-60 + شمعة خضراء أخيرة (c > o) + حجم تداول مقبول
+// بداية الارتداد: confidence >= 25 + شمعة خضراء أخيرة (c > o) + تراجع معقول
 function isStartOfRebound(data) {
-  const rsi = data.rsi;
-  // RSI in rebound zone 25-60 (أوسع قليلاً لاستيعاب مراحل الارتداد المبكرة)
-  if (!rsi || rsi < 25 || rsi > 60) return false;
+  // Confidence check (الثقة في الإشارة يجب أن تكون >= 25)
+  if (data.confidence !== undefined && data.confidence < 25) return false;
   // Last candle green (if candle data available) — يستخدم c/o (اختصارات Firestore)
   if (data.candles && data.candles.length >= 2) {
     const last = data.candles[data.candles.length - 1];
@@ -933,14 +932,12 @@ function isStartOfRebound(data) {
     const open  = last.o !== undefined ? last.o : last.open;
     const vol   = last.v !== undefined ? last.v : last.volume;
     if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يزال ينزل
-    // Volume check (اختياري — لا يرفض إن غاب الحجم)
+    // Volume check (اختياري)
     if (vol) {
       const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
       if (avgVol > 0 && vol < avgVol * 0.5) return false; // حجم منخفض جداً فقط يُرفض
     }
   }
-  // Additional check: not in freefall (confidence must be >= 20)
-  if (data.confidence !== undefined && data.confidence < 20) return false;
   return true;
 }
 
