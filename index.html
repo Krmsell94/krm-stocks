@@ -744,7 +744,7 @@ body {
     <div class="sidebar-footer">
       <button class="theme-toggle" onclick="toggleTheme()">
         <span id="themeIcon">🌙</span>
-        <span id="themeLabel">ليلي</span>
+        <span id="themeLabel">ليمي</span>
       </button>
     </div>
   </aside>
@@ -797,7 +797,7 @@ body {
         <div class="page-title">💼 محفظتي</div>
       </div>
       <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
-      <div class="add-portfolio-form" id="addPortfolioForm">
+      <div class="add-portfolio-form" id="addPortFolioForm">
         <div class="form-grid">
           <div>
             <label>السهم</label>
@@ -826,7 +826,7 @@ body {
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
           <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">حفظ الصفقة</button>
-          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">إلغاء</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortFolio()" style="flex:1">إلغاء</button>
         </div>
       </div>
       <table class="trades-table">
@@ -929,6 +929,7 @@ const auth = getAuth(app);
 window._db = db;
 window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
 
+// ── Persistent UID: use Firebase Auth if available, else fallback to localStorage ──
 function getOrCreateLocalUID() {
   let uid = localStorage.getItem('_krm_uid');
   if (!uid) {
@@ -937,11 +938,14 @@ function getOrCreateLocalUID() {
   }
   return uid;
 }
+
 signInAnonymously(auth).catch(() => {
+  // Auth failed — use persistent local UID so data survives refreshes
   window._uid = getOrCreateLocalUID();
 });
 onAuthStateChanged(auth, user => {
   if (user) {
+    // Firebase Auth succeeded — persist this UID so future fallbacks match
     window._uid = user.uid;
     localStorage.setItem('_krm_uid', user.uid);
   }
@@ -960,7 +964,7 @@ let _currentMarket = 'us';
 let _calWeekOffset = 0;
 
 // ── Halal Universe (قائمة الأسهم الحلال) ──
-const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
+const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DVCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,NRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTK,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
 
 const HALAL_SA = new Set("1020,1111,1120,1140,1150,1182,1183,1201,1202,1210,1211,1212,1213,1214,1301,1302,1303,1304,1320,1321,1322,1323,1324,1810,1820,1830,1831,1832,1833,1834,1835,2001,2010,2020,2030,2040,2050,2060,2070,2080,2081,2082,2083,2084,2090,2100,2110,2120,2130,2140,2150,2160,2170,2180,2190,2200,2210,2220,2222,2223,2230,2240,2250,2270,2280,2281,2282,2283,2284,2285,2286,2287,2288,2290,2300,2310,2320,2330,2340,2350,2360,2370,2380,2381,2382,3002,3003,3004,3005,3007,3008,3010,3020,3030,3040,3050,3060,3080,3090,3091,3092,4001,4002,4003,4004,4005,4006,4007,4008,4009,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4030,4031,4040,4050,4051,4061,4070,4071,4080,4081,4082,4083,4090,4100,4110,4130,4140,4141,4142,4143,4144,4145,4146,4147,4148,4150,4161,4162,4163,4164,4165,4170,4180,4190,4191,4192,4193,4194,4200,4210,4220,4230,4240,4250,4260,4261,4262,4263,4264,4265,4270,4290,4291,4292,4300,4310,4320,4321,4322,4323,4324,4325,4326,4327,4328,5110,6001,6002,6004,6010,6012,6013,6014,6015,6016,6017,6018,6019,6020,6022,6040,6050,6060,6070,6090,7010,7020,7030,7040,7200,7201,7202,7203,7204,7205,7211,8313".split(','));
 
@@ -979,7 +983,7 @@ function isStartOfRebound(data) {
     const close = last.c !== undefined ? last.c : last.close;
     const open  = last.o !== undefined ? last.o : last.open;
     const vol   = last.v !== undefined ? last.v : last.volume;
-    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يزال ينزل
+    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يمال ينزل
     // Volume check (اختياري)
     if (vol) {
       const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
@@ -1028,7 +1032,6 @@ window.toggleTheme = function() {
   }
 })();
 
-// ── Market switch ──
 // ── Market picker dropdown ──
 window.toggleMarketDropdown = function() {
   document.getElementById('marketDropdown').classList.toggle('open');
@@ -1040,6 +1043,7 @@ document.addEventListener('click', function(e) {
   if (!e.target.closest('#marketPicker')) closeMarketDropdown();
 });
 
+// ── Market switch ──
 window.setMarket = function(market) {
   _currentMarket = market;
   // update flag icon
@@ -1063,7 +1067,7 @@ function reloadCurrentTab() {
 // ── Tab switch ──
 window.switchTab = function(tab, el) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(tab => tab.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('page-' + tab).classList.add('active');
   if (tab === 'foras') loadForas();
@@ -1111,6 +1115,30 @@ function renderFullChart(container, candles) {
   chart.timeScale().fitContent();
 }
 
+// ── Float shares cache & fetcher ──
+const _floatCache = {};
+async function fetchFloatShares(symbol, market) {
+  const key = symbol + '_' + market;
+  if (_floatCache[key] !== undefined) return _floatCache[key];
+  _floatCache[key] = null; // prevent duplicate requests
+  try {
+    const ticker = market === 'sa' ? symbol + '.SR' : symbol;
+    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=defaultKeyStatistics`;
+    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } }).catch(() => null);
+    if (!resp || !resp.ok) return null;
+    const json = await resp.json().catch(() => null);
+    const stats = json?.quoteSummary?.result?.[0]?.defaultKeyStatistics;
+    const floatVal = stats?.floatShares?.raw || stats?.sharesOutstanding?.raw || null;
+    if (!floatVal || floatVal <= 0) return null;
+    let formatted;
+    if (floatVal >= 1e9) formatted = (floatVal / 1e9).toFixed(2) + 'B';
+    else if (floatVal >= 1e6) formatted = (floatVal / 1e6).toFixed(1) + 'M';
+    else formatted = floatVal.toLocaleString();
+    _floatCache[key] = formatted;
+    return formatted;
+  } catch { return null; }
+}
+
 // ── Build FORAS card (tall rectangle with key levels) ──
 function buildForasCard(symbol, data, market) {
   const div = document.createElement('div');
@@ -1149,10 +1177,19 @@ function buildForasCard(symbol, data, market) {
       <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
       <span class="conf-pct" style="color:${confCol}">${conf}%</span>
     </div>
+    <div class="card-detail-row">
+      <span class="card-detail-label">📊 أسهم حرة</span>
+      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+    </div>
     <div class="card-note">${data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
   autoRegisterPaperTrade(symbol, data);
+  // جلب الأسهم الحرة في الخمقة الحرaȩ
+  fetchFloatShares(symbol, market).then(val => {
+    const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
+    if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
+  });
   return div;
 }
 
@@ -1161,7 +1198,7 @@ function buildArkitazCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
   const conf = data.confidence || 0;
-  const confCol = confColor(conf);
+  const confCol = confColor(Conf);
 
   const rsi = data.rsi;
   const rsiOk = rsi && rsi >= 23 && rsi <= 27;
@@ -1180,7 +1217,7 @@ function buildArkitazCard(symbol, data, market) {
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '🎯 جاهز' : '⏳ انتظار'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '🏯 جاهز' : '⏳انتظار'}</span>
     </div>
     <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
     <hr class="card-divider">
@@ -1193,7 +1230,7 @@ function buildArkitazCard(symbol, data, market) {
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(macdOk)}</span>
         <span class="cond-label">MACD</span>
-        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'يتحسن' : 'ضعيف'}</span>
+        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'يتحسن' : 'ضضيف'}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(maOk)}</span>
@@ -1216,9 +1253,18 @@ function buildArkitazCard(symbol, data, market) {
       <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
       <span class="conf-pct" style="color:${confCol}">${conf}%</span>
     </div>
+    <div class="card-detail-row" style="margin-top:4px">
+      <span class="card-detail-label">📊 أسهم حرة</span>
+      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+    </div>
     <div class="card-note">${data.consReason || data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
+  // جلب الأسهم الحرة في الخلفية
+  fetchFloatShares(symbol, market).then(val => {
+    const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
+    if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
+  });
   return div;
 }
 
@@ -1391,7 +1437,7 @@ window.toggleAddPortfolio = function() {
   document.getElementById('pf-date').valueAsDate = new Date();
 };
 
-// ── Portfolio localStorage helpers ──
+// ── Portfolio localStorage helpers (primary storage — survives Auth failures) ──
 const LS_PORT_KEY = '_krm_portfolio';
 function lsPortLoad() {
   try { return JSON.parse(localStorage.getItem(LS_PORT_KEY) || '{}'); } catch { return {}; }
@@ -1410,9 +1456,11 @@ window.savePortfolioTrade = async function() {
   if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
   const id = sym + '_manual_' + Date.now();
   const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
+  // Save to localStorage first (always works)
   const map = lsPortLoad();
   map[id] = trade;
   lsPortSave(map);
+  // Try Firestore in background (non-blocking)
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1426,8 +1474,10 @@ window.savePortfolioTrade = async function() {
 async function loadPortfolio() {
   const tbody = document.getElementById('portfolio-tbody');
   tbody.innerHTML = '';
+  // Load from localStorage first for instant display
   const lsMap = lsPortLoad();
   let trades = Object.values(lsMap);
+  // Try to merge from Firestore (may have more data or synced from another device)
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1435,8 +1485,9 @@ async function loadPortfolio() {
     const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
     const fsMap = {};
     snap.forEach(d => { fsMap[d.id] = {...d.data(), id: d.id}; });
+    // Merge: Firestore wins on conflicts, localStorage fills the rest
     const merged = {...lsMap, ...fsMap};
-    lsPortSave(merged);
+    lsPortSave(merged);  // sync back to localStorage
     trades = Object.values(merged);
   } catch {}
   _portfolioTrades = trades;
@@ -1465,9 +1516,11 @@ async function loadPortfolio() {
 
 window.removePortfolioTrade = async function(id) {
   if (!confirm('حذف هذه الصفقة؟')) return;
+  // Remove from localStorage immediately
   const map = lsPortLoad();
   delete map[id];
   lsPortSave(map);
+  // Remove from Firestore in background
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1512,7 +1565,7 @@ async function loadCalendar() {
   calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📅 التقويم الاقتصادي</div>`;
   const countries = (_currentMarket === 'sa') ? '20' : '5';
   const calIframe = document.createElement('iframe');
-  calIframe.src = 'https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=' + countries + '&calType=week&timeZone=23&lang=3';
+  calIframe.src = `https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=${countries}&calType=week&timeZone=23&lang=3`;
   calIframe.width = '100%';
   calIframe.height = '450';
   calIframe.frameBorder = '0';
@@ -1584,7 +1637,7 @@ async function loadTranslatedNews(container, isDark) {
 
     container.innerHTML = '';
     if (statusEl) statusEl.textContent = '(جاري الترجمة...)';
-
+    
     const bg = isDark ? '#1e2130' : '#f4f6fb';
     const border = isDark ? '#2a2f45' : '#e0e4ef';
     const textColor = isDark ? '#c8d0e8' : '#2a2f45';
@@ -1618,7 +1671,7 @@ async function loadTranslatedNews(container, isDark) {
     });
 
   } catch(err) {
-    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبار: ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبan�ة: ${err.message}</div>`;
     if (statusEl) statusEl.textContent = '';
   }
 }
@@ -1664,10 +1717,21 @@ function openDetail(symbol, data, market) {
       <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</div>
     </div>
     <div class="stat-box">
+      <div class="stat-label">الأسهم الحرة</div>
+      <div class="stat-value" id="detailFloatVal" style="color:var(--text2)">⏳</div>
+    </div>
+    <div class="stat-box">
       <div class="stat-label">آخر تحديث</div>
       <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || '—'}</div>
     </div>
   `;
+  // جلب الأسهم الحرة في الخلفية
+  fetchFloatShares(symbol, market).then(val => {
+    const el = document.getElementById('detailFloatVal');
+    if (!el) return;
+    if (val) { el.textContent = val; el.style.color = 'var(--text)'; }
+    else { el.textContent = '—'; el.style.color = 'var(--text2)'; }
+  });
 
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
@@ -1769,7 +1833,7 @@ window.saveBuyDetail = async function() {
   const price = parseFloat(document.getElementById('buyPriceD').value);
   const qty = parseInt(document.getElementById('buyQtyD').value) || 0;
   const date = document.getElementById('buyDateD').value;
-  if (!price) { alert('يرجى إدخال سعر الشراء'); return; }
+  if (!price) { alert('يرجى إدحال سعر الشراء'); return; }
   const trade = {
     id: symbol + '_' + Date.now(),
     symbol, sym: symbol, market,
