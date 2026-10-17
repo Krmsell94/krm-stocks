@@ -64,13 +64,13 @@ body {
   transition: background 0.3s, color 0.3s;
 }
 
-/* ── Layout ── */
+/* ââ Layout ââ */
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
 
-/* ── Sidebar ── */
+/* ââ Sidebar ââ */
 .sidebar {
   width: 180px;
   min-width: 180px;
@@ -99,7 +99,7 @@ body {
   gap: 6px;
 }
 
-/* ── Market selector (above tabs) ── */
+/* ââ Market selector (above tabs) ââ */
 .market-selector {
   padding: 14px 10px 10px;
   border-bottom: 1px solid var(--sidebar-border);
@@ -110,7 +110,7 @@ body {
   margin-bottom: 6px;
   text-align: center;
 }
-/* ── Market picker ── */
+/* ââ Market picker ââ */
 .market-picker {
   position: relative;
 }
@@ -162,7 +162,7 @@ body {
 .market-option.selected { font-weight: 700; color: var(--blue); }
 .market-option .flag { font-size: 18px; }
 
-/* ── Nav tabs ── */
+/* ââ Nav tabs ââ */
 .sidebar-nav {
   flex: 1;
   padding: 10px 10px;
@@ -193,7 +193,7 @@ body {
 }
 .nav-tab .tab-icon { font-size: 16px; }
 
-/* ── Dark mode toggle ── */
+/* ââ Dark mode toggle ââ */
 .sidebar-footer {
   padding: 12px 10px;
   border-top: 1px solid var(--sidebar-border);
@@ -214,7 +214,7 @@ body {
 }
 .theme-toggle:hover { background: var(--tab-hover); }
 
-/* ── Main content ── */
+/* ââ Main content ââ */
 .main-content {
   flex: 1;
   padding: 20px;
@@ -224,7 +224,7 @@ body {
 .page { display: none; }
 .page.active { display: block; }
 
-/* ── Page header ── */
+/* ââ Page header ââ */
 .page-header {
   display: flex;
   align-items: center;
@@ -240,14 +240,14 @@ body {
   color: var(--text2);
 }
 
-/* ── Cards grid ── */
+/* ââ Cards grid ââ */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
 }
 
-/* ── Stock card (tall rectangle) ── */
+/* ââ Stock card (tall rectangle) ââ */
 .stock-card {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -326,7 +326,7 @@ body {
   color: var(--text2);
 }
 
-/* ── Arkitaz card specific ── */
+/* ââ Arkitaz card specific ââ */
 .ark-conditions {
   display: flex;
   flex-direction: column;
@@ -345,7 +345,7 @@ body {
 .cond-warn { color: var(--gold); }
 .cond-bad { color: var(--red); }
 
-/* ── Empty state ── */
+/* ââ Empty state ââ */
 .empty {
   text-align: center;
   padding: 60px 20px;
@@ -353,7 +353,7 @@ body {
 }
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
 
-/* ── Detail page ── */
+/* ââ Detail page ââ */
 #detail-page {
   display: none;
   position: fixed;
@@ -514,7 +514,7 @@ body {
 .news-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
 .news-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
 
-/* ── Close Trade Dialog ── */
+/* ââ Close Trade Dialog ââ */
 .dialog-overlay {
   display: none;
   position: fixed;
@@ -535,7 +535,7 @@ body {
 }
 .dialog-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
 
-/* ── Performance / Portfolio tables ── */
+/* ââ Performance / Portfolio tables ââ */
 .perf-section { margin-bottom: 24px; }
 .perf-section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 .trades-table {
@@ -583,7 +583,7 @@ body {
 .status-profit { color: var(--green); font-weight: 600; }
 .status-loss { color: var(--red); font-weight: 600; }
 
-/* ── Portfolio manual add ── */
+/* ââ Portfolio manual add ââ */
 .btn-add-portfolio {
   padding: 8px 16px;
   background: var(--blue);
@@ -620,7 +620,7 @@ body {
   font-size: 14px;
 }
 
-/* ── News calendar ── */
+/* ââ News calendar ââ */
 .news-calendar {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -680,39 +680,152 @@ body {
 .cal-event-impact-low { border-color: var(--green); }
 .cal-loading { text-align: center; padding: 40px; color: var(--text2); }
 
-/* ── Responsive ── */
+/* ââ Performance market tabs ââ */
+.perf-market-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.perf-market-tab {
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.perf-market-tab.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-color: var(--tab-active-bg);
+}
+
+/* ââ Responsive / Mobile ââ */
 @media (max-width: 700px) {
-  .sidebar { width: 60px; min-width: 60px; }
-  .nav-tab span.tab-label { display: none; }
-  .market-picker-btn .arrow { display: none; }
-  .sidebar-logo span { display: none; }
+  /* Hide sidebar â use bottom nav instead */
+  .sidebar {
+    display: none;
+  }
+  /* Main fills full width */
+  .app-content {
+    padding: 12px 10px 80px; /* bottom padding for nav bar */
+  }
+  /* Bottom navigation bar */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 200;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bottom-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 10px;
+    font-weight: 600;
+    transition: color 0.15s;
+  }
+  .bottom-nav-btn.active {
+    color: var(--blue);
+  }
+  .bottom-nav-icon { font-size: 18px; }
+  /* Market selector in top bar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--sidebar-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mobile-logo { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .mobile-controls { display: flex; align-items: center; gap: 8px; }
+  /* Cards: 2 columns on mobile */
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  /* Calendar: single column */
   .cal-days { grid-template-columns: 1fr; }
+  /* Detail stats: 2 cols */
   .detail-stats { grid-template-columns: 1fr 1fr; }
   .detail-layers { grid-template-columns: 1fr 1fr; }
+  /* Tables: scroll horizontally */
+  .trades-table { font-size: 11px; }
+  .trades-table th, .trades-table td { padding: 7px 6px; }
+  /* Performance tabs row wraps nicely */
+  .perf-market-tabs { flex-wrap: wrap; }
 }
+/* Hide bottom nav on desktop */
+.bottom-nav { display: none; }
+/* Hide mobile topbar on desktop */
+.mobile-topbar { display: none; }
 </style>
 </head>
 <body>
 
+<!-- ââ MOBILE TOP BAR ââ -->
+<div class="mobile-topbar">
+  <div class="mobile-logo">ð KRM</div>
+  <div class="mobile-controls">
+    <div class="market-picker" id="marketPickerMobile">
+      <button class="market-picker-btn" id="marketPickerBtnMobile" onclick="toggleMarketDropdownMobile()">
+        <span id="marketFlagMobile">ðºð¸</span><span class="arrow">â¼</span>
+      </button>
+      <div class="market-dropdown" id="marketDropdownMobile">
+        <div class="market-option selected" id="optUSMobile" onclick="setMarket('us');closeMarketDropdownMobile()">
+          <span class="flag">ðºð¸</span> Ø£ÙØ±ÙÙØ§
+        </div>
+        <div class="market-option" id="optSAMobile" onclick="setMarket('sa');closeMarketDropdownMobile()">
+          <span class="flag">ð¸ð¦</span> Ø§ÙØ³Ø¹ÙØ¯ÙØ©
+        </div>
+      </div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" style="padding:6px 10px;font-size:13px">
+      <span id="themeIconMobile">ð</span>
+    </button>
+  </div>
+</div>
+
 <div class="app-layout">
 
-  <!-- ══ SIDEBAR ══ -->
+  <!-- ââ SIDEBAR ââ -->
   <aside class="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo">📈 <span>KRM</span></div>
+      <div class="sidebar-logo">ð <span>KRM</span></div>
     </div>
 
     <!-- Market selector -->
     <div class="market-picker" id="marketPicker">
       <button class="market-picker-btn" id="marketPickerBtn" onclick="toggleMarketDropdown()">
-        <span id="marketFlag">🇺🇸</span><span class="arrow">▼</span>
+        <span id="marketFlag">ðºð¸</span><span class="arrow">â¼</span>
       </button>
       <div class="market-dropdown" id="marketDropdown">
         <div class="market-option selected" id="optUS" onclick="setMarket('us');closeMarketDropdown()">
-          <span class="flag">🇺🇸</span> أمريكا
+          <span class="flag">ðºð¸</span> Ø£ÙØ±ÙÙØ§
         </div>
         <div class="market-option" id="optSA" onclick="setMarket('sa');closeMarketDropdown()">
-          <span class="flag">🇸🇦</span> السعودية
+          <span class="flag">ð¸ð¦</span> Ø§ÙØ³Ø¹ÙØ¯ÙØ©
         </div>
       </div>
     </div>
@@ -720,70 +833,75 @@ body {
     <!-- Nav tabs -->
     <nav class="sidebar-nav">
       <button class="nav-tab active" onclick="switchTab('foras', this)">
-        <span class="tab-icon">🚀</span>
-        <span class="tab-label">الفرص</span>
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙÙØ±Øµ</span>
       </button>
       <button class="nav-tab" onclick="switchTab('arkitaz', this)">
-        <span class="tab-icon">🎯</span>
-        <span class="tab-label">الارتكاز</span>
+        <span class="tab-icon">ð¯</span>
+        <span class="tab-label">Ø§ÙØ§Ø±ØªÙØ§Ø²</span>
       </button>
       <button class="nav-tab" onclick="switchTab('performance', this)">
-        <span class="tab-icon">📊</span>
-        <span class="tab-label">الأداء</span>
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙØ£Ø¯Ø§Ø¡</span>
       </button>
       <button class="nav-tab" onclick="switchTab('portfolio', this)">
-        <span class="tab-icon">💼</span>
-        <span class="tab-label">محفظتي</span>
+        <span class="tab-icon">ð¼</span>
+        <span class="tab-label">ÙØ­ÙØ¸ØªÙ</span>
       </button>
       <button class="nav-tab" onclick="switchTab('calendar', this)">
-        <span class="tab-icon">📅</span>
-        <span class="tab-label">الأخبار</span>
+        <span class="tab-icon">ð</span>
+        <span class="tab-label">Ø§ÙØ£Ø®Ø¨Ø§Ø±</span>
       </button>
     </nav>
 
     <div class="sidebar-footer">
       <button class="theme-toggle" onclick="toggleTheme()">
-        <span id="themeIcon">🌙</span>
-        <span id="themeLabel">ليمي</span>
+        <span id="themeIcon">ð</span>
+        <span id="themeLabel">ÙÙÙÙ</span>
       </button>
     </div>
   </aside>
 
-  <!-- ══ MAIN CONTENT ══ -->
+  <!-- ââ MAIN CONTENT ââ -->
   <main class="main-content">
 
-    <!-- ── FORAS PAGE ── -->
+    <!-- ââ FORAS PAGE ââ -->
     <div id="page-foras" class="page active">
       <div class="page-header">
-        <div class="page-title">🚀 الفرص</div>
-        <span id="lastUpdate">جاري التحميل...</span>
+        <div class="page-title">ð Ø§ÙÙØ±Øµ</div>
+        <span id="lastUpdate">Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</span>
       </div>
       <div class="cards-grid" id="grid-foras"></div>
     </div>
 
-    <!-- ── ARKITAZ PAGE ── -->
+    <!-- ââ ARKITAZ PAGE ââ -->
     <div id="page-arkitaz" class="page">
       <div class="page-header">
-        <div class="page-title">🎯 الارتكاز</div>
-        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + دعم + MACD</span>
+        <div class="page-title">ð¯ Ø§ÙØ§Ø±ØªÙØ§Ø²</div>
+        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + Ø¯Ø¹Ù + MACD</span>
       </div>
       <div class="cards-grid" id="grid-arkitaz"></div>
     </div>
 
-    <!-- ── PERFORMANCE PAGE ── -->
+    <!-- ââ PERFORMANCE PAGE ââ -->
     <div id="page-performance" class="page">
       <div class="page-header">
-        <div class="page-title">📊 الأداء</div>
+        <div class="page-title">ð Ø§ÙØ£Ø¯Ø§Ø¡</div>
+      </div>
+      <!-- ÙØµÙ Ø§ÙØ³ÙÙÙÙ -->
+      <div class="perf-market-tabs">
+        <button class="perf-market-tab active" id="perf-tab-us" onclick="switchPerfMarket('us')">ðºð¸ Ø£ÙØ±ÙÙØ§</button>
+        <button class="perf-market-tab" id="perf-tab-sa" onclick="switchPerfMarket('sa')">ð¸ð¦ Ø§ÙØ³Ø¹ÙØ¯ÙØ©</button>
       </div>
       <div class="perf-section">
-        <div class="perf-section-title">⚡ صفقات تلقائية (الفرص والارتكاز)</div>
+        <div class="perf-section-title">â¡ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© (<span id="perf-market-label">Ø§ÙÙØ±Øµ ÙØ§ÙØ§Ø±ØªÙØ§Ø²</span>)</div>
         <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
         <table class="trades-table">
           <thead>
             <tr>
-              <th>السهم</th><th>الدخول</th><th>التاريخ</th>
-              <th>الهدف1</th><th>الهدف2</th><th>الوقف</th>
-              <th>الحالة</th><th>ربح/خسارة</th><th></th>
+              <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
+              <th>Ø§ÙÙØ¯Ù1</th><th>Ø§ÙÙØ¯Ù2</th><th>Ø§ÙÙÙÙ</th>
+              <th>Ø§ÙØ­Ø§ÙØ©</th><th>Ø±Ø¨Ø­/Ø®Ø³Ø§Ø±Ø©</th><th></th>
             </tr>
           </thead>
           <tbody id="perf-tbody"></tbody>
@@ -791,66 +909,66 @@ body {
       </div>
     </div>
 
-    <!-- ── PORTFOLIO PAGE ── -->
+    <!-- ââ PORTFOLIO PAGE ââ -->
     <div id="page-portfolio" class="page">
       <div class="page-header">
-        <div class="page-title">💼 محفظتي</div>
+        <div class="page-title">ð¼ ÙØ­ÙØ¸ØªÙ</div>
       </div>
-      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
-      <div class="add-portfolio-form" id="addPortFolioForm">
+      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ Ø¥Ø¶Ø§ÙØ© ØµÙÙØ© ÙØ¯ÙÙØ©</button>
+      <div class="add-portfolio-form" id="addPortfolioForm">
         <div class="form-grid">
           <div>
-            <label>السهم</label>
+            <label>Ø§ÙØ³ÙÙ</label>
             <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
           </div>
           <div>
-            <label>سعر الدخول</label>
+            <label>Ø³Ø¹Ø± Ø§ÙØ¯Ø®ÙÙ</label>
             <input id="pf-entry" type="number" step="0.01" placeholder="1.50">
           </div>
           <div>
-            <label>الكمية</label>
+            <label>Ø§ÙÙÙÙØ©</label>
             <input id="pf-qty" type="number" placeholder="100">
           </div>
           <div>
-            <label>تاريخ الدخول</label>
+            <label>ØªØ§Ø±ÙØ® Ø§ÙØ¯Ø®ÙÙ</label>
             <input id="pf-date" type="date">
           </div>
           <div>
-            <label>الهدف 1</label>
+            <label>Ø§ÙÙØ¯Ù 1</label>
             <input id="pf-t1" type="number" step="0.01" placeholder="2.00">
           </div>
           <div>
-            <label>وقف الخسارة</label>
+            <label>ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</label>
             <input id="pf-sl" type="number" step="0.01" placeholder="1.20">
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:12px">
-          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">حفظ الصفقة</button>
-          <button class="btn-cancel-buy" onclick="toggleAddPortFolio()" style="flex:1">إلغاء</button>
+          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
         </div>
       </div>
       <table class="trades-table">
         <thead>
           <tr>
-            <th>السهم</th><th>الدخول</th><th>الكمية</th>
-            <th>الهدف</th><th>الوقف</th><th>التاريخ</th>
-            <th>الحالة</th><th></th>
+            <th>Ø§ÙØ³ÙÙ</th><th>Ø§ÙØ¯Ø®ÙÙ</th><th>Ø§ÙÙÙÙØ©</th>
+            <th>Ø§ÙÙØ¯Ù</th><th>Ø§ÙÙÙÙ</th><th>Ø§ÙØªØ§Ø±ÙØ®</th>
+            <th>Ø§ÙØ­Ø§ÙØ©</th><th></th>
           </tr>
         </thead>
         <tbody id="portfolio-tbody"></tbody>
       </table>
     </div>
 
-    <!-- ── CALENDAR PAGE ── -->
+    <!-- ââ CALENDAR PAGE ââ -->
     <div id="page-calendar" class="page">
       <div class="page-header">
-        <div class="page-title">📅 الأخبار الأسبوعية</div>
+        <div class="page-title">ð Ø§ÙØ£Ø®Ø¨Ø§Ø± Ø§ÙØ£Ø³Ø¨ÙØ¹ÙØ©</div>
       </div>
       <div class="news-calendar">
         <div class="cal-header">
-          <button class="cal-nav-btn" onclick="calPrevWeek()">◀ الأسبوع السابق</button>
-          <div class="cal-title" id="calWeekLabel">هذا الأسبوع</div>
-          <button class="cal-nav-btn" onclick="calNextWeek()">الأسبوع القادم ▶</button>
+          <button class="cal-nav-btn" onclick="calPrevWeek()">â Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙØ³Ø§Ø¨Ù</button>
+          <div class="cal-title" id="calWeekLabel">ÙØ°Ø§ Ø§ÙØ£Ø³Ø¨ÙØ¹</div>
+          <button class="cal-nav-btn" onclick="calNextWeek()">Ø§ÙØ£Ø³Ø¨ÙØ¹ Ø§ÙÙØ§Ø¯Ù â¶</button>
         </div>
         <div class="cal-days" id="calDaysGrid"></div>
       </div>
@@ -859,14 +977,33 @@ body {
   </main>
 </div>
 
-<!-- ══ DETAIL PAGE ══ -->
+<!-- ââ MOBILE BOTTOM NAV ââ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" id="bn-foras" onclick="switchTab('foras', document.querySelector('.nav-tab.active') || this); syncBottomNav('foras')">
+    <span class="bottom-nav-icon">ð</span>Ø§ÙÙØ±Øµ
+  </button>
+  <button class="bottom-nav-btn" id="bn-arkitaz" onclick="switchTab('arkitaz', document.querySelector('.nav-tab:nth-child(2)') || this); syncBottomNav('arkitaz')">
+    <span class="bottom-nav-icon">ð¯</span>Ø§ÙØ§Ø±ØªÙØ§Ø²
+  </button>
+  <button class="bottom-nav-btn" id="bn-performance" onclick="switchTab('performance', document.querySelector('.nav-tab:nth-child(3)') || this); syncBottomNav('performance')">
+    <span class="bottom-nav-icon">ð</span>Ø§ÙØ£Ø¯Ø§Ø¡
+  </button>
+  <button class="bottom-nav-btn" id="bn-portfolio" onclick="switchTab('portfolio', document.querySelector('.nav-tab:nth-child(4)') || this); syncBottomNav('portfolio')">
+    <span class="bottom-nav-icon">ð¼</span>ÙØ­ÙØ¸ØªÙ
+  </button>
+  <button class="bottom-nav-btn" id="bn-calendar" onclick="switchTab('calendar', document.querySelector('.nav-tab:nth-child(5)') || this); syncBottomNav('calendar')">
+    <span class="bottom-nav-icon">ð</span>Ø§ÙØ£Ø®Ø¨Ø§Ø±
+  </button>
+</nav>
+
+<!-- ââ DETAIL PAGE ââ -->
 <div id="detail-page">
   <div class="detail-header">
-    <button class="btn-back" onclick="closeDetail()">← رجوع</button>
+    <button class="btn-back" onclick="closeDetail()">â Ø±Ø¬ÙØ¹</button>
     <div id="detailSymbol"></div>
     <div class="detail-actions">
-      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">🛒 شراء</button>
-      <a id="detailTvLink" class="btn-tv-link" target="_blank">📈 TradingView</a>
+      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">ð Ø´Ø±Ø§Ø¡</button>
+      <a id="detailTvLink" class="btn-tv-link" target="_blank">ð TradingView</a>
     </div>
   </div>
 
@@ -877,38 +1014,38 @@ body {
   <div id="detailNews"></div>
 
   <div class="buy-form" id="buyFormDetail">
-    <label>تاريخ الشراء</label>
+    <label>ØªØ§Ø±ÙØ® Ø§ÙØ´Ø±Ø§Ø¡</label>
     <input type="date" id="buyDateD">
-    <label>سعر الشراء</label>
+    <label>Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡</label>
     <input type="number" id="buyPriceD" step="0.01">
-    <label>عدد الأسهم</label>
+    <label>Ø¹Ø¯Ø¯ Ø§ÙØ£Ø³ÙÙ</label>
     <input type="number" id="buyQtyD" placeholder="100">
-    <button class="btn-save-buy" onclick="saveBuyDetail()">حفظ الصفقة</button>
-    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">إلغاء</button>
+    <button class="btn-save-buy" onclick="saveBuyDetail()">Ø­ÙØ¸ Ø§ÙØµÙÙØ©</button>
+    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">Ø¥ÙØºØ§Ø¡</button>
     <div id="saveIndicator"></div>
   </div>
 </div>
 
-<!-- ══ CLOSE TRADE DIALOG ══ -->
+<!-- ââ CLOSE TRADE DIALOG ââ -->
 <div id="closeTradeDialog" class="dialog-overlay">
   <div class="dialog-box">
-    <div class="dialog-title">إغلاق الصفقة</div>
+    <div class="dialog-title">Ø¥ØºÙØ§Ù Ø§ÙØµÙÙØ©</div>
     <div style="margin-bottom:10px">
-      <label style="font-size:12px;color:var(--text2)">سعر الإغلاق</label>
+      <label style="font-size:12px;color:var(--text2)">Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù</label>
       <input type="number" id="closePriceInput" step="0.01" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
     <div style="margin-bottom:10px">
-      <label style="font-size:12px;color:var(--text2)">تاريخ الإغلاق</label>
+      <label style="font-size:12px;color:var(--text2)">ØªØ§Ø±ÙØ® Ø§ÙØ¥ØºÙØ§Ù</label>
       <input type="date" id="closeDateInput" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
     </div>
     <div style="display:flex;gap:8px">
-      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">تأكيد الإغلاق</button>
-      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">إلغاء</button>
+      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">ØªØ£ÙÙØ¯ Ø§ÙØ¥ØºÙØ§Ù</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">Ø¥ÙØºØ§Ø¡</button>
     </div>
   </div>
 </div>
 
-<!-- ══ Firebase ══ -->
+<!-- ââ Firebase ââ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
@@ -929,7 +1066,7 @@ const auth = getAuth(app);
 window._db = db;
 window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
 
-// ── Persistent UID: use Firebase Auth if available, else fallback to localStorage ──
+// ââ Persistent UID: use Firebase Auth if available, else fallback to localStorage ââ
 function getOrCreateLocalUID() {
   let uid = localStorage.getItem('_krm_uid');
   if (!uid) {
@@ -940,31 +1077,32 @@ function getOrCreateLocalUID() {
 }
 
 signInAnonymously(auth).catch(() => {
-  // Auth failed — use persistent local UID so data survives refreshes
+  // Auth failed â use persistent local UID so data survives refreshes
   window._uid = getOrCreateLocalUID();
 });
 onAuthStateChanged(auth, user => {
   if (user) {
-    // Firebase Auth succeeded — persist this UID so future fallbacks match
+    // Firebase Auth succeeded â persist this UID so future fallbacks match
     window._uid = user.uid;
     localStorage.setItem('_krm_uid', user.uid);
   }
 });
 </script>
 
-<!-- ══ Main Script ══ -->
+<!-- ââ Main Script ââ -->
 <script type="module">
 
-// ── Globals ──
+// ââ Globals ââ
 let _currentStock = null;
 let _trades = [];
 let _portfolioTrades = [];
 let _closeTradeId = null;
 let _currentMarket = 'us';
+let _currentPerfMarket = 'us';
 let _calWeekOffset = 0;
 
-// ── Halal Universe (قائمة الأسهم الحلال) ──
-const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DVCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,NRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTK,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
+// ââ Halal Universe (ÙØ§Ø¦ÙØ© Ø§ÙØ£Ø³ÙÙ Ø§ÙØ­ÙØ§Ù) ââ
+const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTK,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVK,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
 
 const HALAL_SA = new Set("1020,1111,1120,1140,1150,1182,1183,1201,1202,1210,1211,1212,1213,1214,1301,1302,1303,1304,1320,1321,1322,1323,1324,1810,1820,1830,1831,1832,1833,1834,1835,2001,2010,2020,2030,2040,2050,2060,2070,2080,2081,2082,2083,2084,2090,2100,2110,2120,2130,2140,2150,2160,2170,2180,2190,2200,2210,2220,2222,2223,2230,2240,2250,2270,2280,2281,2282,2283,2284,2285,2286,2287,2288,2290,2300,2310,2320,2330,2340,2350,2360,2370,2380,2381,2382,3002,3003,3004,3005,3007,3008,3010,3020,3030,3040,3050,3060,3080,3090,3091,3092,4001,4002,4003,4004,4005,4006,4007,4008,4009,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4030,4031,4040,4050,4051,4061,4070,4071,4080,4081,4082,4083,4090,4100,4110,4130,4140,4141,4142,4143,4144,4145,4146,4147,4148,4150,4161,4162,4163,4164,4165,4170,4180,4190,4191,4192,4193,4194,4200,4210,4220,4230,4240,4250,4260,4261,4262,4263,4264,4265,4270,4290,4291,4292,4300,4310,4320,4321,4322,4323,4324,4325,4326,4327,4328,5110,6001,6002,6004,6010,6012,6013,6014,6015,6016,6017,6018,6019,6020,6022,6040,6050,6060,6070,6090,7010,7020,7030,7040,7200,7201,7202,7203,7204,7205,7211,8313".split(','));
 
@@ -973,27 +1111,27 @@ function isHalal(sym, market) {
   return HALAL_US.has(String(sym).toUpperCase());
 }
 
-// بداية الارتداد: confidence >= 25 + شمعة خضراء أخيرة (c > o) + تراجع معقول
+// Ø¨Ø¯Ø§ÙØ© Ø§ÙØ§Ø±ØªØ¯Ø§Ø¯: confidence >= 25 + Ø´ÙØ¹Ø© Ø®Ø¶Ø±Ø§Ø¡ Ø£Ø®ÙØ±Ø© (c > o) + ØªØ±Ø§Ø¬Ø¹ ÙØ¹ÙÙÙ
 function isStartOfRebound(data) {
-  // Confidence check (الثقة في الإشارة يجب أن تكون >= 25)
+  // Confidence check (Ø§ÙØ«ÙØ© ÙÙ Ø§ÙØ¥Ø´Ø§Ø±Ø© ÙØ¬Ø¨ Ø£Ù ØªÙÙÙ >= 25)
   if (data.confidence !== undefined && data.confidence < 25) return false;
-  // Last candle green (if candle data available) — يستخدم c/o (اختصارات Firestore)
+  // Last candle green (if candle data available) â ÙØ³ØªØ®Ø¯Ù c/o (Ø§Ø®ØªØµØ§Ø±Ø§Øª Firestore)
   if (data.candles && data.candles.length >= 2) {
     const last = data.candles[data.candles.length - 1];
     const close = last.c !== undefined ? last.c : last.close;
     const open  = last.o !== undefined ? last.o : last.open;
     const vol   = last.v !== undefined ? last.v : last.volume;
-    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يمال ينزل
-    // Volume check (اختياري)
+    if (close !== undefined && open !== undefined && close <= open) return false; // Ø´ÙØ¹Ø© Ø­ÙØ±Ø§Ø¡ = ÙØ§ ÙØ³(§Ù ÙÙØ²Ù
+    // Volume check (Ø§Ø®ØªÙØ§Ø±Ù)
     if (vol) {
       const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
-      if (avgVol > 0 && vol < avgVol * 0.5) return false; // حجم منخفض جداً فقط يُرفض
+      if (avgVol > 0 && vol < avgVol * 0.5) return false; // Ø­Ø¦Ù ÙÙØ®ÙØ¶ Ø¬Ø¯Ø§Ù ÙÙØ· ÙÙØ±ÙØ¶
     }
   }
   return true;
 }
 
-// ── Wait helpers ──
+// ââ Wait helpers ââ
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
     if (window._db) return;
@@ -1009,30 +1147,30 @@ async function waitForUID() {
   throw new Error('Auth timeout');
 }
 
-// ── Theme ──
+// ââ Theme ââ
 window.toggleTheme = function() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   if (isDark) {
     document.documentElement.removeAttribute('data-theme');
-    document.getElementById('themeIcon').textContent = '🌙';
-    document.getElementById('themeLabel').textContent = 'ليلي';
+    document.getElementById('themeIcon').textContent = 'ð';
+    document.getElementById('themeLabel').textContent = 'ÙÙÙÙ';
     localStorage.setItem('theme', 'light');
   } else {
     document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeIcon').textContent = '☀️';
-    document.getElementById('themeLabel').textContent = 'نهاري';
+    document.getElementById('themeIcon').textContent = 'âï¸';
+    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
     localStorage.setItem('theme', 'dark');
   }
 };
 (function() {
   if (localStorage.getItem('theme') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'dark');
-    document.getElementById('themeIcon').textContent = '☀️';
-    document.getElementById('themeLabel').textContent = 'نهاري';
+    document.getElementById('themeIcon').textContent = 'âï¸';
+    document.getElementById('themeLabel').textContent = 'ÙÙØ§Ø±Ù';
   }
 })();
 
-// ── Market picker dropdown ──
+// ââ Market picker dropdown ââ
 window.toggleMarketDropdown = function() {
   document.getElementById('marketDropdown').classList.toggle('open');
 };
@@ -1043,15 +1181,47 @@ document.addEventListener('click', function(e) {
   if (!e.target.closest('#marketPicker')) closeMarketDropdown();
 });
 
-// ── Market switch ──
+// ââ Market switch ââ
 window.setMarket = function(market) {
   _currentMarket = market;
-  // update flag icon
-  document.getElementById('marketFlag').textContent = market === 'us' ? '🇺🇸' : '🇸🇦';
-  // update selected state in dropdown
+  const flag = market === 'us' ? 'ðºð¸' : 'ð¸ð¦';
+  document.getElementById('marketFlag').textContent = flag;
+  const mf = document.getElementById('marketFlagMobile');
+  if (mf) mf.textContent = flag;
   document.getElementById('optUS').classList.toggle('selected', market === 'us');
   document.getElementById('optSA').classList.toggle('selected', market === 'sa');
+  const optUSM = document.getElementById('optUSMobile');
+  const optSAM = document.getElementById('optSAMobile');
+  if (optUSM) optUSM.classList.toggle('selected', market === 'us');
+  if (optSAM) optSAM.classList.toggle('selected', market === 'sa');
   reloadCurrentTab();
+};
+
+window.toggleMarketDropdownMobile = function() {
+  document.getElementById('marketDropdownMobile').classList.toggle('open');
+};
+window.closeMarketDropdownMobile = function() {
+  document.getElementById('marketDropdownMobile').classList.remove('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#marketPickerMobile')) closeMarketDropdownMobile();
+});
+
+// ââ Bottom nav sync ââ
+window.syncBottomNav = function(tab) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('bn-' + tab);
+  if (btn) btn.classList.add('active');
+};
+
+// ââ Performance market switch ââ
+window.switchPerfMarket = function(market) {
+  _currentPerfMarket = market;
+  document.getElementById('perf-tab-us').classList.toggle('active', market === 'us');
+  document.getElementById('perf-tab-sa').classList.toggle('active', market === 'sa');
+  const lbl = document.getElementById('perf-market-label');
+  if (lbl) lbl.textContent = market === 'us' ? 'Ø§ÙÙØ±Øµ ÙØ§ÙØ§Ø±ØªÙØ§Ø² - Ø£ÙØ±ÙÙØ§ ðºð¸' : 'Ø§ÙÙØ±Øµ ÙØ§ÙØ§Ø±ØªÙØ§Ø² - Ø§ÙØ³Ø¹ÙØ¯ÙØ© ð¸ð¦';
+  loadPerformance();
 };
 
 function reloadCurrentTab() {
@@ -1064,12 +1234,13 @@ function reloadCurrentTab() {
   else if (fn && fn.includes('portfolio')) loadPortfolio();
 }
 
-// ── Tab switch ──
+// ââ Tab switch ââ
 window.switchTab = function(tab, el) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.page').forEach(tab => tab.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (el && el.classList && el.classList.contains('nav-tab')) el.classList.add('active');
   document.getElementById('page-' + tab).classList.add('active');
+  syncBottomNav(tab);
   if (tab === 'foras') loadForas();
   else if (tab === 'arkitaz') loadArkitaz();
   else if (tab === 'performance') loadPerformance();
@@ -1077,7 +1248,7 @@ window.switchTab = function(tab, el) {
   else if (tab === 'calendar') loadCalendar();
 };
 
-// ── Helpers ──
+// ââ Helpers ââ
 function confColor(v) {
   if (v >= 70) return 'var(--green)';
   if (v >= 40) return 'var(--gold)';
@@ -1090,11 +1261,11 @@ function rsiColor(v) {
   return 'var(--red)';
 }
 
-// ── Chart ──
+// ââ Chart ââ
 function renderFullChart(container, candles) {
   container.innerHTML = '';
   if (!candles || !candles.length) {
-    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø¨ÙØ§ÙØ§Øª Ø§ÙØ´Ø§Ø±Øª Ø³ØªÙØ¶Ø§Ù ØªÙÙØ§Ø¦ÙØ§Ù</div></div>';
     return;
   }
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1115,7 +1286,7 @@ function renderFullChart(container, candles) {
   chart.timeScale().fitContent();
 }
 
-// ── Float shares cache & fetcher ──
+// ââ Float shares cache & fetcher ââ
 const _floatCache = {};
 async function fetchFloatShares(symbol, market) {
   const key = symbol + '_' + market;
@@ -1139,37 +1310,38 @@ async function fetchFloatShares(symbol, market) {
   } catch { return null; }
 }
 
-// ── Build FORAS card (tall rectangle with key levels) ──
+// ââ Build FORAS card (tall rectangle with key levels) ââ
 function buildForasCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
   const conf = data.confidence || 0;
   const confCol = confColor(conf);
   const isReady = conf >= 60;
+  const cur = market === 'sa' ? 'Ø±.Ø³ ' : '$';
 
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '✅ جاهز' : '⏳ انتظار'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'â Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
     </div>
-    <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
+    <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : 'â'}</div>
     <hr class="card-divider">
     <div class="ark-conditions">
       <div class="card-detail-row">
-        <span class="card-detail-label">🎯 دخول</span>
-        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? '$'+data.entry : '—'}</span>
+        <span class="card-detail-label">ð¯ Ø¯Ø®ÙÙ</span>
+        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? cur+data.entry : 'â'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">🛑 وقف</span>
-        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</span>
+        <span class="card-detail-label">ð ÙÙÙ</span>
+        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? cur+data.stop_loss : 'â'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">🟢 هدف 1</span>
-        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? '$'+data.target1 : '—'}</span>
+        <span class="card-detail-label">ð¢ ÙØ¯Ù 1</span>
+        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? cur+data.target1 : 'â'}</span>
       </div>
       <div class="card-detail-row">
-        <span class="card-detail-label">🚀 هدف 2</span>
-        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? '$'+data.target2 : '—'}</span>
+        <span class="card-detail-label">ð ÙØ¯Ù 2</span>
+        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? cur+data.target2 : 'â'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1178,14 +1350,14 @@ function buildForasCard(symbol, data, market) {
       <span class="conf-pct" style="color:${confCol}">${conf}%</span>
     </div>
     <div class="card-detail-row">
-      <span class="card-detail-label">📊 أسهم حرة</span>
-      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+      <span class="card-detail-label">ð Ø£Ø³ÙÙ Ø­Ø±Ø©</span>
+      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">â</span>
     </div>
     <div class="card-note">${data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
   autoRegisterPaperTrade(symbol, data);
-  // جلب الأسهم الحرة في الخمقة الحرaȩ
+  // Ø¬ÙØ¨ Ø§ÙØ£Ø³ÙÙ Ø§ÙØ­Ø±Ø© ÙÙ Ø§ÙØ®ÙÙÙØ©
   fetchFloatShares(symbol, market).then(val => {
     const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
     if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
@@ -1193,12 +1365,13 @@ function buildForasCard(symbol, data, market) {
   return div;
 }
 
-// ── Build ARKITAZ card (tall rectangle with conditions) ──
+// ââ Build ARKITAZ card (tall rectangle with conditions) ââ
 function buildArkitazCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
   const conf = data.confidence || 0;
-  const confCol = confColor(Conf);
+  const confCol = confColor(conf);
+  const cur = market === 'sa' ? 'Ø±.Ø³ ' : '$';
 
   const rsi = data.rsi;
   const rsiOk = rsi && rsi >= 23 && rsi <= 27;
@@ -1207,19 +1380,19 @@ function buildArkitazCard(symbol, data, market) {
   const supportOk = data.has_support;
   const candleOk = data.bullish_candle;
 
-  const rsiLabel = rsi ? rsi.toFixed(1) : '—';
+  const rsiLabel = rsi ? rsi.toFixed(1) : 'â';
   const rsiCol = rsiColor(rsi);
 
-  const checkIcon = (ok) => ok ? '✅' : (ok === false ? '❌' : '⚪');
+  const checkIcon = (ok) => ok ? 'â' : (ok === false ? 'â' : 'âª');
 
   const isReady = conf >= 50 || (rsiOk && supportOk);
 
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '🏯 جاهز' : '⏳انتظار'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? 'ð¯ Ø¬Ø§ÙØ²' : 'â³ Ø§ÙØªØ¸Ø§Ø±'}</span>
     </div>
-    <div class="card-price">$${data.close ? data.close.toFixed(2) : '—'}</div>
+    <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : 'â'}</div>
     <hr class="card-divider">
     <div class="ark-conditions">
       <div class="ark-condition">
@@ -1230,22 +1403,22 @@ function buildArkitazCard(symbol, data, market) {
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(macdOk)}</span>
         <span class="cond-label">MACD</span>
-        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'يتحسن' : 'ضضيف'}</span>
+        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'ÙØªØ­Ø³Ù' : 'Ø¶Ø¹ÙÙ'}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(maOk)}</span>
-        <span class="cond-label">المتوسطات</span>
-        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'يستعيد' : 'تحتها'}</span>
+        <span class="cond-label">Ø§ÙÙØªÙØ³Ø·Ø§Øª</span>
+        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'ÙØ³ØªØ¹ÙØ¯' : 'ØªØ­ØªÙØ§'}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(supportOk)}</span>
-        <span class="cond-label">دعم واضح</span>
-        <span class="cond-val">${data.support_level ? '$'+data.support_level : (supportOk ? 'نعم' : '—')}</span>
+        <span class="cond-label">Ø¯Ø¹Ù ÙØ§Ø¶Ø­</span>
+        <span class="cond-val">${data.support_level ? cur+data.support_level : (supportOk ? 'ÙØ¹Ù' : 'â')}</span>
       </div>
       <div class="ark-condition">
         <span class="cond-icon">${checkIcon(candleOk)}</span>
-        <span class="cond-label">شمعة إيجابية</span>
-        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نعم' : '—'}</span>
+        <span class="cond-label">Ø´ÙØ¹Ø© Ø¥ÙØ¬Ø§Ø¨ÙØ©</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'ÙØ¹Ù' : 'â'}</span>
       </div>
     </div>
     <hr class="card-divider">
@@ -1254,13 +1427,13 @@ function buildArkitazCard(symbol, data, market) {
       <span class="conf-pct" style="color:${confCol}">${conf}%</span>
     </div>
     <div class="card-detail-row" style="margin-top:4px">
-      <span class="card-detail-label">📊 أسهم حرة</span>
-      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+      <span class="card-detail-label">ð Ø£Ø³ÙÙ Ø­Ø±Ø©</span>
+      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">â</span>
     </div>
     <div class="card-note">${data.consReason || data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
-  // جلب الأسهم الحرة في الخلفية
+  // Ø¬ÙØ¨ Ø§ÙØ£Ø³ÙÙ Ø§ÙØ­Ø±Ø© ÙÙ Ø§ÙØ®ÙÙÙØ©
   fetchFloatShares(symbol, market).then(val => {
     const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
     if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
@@ -1268,45 +1441,58 @@ function buildArkitazCard(symbol, data, market) {
   return div;
 }
 
-// ── Load FORAS ──
+// ââ Load FORAS ââ
 async function loadForas() {
   const grid = document.getElementById('grid-foras');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص</div>'; return; }
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ ÙØ±Øµ â ÙØ§Ø¹Ø¯Ø© Ø§ÙØ¨ÙØ§ÙØ§Øª ÙØ§Ø±ØºØ©</div>'; return; }
     let count = 0;
+    let countHalal = 0;
+    let countRebound = 0;
     snap.forEach(d => {
       const data = d.data();
-      if (isHalal(d.id, _currentMarket) && isStartOfRebound(data)) {
+      const halal = isHalal(d.id, _currentMarket);
+      const rebound = isStartOfRebound(data);
+      if (halal) countHalal++;
+      if (halal && rebound) { countRebound++; }
+      if (halal && rebound) {
         grid.appendChild(buildForasCard(d.id, data, _currentMarket));
         count++;
       }
     });
     if (count === 0) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div>لا توجد أسهم في بداية الارتداد حالياً</div>';
+      const total = snap.size;
+      let msg = 'ð ÙØ§ ØªÙØ¬Ø¯ Ø£Ø³ÙÙ ÙÙ Ø¨Ø¯Ø§ÙØ© Ø§ÙØ§Ø±ØªØ¯Ø§Ø¯ Ø­Ø§ÙÙØ§Ù';
+      if (total > 0 && countHalal === 0) {
+        msg = `â ï¸ ÙÙØ¬Ø¯ ${total} Ø³ÙÙ ÙÙ Ø§ÙÙØ§Ø¹Ø¯Ø© ÙÙÙ ÙØ§ Ø´ÙØ¡ ÙÙ ÙØ§Ø¦ÙØ© Ø§ÙØ­ÙØ§Ù`;
+      } else if (total > 0 && countHalal > 0 && countRebound === 0) {
+        msg = `â³ ÙÙØ¬Ø¯ ${countHalal} Ø³ÙÙ Ø­ÙØ§Ù ÙÙÙ ÙØ§ ØªÙØ¬Ø¯ Ø¥Ø´Ø§Ø±Ø© Ø§Ø±ØªØ¯Ø§Ø¯ Ø¨Ø¹Ø¯ (Confidence < 25 Ø£Ù Ø´ÙØ¹Ø© Ø­ÙØ±Ø§Ø¡)`;
+      }
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">ð</div>${msg}</div>`;
     }
     loadMeta();
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
   }
 }
 
-// ── Load ARKITAZ ──
+// ââ Load ARKITAZ ââ
 async function loadArkitaz() {
   const grid = document.getElementById('grid-arkitaz');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  grid.innerHTML = '<div class="empty"><div class="empty-icon">â³</div>Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'consolidation_sa' : 'consolidation_us';
     const snap = await getDocs(collection(window._db, collName));
     grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>'; return; }
+    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ Ø£Ø³ÙÙ Ø§Ø±ØªÙØ§Ø²</div>'; return; }
     let count = 0;
     snap.forEach(d => {
       if (isHalal(d.id, _currentMarket)) {
@@ -1315,14 +1501,14 @@ async function loadArkitaz() {
       }
     });
     if (count === 0) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز حلال حالياً</div>';
+      grid.innerHTML = '<div class="empty"><div class="empty-icon">ð­</div>ÙØ§ ØªÙØ¬Ø¯ Ø£Ø³ÙÙ Ø§Ø±ØªÙØ§Ø² Ø­ÙØ§Ù Ø­Ø§ÙÙØ§Ù</div>';
     }
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">â ï¸</div>Ø®Ø·Ø£: ${err.message}</div>`;
   }
 }
 
-// ── Load meta ──
+// ââ Load meta ââ
 async function loadMeta() {
   try {
     await waitForDB();
@@ -1330,11 +1516,11 @@ async function loadMeta() {
     const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
     const metaDoc = await getDoc(doc(window._db, 'meta', collName));
     const d = metaDoc.data();
-    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'آخر تحديث: ' + d.lastRun : '';
+    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«: ' + d.lastRun : '';
   } catch {}
 }
 
-// ── Auto-register paper trade (for performance tab) ──
+// ââ Auto-register paper trade (for performance tab) ââ
 function autoRegisterPaperTrade(sym, data) {
   if (!data.confidence || data.confidence < 60) return;
   const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
@@ -1355,10 +1541,10 @@ function autoRegisterPaperTrade(sym, data) {
   localStorage.setItem('paperTrades', JSON.stringify(trades));
 }
 
-// ── Load Performance (auto trades) ──
+// ââ Load Performance (auto trades) â ÙÙØµÙÙ Ø­Ø³Ø¨ Ø§ÙØ³ÙÙ ââ
 async function loadPerformance() {
   const tbody = document.getElementById('perf-tbody');
-  tbody.innerHTML = '';
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text2)">â³ Ø¬Ø§Ø±Ù Ø§ÙØªØ­ÙÙÙ...</td></tr>';
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1368,38 +1554,46 @@ async function loadPerformance() {
     snap.forEach(d => _trades.push({...d.data(), id: d.id}));
     // Also local auto trades
     const localTrades = Object.values(JSON.parse(localStorage.getItem('paperTrades') || '{}'));
-    const allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
+    let allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
+    // ÙÙØªØ± Ø­Ø³Ø¨ Ø§ÙØ³ÙÙ Ø§ÙÙØ­Ø¯Ø¯ ÙÙ ØªØ¨ÙÙØ¨ Ø§ÙØ£Ø¯Ø§Ø¡
+    const perfMarket = _currentPerfMarket || 'us';
+    const isSA = (sym) => /^\d{4}$/.test(String(sym));
+    if (perfMarket === 'sa') {
+      allAutoTrades = allAutoTrades.filter(t => isSA(t.sym || t.symbol));
+    } else {
+      allAutoTrades = allAutoTrades.filter(t => !isSA(t.sym || t.symbol));
+    }
     renderPerfTable(allAutoTrades, tbody);
     renderPerfSummary(allAutoTrades);
   } catch(err) {
-    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">Ø®Ø·Ø£ ÙÙ Ø§ÙØªØ­ÙÙÙ</td></tr>`;
   }
 }
 
 function renderPerfTable(trades, tbody) {
   tbody.innerHTML = '';
   if (!trades.length) {
-    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات تلقائية بعد</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª ØªÙÙØ§Ø¦ÙØ© Ø¨Ø¹Ø¯</td></tr>';
     return;
   }
   trades.forEach(t => {
     const pnl = t.close_price && t.entry ? ((t.close_price - t.entry) / t.entry * 100).toFixed(2) : null;
     const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
-    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' :
-      (pnl > 0 ? '<span class="status-profit">ربح</span>' : '<span class="status-loss">خسارة</span>');
+    const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' :
+      (pnl > 0 ? '<span class="status-profit">Ø±Ø¨Ø­</span>' : '<span class="status-loss">Ø®Ø³Ø§Ø±Ø©</span>');
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${t.sym || t.symbol}</strong></td>
-      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : '—'}</td>
-      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : '—'}</td>
-      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
-      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : '—'}</td>
-      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
+      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : 'â'}</td>
+      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : 'â'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
+      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : 'â'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
       <td>${statusLabel}</td>
-      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : '—'}</td>
+      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : 'â'}</td>
       <td>
-        ${t.status === 'open' ? `<button class="btn-close-trade" onclick="openCloseTrade('${t.id || t.sym}')">إغلاق</button>` : ''}
-        <button class="btn-remove-trade" onclick="removeTrade('${t.id || t.sym}')" style="margin-top:2px">حذف</button>
+        ${t.status === 'open' ? `<button class="btn-close-trade" onclick="openCloseTrade('${t.id || t.sym}')">Ø¥ØºÙØ§Ù</button>` : ''}
+        <button class="btn-remove-trade" onclick="removeTrade('${t.id || t.sym}')" style="margin-top:2px">Ø­Ø°Ù</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1413,31 +1607,31 @@ function renderPerfSummary(trades) {
   const wins = closed.filter(t => t.close_price && t.entry && t.close_price > t.entry);
   el.innerHTML = `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">إجمالي</div>
+      <div style="font-size:11px;color:var(--text2)">Ø¥Ø¬ÙØ§ÙÙ</div>
       <div style="font-size:20px;font-weight:700">${total}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">مفتوحة</div>
+      <div style="font-size:11px;color:var(--text2)">ÙÙØªÙØ­Ø©</div>
       <div style="font-size:20px;font-weight:700;color:var(--blue)">${trades.filter(t => t.status === 'open').length}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">ربح</div>
+      <div style="font-size:11px;color:var(--text2)">Ø±Ø¨Ø­</div>
       <div style="font-size:20px;font-weight:700;color:var(--green)">${wins.length}</div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">خسارة</div>
+      <div style="font-size:11px;color:var(--text2)">Ø®Ø³Ø§Ø±Ø©</div>
       <div style="font-size:20px;font-weight:700;color:var(--red)">${closed.length - wins.length}</div>
     </div>
   `;
 }
 
-// ── Portfolio (manual) ──
+// ââ Portfolio (manual) ââ
 window.toggleAddPortfolio = function() {
   document.getElementById('addPortfolioForm').classList.toggle('open');
   document.getElementById('pf-date').valueAsDate = new Date();
 };
 
-// ── Portfolio localStorage helpers (primary storage — survives Auth failures) ──
+// ââ Portfolio localStorage helpers (primary storage â survives Auth failures) ââ
 const LS_PORT_KEY = '_krm_portfolio';
 function lsPortLoad() {
   try { return JSON.parse(localStorage.getItem(LS_PORT_KEY) || '{}'); } catch { return {}; }
@@ -1453,7 +1647,7 @@ window.savePortfolioTrade = async function() {
   const date = document.getElementById('pf-date').value;
   const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
   const sl = parseFloat(document.getElementById('pf-sl').value) || null;
-  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
+  if (!sym || !entry || !qty) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø§ÙØ³ÙÙ ÙØ§ÙØ³Ø¹Ø± ÙØ§ÙÙÙÙØ©'); return; }
   const id = sym + '_manual_' + Date.now();
   const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
   // Save to localStorage first (always works)
@@ -1492,22 +1686,22 @@ async function loadPortfolio() {
   } catch {}
   _portfolioTrades = trades;
   if (!trades.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">ÙØ§ ØªÙØ¬Ø¯ ØµÙÙØ§Øª â Ø£Ø¶Ù ØµÙÙØ© ÙØ¯ÙÙØ©</td></tr>';
     return;
   }
   trades.forEach(t => {
-    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
+    const statusLabel = t.status === 'open' ? '<span class="status-open">ÙÙØªÙØ­Ø©</span>' : '<span class="status-closed">ÙØºÙÙØ©</span>';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${t.symbol || t.sym}</strong></td>
       <td>$${Number(t.entry).toFixed(2)}</td>
-      <td>${t.qty || '—'}</td>
-      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
-      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
-      <td style="font-size:11px">${t.date || '—'}</td>
+      <td>${t.qty || 'â'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : 'â'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : 'â'}</td>
+      <td style="font-size:11px">${t.date || 'â'}</td>
       <td>${statusLabel}</td>
       <td>
-        <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">حذف</button>
+        <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')">Ø­Ø°Ù</button>
       </td>
     `;
     tbody.appendChild(tr);
@@ -1515,7 +1709,7 @@ async function loadPortfolio() {
 }
 
 window.removePortfolioTrade = async function(id) {
-  if (!confirm('حذف هذه الصفقة؟')) return;
+  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
   // Remove from localStorage immediately
   const map = lsPortLoad();
   delete map[id];
@@ -1530,8 +1724,8 @@ window.removePortfolioTrade = async function(id) {
   loadPortfolio();
 };
 
-// ── News Calendar ──
-const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+// ââ News Calendar ââ
+const DAY_NAMES = ['Ø§ÙØ£Ø­Ø¯','Ø§ÙØ§Ø«ÙÙÙ','Ø§ÙØ«ÙØ§Ø«Ø§Ø¡','Ø§ÙØ£Ø±Ø¨Ø¹Ø§Ø¡','Ø§ÙØ®ÙÙØ³','Ø§ÙØ¬ÙØ¹Ø©','Ø§ÙØ³Ø¨Øª'];
 
 function getWeekStart(offset = 0) {
   const now = new Date();
@@ -1549,7 +1743,7 @@ async function loadCalendar() {
   grid.innerHTML = '';
   grid.style.display = 'block';
 
-  // Hide the prev/next week buttons and label — TradingView widget handles navigation
+  // Hide the prev/next week buttons and label â TradingView widget handles navigation
   const calHeaderEl = document.querySelector('.cal-header');
   if (calHeaderEl) calHeaderEl.style.display = 'none';
 
@@ -1560,9 +1754,9 @@ async function loadCalendar() {
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
 
-  // ── Economic Calendar Widget (investing.com) ──
+  // ââ Economic Calendar Widget (investing.com) ââ
   const calSection = document.createElement('div');
-  calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📅 التقويم الاقتصادي</div>`;
+  calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">ð Ø§ÙØªÙÙÙÙ Ø§ÙØ§ÙØªØµØ§Ø¯Ù</div>`;
   const countries = (_currentMarket === 'sa') ? '20' : '5';
   const calIframe = document.createElement('iframe');
   calIframe.src = `https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=${countries}&calType=week&timeZone=23&lang=3`;
@@ -1576,13 +1770,13 @@ async function loadCalendar() {
   calSection.appendChild(calIframe);
   wrapper.appendChild(calSection);
 
-  // ── News Section (Arabic translated headlines) ──
+  // ââ News Section (Arabic translated headlines) ââ
   const newsSection = document.createElement('div');
-  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار <span id="news-status" style="font-weight:400;font-size:11px;opacity:.6"></span></div>`;
+  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">ð° Ø¢Ø®Ø± Ø§ÙØ£Ø®Ø¨Ø§Ø± <span id="news-status" style="font-weight:400;font-size:11px;opacity:.6"></span></div>`;
   const newsListEl = document.createElement('div');
   newsListEl.id = 'news-list';
   newsListEl.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
-  newsListEl.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⏳ جاري تحميل الأخبار...</div>';
+  newsListEl.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">â³ Ø¬Ø§Ø±Ù ØªØ­ÙÙÙ Ø§ÙØ£Ø®Ø¨Ø§Ø±...</div>';
   newsSection.appendChild(newsListEl);
   wrapper.appendChild(newsSection);
 
@@ -1633,11 +1827,10 @@ async function loadTranslatedNews(container, isDark) {
       } catch(e) {}
     }
 
-    if (!items.length) throw new Error('لا توجد أخبار');
+    if (!items.length) throw new Error('ÙØ§ ØªÙØ¬Ø¯ Ø£Ø®Ø¨Ø§Ø±');
 
     container.innerHTML = '';
-    if (statusEl) statusEl.textContent = '(جاري الترجمة...)';
-    
+    if (statusEl) statusEl.textContent = '(Ø¬Ø§Ø±Ù Ø§ÙØªØ±Ø¬ÙØ©...)';
     const bg = isDark ? '#1e2130' : '#f4f6fb';
     const border = isDark ? '#2a2f45' : '#e0e4ef';
     const textColor = isDark ? '#c8d0e8' : '#2a2f45';
@@ -1664,14 +1857,14 @@ async function loadTranslatedNews(container, isDark) {
       card.onmouseleave = () => card.style.opacity = '1';
       card.innerHTML = `
         <div style="font-size:13px;font-weight:600;color:${textColor};line-height:1.5;margin-bottom:4px;direction:rtl;text-align:right">${translated[i]}</div>
-        <div style="font-size:11px;color:${subColor};direction:rtl;text-align:right">${source ? source + ' · ' : ''}${dateStr}</div>
+        <div style="font-size:11px;color:${subColor};direction:rtl;text-align:right">${source ? source + ' Â· ' : ''}${dateStr}</div>
         <div style="font-size:11px;color:${subColor};direction:ltr;text-align:left;margin-top:2px;opacity:.7">${titles[i]}</div>
       `;
       container.appendChild(card);
     });
 
   } catch(err) {
-    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبan�ة: ${err.message}</div>`;
+    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">â¨ï¸ ØªØ²Ø°ÙØ± ØªØ­ÙÙÙ Ø§ÙØ£Ø®Ø¨Ø§Ø±: ${err.message}</div>`;
     if (statusEl) statusEl.textContent = '';
   }
 }
@@ -1679,7 +1872,7 @@ async function loadTranslatedNews(container, isDark) {
 window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
 window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
 
-// ── Detail page ──
+// ââ Detail page ââ
 function openDetail(symbol, data, market) {
   _currentStock = { symbol, data, market };
   document.getElementById('detailSymbol').textContent = symbol;
@@ -1689,61 +1882,61 @@ function openDetail(symbol, data, market) {
 
   const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
   const btn = document.getElementById('btnBuyDetail');
-  if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
-  else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
+  if (openTrade) { btn.textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø©'; btn.classList.add('bought'); }
+  else { btn.textContent = 'ð Ø´Ø±Ø§Ø©'; btn.classList.remove('bought'); }
   document.getElementById('buyFormDetail').classList.remove('open');
   document.getElementById('saveIndicator').textContent = '';
 
   const conf = data.confidence || 0;
   document.getElementById('detailStats').innerHTML = `
     <div class="stat-box">
-      <div class="stat-label">السعر الحالي</div>
-      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : '—'}</div>
+      <div class="stat-label">Ø§ÙØ³Ø¹Ø± Ø§ÙØ­Ø§ÙÙÙ</div>
+      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">مستوى الثقة</div>
+      <div class="stat-label">ÙØ¶ØªÙÙ Ø§ÙØ«ÙØ©</div>
       <div class="stat-value" style="color:${confColor(conf)}">${conf}%</div>
     </div>
     <div class="stat-box">
       <div class="stat-label">RSI</div>
-      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : '—'}</div>
+      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">نقطة الدخول</div>
-      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : '—'}</div>
+      <div class="stat-label">ÙØ¹ØªÙÙ Ø§ÙØ¯Ø®ÙÙ</div>
+      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">وقف الخسارة</div>
-      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</div>
+      <div class="stat-label">ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div>
+      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : 'â'}</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">الأسهم الحرة</div>
-      <div class="stat-value" id="detailFloatVal" style="color:var(--text2)">⏳</div>
+      <div class="stat-label">Ø§ÙØ£Ø³ÙÙ Ø§ÙØ­Ø±Ø©</div>
+      <div class="stat-value" id="detailFloatVal" style="color:var(--text2)">â³</div>
     </div>
     <div class="stat-box">
-      <div class="stat-label">آخر تحديث</div>
-      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || '—'}</div>
+      <div class="stat-label">Ø¢Ø®Ø± ØªØ­Ø¯ÙØ«</div>
+      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || 'â'}</div>
     </div>
   `;
-  // جلب الأسهم الحرة في الخلفية
+  // Ø¬ÙØ¨ Ø§ÙØ£Ø³ÙÙ Ø§ÙØ­Ø±Ø© ÙÙ Ø§ÙØ®ÙÙÙØ©
   fetchFloatShares(symbol, market).then(val => {
     const el = document.getElementById('detailFloatVal');
     if (!el) return;
     if (val) { el.textContent = val; el.style.color = 'var(--text)'; }
-    else { el.textContent = '—'; el.style.color = 'var(--text2)'; }
+    else { el.textContent = 'â'; el.style.color = 'var(--text2)'; }
   });
 
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
-      <div class="tl-title">مستويات التداول</div>
+      <div class="tl-title">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ</div>
       <div class="tl-grid">
-        <div class="tl-item tl-entry"><div class="tl-item-label">🎯 نقطة الدخول</div><div class="tl-item-val">$${data.entry}</div></div>
-        <div class="tl-item tl-stop"><div class="tl-item-label">🛑 وقف الخسارة</div><div class="tl-item-val">$${data.stop_loss}</div></div>
-        <div class="tl-item tl-t1"><div class="tl-item-label">🟢 الهدف الأول</div><div class="tl-item-val">$${data.target1}</div></div>
-        <div class="tl-item tl-t2"><div class="tl-item-label">🚀 الهدف الثاني</div><div class="tl-item-val">$${data.target2 || '—'}</div></div>
+        <div class="tl-item tl-entry"><div class="tl-item-label">ð¯ ÙÙØ·Ø© Ø§ÙØ¯Ø®ÙÙ</div><div class="tl-item-val">$${data.entry}</div></div>
+        <div class="tl-item tl-stop"><div class="tl-item-label">ð ÙÙÙ Ø§ÙØ®Ø³Ø§Ø±Ø©</div><div class="tl-item-val">$${data.stop_loss}</div></div>
+        <div class="tl-item tl-t1"><div class="tl-item-label">ð¢ Ø§ÙÙØ¯Ù Ø§ÙØ£ÙÙ</div><div class="tl-item-val">$${data.target1}</div></div>
+        <div class="tl-item tl-t2"><div class="tl-item-label">ð Ø§ÙÙØ¯Ù Ø§ÙØ«Ø§ÙÙ</div><div class="tl-item-val">$${data.target2 || 'â'}</div></div>
       </div>`;
   } else {
-    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُضاف بعد التحديث</div>';
+    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">ÙØ³ØªÙÙØ§Øª Ø§ÙØªØ¯Ø§ÙÙ Ø³ØªÙØ¶Ø§Ù Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div>';
   }
 
   // Arkitaz conditions in detail
@@ -1752,19 +1945,19 @@ function openDetail(symbol, data, market) {
     const rsiOk = rsi && rsi >= 23 && rsi <= 27;
     document.getElementById('detailLayers').innerHTML = `
       <div class="layer-card">
-        <div class="layer-name">📊 RSI</div>
-        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : '—'}</div>
-        <div style="font-size:10px;color:var(--text2)">${rsiOk ? '✅ في المنطقة المثالية 23-27' : rsi < 23 ? '⚠️ منخفض جداً' : rsi > 35 ? '❌ فوق المستهدف' : '🟡 قريب'}</div>
+        <div class="layer-name">ð RSI</div>
+        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : 'â'}</div>
+        <div style="font-size:10px;color:var(--text2)">${rsiOk ? 'â ÙÙ Ø§ÙÙÙØ·ÙØ© Ø§ÙÙØ«Ø§ÙÙØ© 23-27' : rsi < 23 ? 'â ï¸ ÙÙØ®ÙØ¶ Ø¬Ø¯Ø§Ù' : rsi > 35 ? 'â ÙÙÙ Ø§ÙÙØ³ØªÙØ¯Ù' : 'ð¡ ÙØ±ÙØ¨'}</div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">📈 MACD</div>
-        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? '↗️' : '—'}</div>
-        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'يتحسن ✅' : 'ينتظر تأكيد'}</div>
+        <div class="layer-name">ð MACD</div>
+        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? 'âï¸' : 'â'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'ÙØªØ­Ø³Ù â' : 'ÙÙØªØ¸Ø± ØªØ£ÙÙØ¯'}</div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">〽️ المتوسطات</div>
-        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? '↗️' : '↘️'}</div>
-        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'يستعيد ✅' : 'تحت المتوسطات'}</div>
+        <div class="layer-name">ã½ï¸ Ø§ÙÙØªÙØ³Ø·Ø§Øª</div>
+        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? 'âï¸' : 'âï¸'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'ÙØ³ØªØ¹ÙØ¯ â' : 'ØªØ­Øª Ø§ÙÙØªÙØ³Ø·Ø§Øª'}</div>
       </div>
     `;
   } else {
@@ -1773,17 +1966,17 @@ function openDetail(symbol, data, market) {
     const p = typeof data.score === 'number' ? Math.max(0, 1 - data.score / 0.10) : 0;
     document.getElementById('detailLayers').innerHTML = `
       <div class="layer-card">
-        <div class="layer-name">📊 كلاسيكي</div>
+        <div class="layer-name">ð ÙÙØ§Ø³ÙÙÙ</div>
         <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">🌊 وايكوف</div>
+        <div class="layer-name">ð ÙØ§ÙÙÙÙ</div>
         <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div>
       </div>
       <div class="layer-card">
-        <div class="layer-name">🌀 إليوت</div>
+        <div class="layer-name">ð Ø¥ÙÙÙØª</div>
         <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
         <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div>
       </div>
@@ -1795,9 +1988,9 @@ function openDetail(symbol, data, market) {
   if (news.length) {
     const newsHtml = news.map(n => {
       const d = n.time ? new Date(n.time * 1000).toLocaleDateString('ar-SA') : '';
-      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' · ' + d : ''}</div></div>`;
+      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' Â· ' + d : ''}</div></div>`;
     }).join('');
-    newsEl.innerHTML = `<div class="news-title">📰 آخر الأخبار</div>${newsHtml}`;
+    newsEl.innerHTML = `<div class="news-title">ð° Ø¢Ø®Ø± Ø§ÙØ£Ø®Ø¨Ø§Ø±</div>${newsHtml}`;
     newsEl.style.display = '';
   } else {
     newsEl.style.display = 'none';
@@ -1808,7 +2001,7 @@ function openDetail(symbol, data, market) {
   if (data.candles && data.candles.length) {
     setTimeout(() => renderFullChart(chartDiv, data.candles), 50);
   } else {
-    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">الشارت سيظهر بعد التحديث</div></div>';
+    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>ð</div><div style="font-size:12px">Ø§ÙØ´Ø§Ø±Øª Ø³ÙØ¸ÙØ± Ø¨Ø¹Ø¯ Ø§ÙØªØ­Ø¯ÙØ«</div></div>';
   }
 
   document.getElementById('buyDateD').valueAsDate = new Date();
@@ -1826,14 +2019,14 @@ window.detailBuy = function() {
   document.getElementById('buyFormDetail').classList.toggle('open');
 };
 
-// ── Save buy ──
+// ââ Save buy ââ
 window.saveBuyDetail = async function() {
   if (!_currentStock) return;
   const { symbol, data, market } = _currentStock;
   const price = parseFloat(document.getElementById('buyPriceD').value);
   const qty = parseInt(document.getElementById('buyQtyD').value) || 0;
   const date = document.getElementById('buyDateD').value;
-  if (!price) { alert('يرجى إدحال سعر الشراء'); return; }
+  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø­Ø§Ù Ø³Ø¹Ø± Ø§ÙØ´Ø±Ø§Ø¡'); return; }
   const trade = {
     id: symbol + '_' + Date.now(),
     symbol, sym: symbol, market,
@@ -1853,16 +2046,16 @@ window.saveBuyDetail = async function() {
     const { doc, setDoc } = window._firestoreOps;
     await setDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
     _trades.push(trade);
-    document.getElementById('saveIndicator').textContent = '✅ تم الحفظ';
+    document.getElementById('saveIndicator').textContent = 'â ØªÙ Ø§ÙØ­ÙØ¸';
     document.getElementById('buyFormDetail').classList.remove('open');
-    document.getElementById('btnBuyDetail').textContent = '✅ تم الشراء';
+    document.getElementById('btnBuyDetail').textContent = 'â ØªÙ Ø§ÙØ´Ø±Ø§Ø¡';
     document.getElementById('btnBuyDetail').classList.add('bought');
   } catch(err) {
-    document.getElementById('saveIndicator').textContent = '❌ ' + err.message;
+    document.getElementById('saveIndicator').textContent = 'â ' + err.message;
   }
 };
 
-// ── Close trade ──
+// ââ Close trade ââ
 window.openCloseTrade = function(id) {
   _closeTradeId = id;
   document.getElementById('closeDateInput').valueAsDate = new Date();
@@ -1871,7 +2064,7 @@ window.openCloseTrade = function(id) {
 window.confirmCloseTrade = async function() {
   const price = parseFloat(document.getElementById('closePriceInput').value);
   const date = document.getElementById('closeDateInput').value;
-  if (!price) { alert('يرجى إدخال سعر الإغلاق'); return; }
+  if (!price) { alert('ÙØ±Ø¬Ù Ø¥Ø¯Ø®Ø§Ù Ø³Ø¹Ø± Ø§ÙØ¥ØºÙØ§Ù'); return; }
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1881,11 +2074,11 @@ window.confirmCloseTrade = async function() {
     });
     document.getElementById('closeTradeDialog').classList.remove('open');
     loadPerformance();
-  } catch(err) { alert('خطأ: ' + err.message); }
+  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
 };
 
 window.removeTrade = async function(id) {
-  if (!confirm('حذف هذه الصفقة؟')) return;
+  if (!confirm('Ø­Ø°Ù ÙØ°Ù Ø§ÙØµÙÙØ©Ø')) return;
   try {
     await waitForDB();
     const uid = await waitForUID();
@@ -1896,10 +2089,10 @@ window.removeTrade = async function(id) {
     Object.keys(lt).forEach(k => { if (lt[k].id === id || k === id) delete lt[k]; });
     localStorage.setItem('paperTrades', JSON.stringify(lt));
     loadPerformance();
-  } catch(err) { alert('خطأ: ' + err.message); }
+  } catch(err) { alert('Ø®Ø·Ø£: ' + err.message); }
 };
 
-// ── Init ──
+// ââ Init ââ
 loadForas();
 
 window.openDetail = openDetail;
