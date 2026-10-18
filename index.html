@@ -54,7 +54,7 @@
   --badge-ready: #14532d;
   --badge-ready-text: #22c55e;
 }
-
+ 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
@@ -63,13 +63,13 @@ body {
   min-height: 100vh;
   transition: background 0.3s, color 0.3s;
 }
-
+ 
 /* ── Layout ── */
 .app-layout {
   display: flex;
   min-height: 100vh;
 }
-
+ 
 /* ── Sidebar ── */
 .sidebar {
   width: 180px;
@@ -84,12 +84,12 @@ body {
   height: 100vh;
   overflow-y: auto;
 }
-
+ 
 .sidebar-header {
   padding: 0 14px 14px;
   border-bottom: 1px solid var(--sidebar-border);
 }
-
+ 
 .sidebar-logo {
   font-size: 17px;
   font-weight: 700;
@@ -98,7 +98,7 @@ body {
   align-items: center;
   gap: 6px;
 }
-
+ 
 /* ── Market selector (above tabs) ── */
 .market-selector {
   padding: 14px 10px 10px;
@@ -161,7 +161,7 @@ body {
 .market-option:hover { background: var(--bg3); }
 .market-option.selected { font-weight: 700; color: var(--blue); }
 .market-option .flag { font-size: 18px; }
-
+ 
 /* ── Nav tabs ── */
 .sidebar-nav {
   flex: 1;
@@ -192,7 +192,7 @@ body {
   font-weight: 600;
 }
 .nav-tab .tab-icon { font-size: 16px; }
-
+ 
 /* ── Dark mode toggle ── */
 .sidebar-footer {
   padding: 12px 10px;
@@ -213,17 +213,17 @@ body {
   justify-content: center;
 }
 .theme-toggle:hover { background: var(--tab-hover); }
-
+ 
 /* ── Main content ── */
 .main-content {
   flex: 1;
   padding: 20px;
   min-width: 0;
 }
-
+ 
 .page { display: none; }
 .page.active { display: block; }
-
+ 
 /* ── Page header ── */
 .page-header {
   display: flex;
@@ -239,14 +239,14 @@ body {
   font-size: 12px;
   color: var(--text2);
 }
-
+ 
 /* ── Cards grid ── */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   gap: 14px;
 }
-
+ 
 /* ── Stock card (tall rectangle) ── */
 .stock-card {
   background: var(--card-bg);
@@ -307,7 +307,7 @@ body {
 }
 .conf-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
 .conf-pct { font-size: 12px; font-weight: 700; min-width: 32px; text-align: left; }
-
+ 
 .badge-ready {
   display: inline-block;
   padding: 3px 8px;
@@ -325,7 +325,7 @@ body {
   background: var(--bg3);
   color: var(--text2);
 }
-
+ 
 /* ── Arkitaz card specific ── */
 .ark-conditions {
   display: flex;
@@ -344,7 +344,7 @@ body {
 .cond-ok { color: var(--green); }
 .cond-warn { color: var(--gold); }
 .cond-bad { color: var(--red); }
-
+ 
 /* ── Empty state ── */
 .empty {
   text-align: center;
@@ -352,7 +352,7 @@ body {
   color: var(--text2);
 }
 .empty-icon { font-size: 48px; margin-bottom: 12px; }
-
+ 
 /* ── Detail page ── */
 #detail-page {
   display: none;
@@ -364,7 +364,7 @@ body {
   padding: 20px;
 }
 #detail-page.open { display: block; }
-
+ 
 .detail-header {
   display: flex;
   align-items: center;
@@ -381,9 +381,9 @@ body {
   font-size: 14px;
 }
 .btn-back:hover { background: var(--tab-hover); }
-
+ 
 #detailSymbol { font-size: 24px; font-weight: 700; }
-
+ 
 .detail-actions {
   display: flex;
   gap: 8px;
@@ -409,7 +409,7 @@ body {
   text-decoration: none;
   font-size: 13px;
 }
-
+ 
 .detail-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -424,7 +424,7 @@ body {
 }
 .stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
 .stat-value { font-size: 16px; font-weight: 700; }
-
+ 
 .tl-title { font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 600; }
 .tl-grid {
   display: grid;
@@ -444,7 +444,7 @@ body {
 .tl-stop .tl-item-val { color: var(--red); }
 .tl-t1 .tl-item-val { color: var(--green); }
 .tl-t2 .tl-item-val { color: #a855f7; }
-
+ 
 .detail-layers {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -461,7 +461,7 @@ body {
 .layer-val { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
 .layer-bar { height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
 .layer-fill { height: 100%; border-radius: 4px; }
-
+ 
 #detailChart {
   height: 280px;
   background: var(--bg2);
@@ -470,7 +470,7 @@ body {
   margin-bottom: 16px;
   overflow: hidden;
 }
-
+ 
 .buy-form { display: none; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 10px; }
 .buy-form.open { display: block; }
 .buy-form label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 10px; }
@@ -507,13 +507,13 @@ body {
   font-size: 13px;
 }
 #saveIndicator { font-size: 13px; color: var(--green); margin-top: 8px; }
-
+ 
 .news-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
 .news-item a { color: var(--blue); text-decoration: none; font-size: 13px; }
 .news-item a:hover { text-decoration: underline; }
 .news-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
 .news-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
-
+ 
 /* ── Close Trade Dialog ── */
 .dialog-overlay {
   display: none;
@@ -534,7 +534,7 @@ body {
   box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 .dialog-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
-
+ 
 /* ── Performance / Portfolio tables ── */
 .perf-section { margin-bottom: 24px; }
 .perf-section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
@@ -582,7 +582,7 @@ body {
 .status-closed { color: var(--text2); }
 .status-profit { color: var(--green); font-weight: 600; }
 .status-loss { color: var(--red); font-weight: 600; }
-
+ 
 /* ── Portfolio manual add ── */
 .btn-add-portfolio {
   padding: 8px 16px;
@@ -619,7 +619,7 @@ body {
   border-radius: 6px;
   font-size: 14px;
 }
-
+ 
 /* ── News calendar ── */
 .news-calendar {
   background: var(--card-bg);
@@ -679,7 +679,7 @@ body {
 .cal-event-impact-med { border-color: var(--gold); }
 .cal-event-impact-low { border-color: var(--green); }
 .cal-loading { text-align: center; padding: 40px; color: var(--text2); }
-
+ 
 /* ── Performance market tabs ── */
 .perf-market-tabs {
   display: flex;
@@ -702,7 +702,7 @@ body {
   color: var(--tab-active-text);
   border-color: var(--tab-active-bg);
 }
-
+ 
 /* ── Responsive / Mobile ── */
 @media (max-width: 700px) {
   /* Hide sidebar — use bottom nav instead */
@@ -752,7 +752,7 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 10px 12px;
-  2 background: var(--sidebar-bg);
+    background: var(--sidebar-bg);
     border-bottom: 1px solid var(--sidebar-border);
     position: sticky;
     top: 0;
@@ -783,13 +783,55 @@ body {
 </style>
 </head>
 <body>
-
+ 
+<!-- ══ LOGIN OVERLAY ══ -->
+<div id="loginOverlay" style="display:flex;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:40px 32px;width:320px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.15);text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px">📈</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px">KRM Stocks</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:28px">تسجيل الدخول</div>
+    <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;direction:ltr;outline:none">
+    <input id="loginPass" type="password" placeholder="كلمة المرور" autocomplete="current-password"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;direction:ltr;outline:none">
+    <div id="loginError" style="color:var(--red);font-size:12px;min-height:18px;margin-bottom:8px"></div>
+    <button id="loginBtn" onclick="doLogin()"
+      style="width:100%;padding:11px;background:var(--tab-active-bg);color:var(--tab-active-text);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">
+      دخول
+    </button>
+  </div>
+</div>
+<script>
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  if (!email || !pass) { errEl.textContent = 'أدخل الإيميل وكلمة المرور'; return; }
+  btn.disabled = true;
+  btn.textContent = '...';
+  errEl.textContent = '';
+  // signIn called after firebase loads
+  const tryLogin = () => {
+    if (!window._signIn) { setTimeout(tryLogin, 200); return; }
+    window._signIn(email, pass).catch(err => {
+      errEl.textContent = 'بيانات خاطئة';
+      btn.disabled = false;
+      btn.textContent = 'دخول';
+    });
+  };
+  tryLogin();
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+ 
+<div id="app" style="display:none">
 <!-- ══ MOBILE TOP BAR ══ -->
 <div class="mobile-topbar">
   <div class="mobile-logo">📈 KRM</div>
   <div class="mobile-controls">
     <div class="market-picker" id="marketPickerMobile">
-  2   <button class="market-picker-btn" id="marketPickerBtnMobile" onclick="toggleMarketDropdownMobile()">
+      <button class="market-picker-btn" id="marketPickerBtnMobile" onclick="toggleMarketDropdownMobile()">
         <span id="marketFlagMobile">🇺🇸</span><span class="arrow">▼</span>
       </button>
       <div class="market-dropdown" id="marketDropdownMobile">
@@ -804,17 +846,21 @@ body {
     <button class="theme-toggle" onclick="toggleTheme()" style="padding:6px 10px;font-size:13px">
       <span id="themeIconMobile">🌙</span>
     </button>
+    <button onclick="if(window._signOut)window._signOut()" title="تسجيل الخروج"
+      style="padding:6px 10px;font-size:13px;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text2)">
+      خروج
+    </button>
   </div>
 </div>
-
+ 
 <div class="app-layout">
-
+ 
   <!-- ══ SIDEBAR ══ -->
   <aside class="sidebar">
     <div class="sidebar-header">
       <div class="sidebar-logo">📈 <span>KRM</span></div>
     </div>
-
+ 
     <!-- Market selector -->
     <div class="market-picker" id="marketPicker">
       <button class="market-picker-btn" id="marketPickerBtn" onclick="toggleMarketDropdown()">
@@ -829,7 +875,7 @@ body {
         </div>
       </div>
     </div>
-
+ 
     <!-- Nav tabs -->
     <nav class="sidebar-nav">
       <button class="nav-tab active" onclick="switchTab('foras', this)">
@@ -853,18 +899,22 @@ body {
         <span class="tab-label">الأخبار</span>
       </button>
     </nav>
-
+ 
     <div class="sidebar-footer">
       <button class="theme-toggle" onclick="toggleTheme()">
         <span id="themeIcon">🌙</span>
         <span id="themeLabel">ليلي</span>
       </button>
+      <button onclick="if(window._signOut)window._signOut()"
+        style="margin-top:8px;width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px">
+        🚪 تسجيل الخروج
+      </button>
     </div>
   </aside>
-
+ 
   <!-- ══ MAIN CONTENT ══ -->
   <main class="main-content">
-
+ 
     <!-- ── FORAS PAGE ── -->
     <div id="page-foras" class="page active">
       <div class="page-header">
@@ -873,7 +923,7 @@ body {
       </div>
       <div class="cards-grid" id="grid-foras"></div>
     </div>
-
+ 
     <!-- ── ARKITAZ PAGE ── -->
     <div id="page-arkitaz" class="page">
       <div class="page-header">
@@ -882,7 +932,7 @@ body {
       </div>
       <div class="cards-grid" id="grid-arkitaz"></div>
     </div>
-
+ 
     <!-- ── PERFORMANCE PAGE ── -->
     <div id="page-performance" class="page">
       <div class="page-header">
@@ -908,7 +958,7 @@ body {
         </table>
       </div>
     </div>
-
+ 
     <!-- ── PORTFOLIO PAGE ── -->
     <div id="page-portfolio" class="page">
       <div class="page-header">
@@ -920,7 +970,7 @@ body {
           <div>
             <label>السهم</label>
             <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
-     0    </div>
+          </div>
           <div>
             <label>سعر الدخول</label>
             <input id="pf-entry" type="number" step="0.01" placeholder="1.50">
@@ -928,7 +978,7 @@ body {
           <div>
             <label>الكمية</label>
             <input id="pf-qty" type="number" placeholder="100">
-         0</div>
+          </div>
           <div>
             <label>تاريخ الدخول</label>
             <input id="pf-date" type="date">
@@ -958,7 +1008,7 @@ body {
         <tbody id="portfolio-tbody"></tbody>
       </table>
     </div>
-
+ 
     <!-- ── CALENDAR PAGE ── -->
     <div id="page-calendar" class="page">
       <div class="page-header">
@@ -973,10 +1023,10 @@ body {
         <div class="cal-days" id="calDaysGrid"></div>
       </div>
     </div>
-
+ 
   </main>
 </div>
-
+ 
 <!-- ══ MOBILE BOTTOM NAV ══ -->
 <nav class="bottom-nav" id="bottomNav">
   <button class="bottom-nav-btn active" id="bn-foras" onclick="switchTab('foras', document.querySelector('.nav-tab.active') || this); syncBottomNav('foras')">
@@ -995,7 +1045,7 @@ body {
     <span class="bottom-nav-icon">📅</span>الأخبار
   </button>
 </nav>
-
+ 
 <!-- ══ DETAIL PAGE ══ -->
 <div id="detail-page">
   <div class="detail-header">
@@ -1006,13 +1056,13 @@ body {
       <a id="detailTvLink" class="btn-tv-link" target="_blank">📈 TradingView</a>
     </div>
   </div>
-
+ 
   <div class="detail-stats" id="detailStats"></div>
   <div id="detailLevels"></div>
   <div class="detail-layers" id="detailLayers"></div>
   <div id="detailChart"></div>
   <div id="detailNews"></div>
-
+ 
   <div class="buy-form" id="buyFormDetail">
     <label>تاريخ الشراء</label>
     <input type="date" id="buyDateD">
@@ -1025,7 +1075,7 @@ body {
     <div id="saveIndicator"></div>
   </div>
 </div>
-
+ 
 <!-- ══ CLOSE TRADE DIALOG ══ -->
 <div id="closeTradeDialog" class="dialog-overlay">
   <div class="dialog-box">
@@ -1044,13 +1094,13 @@ body {
     </div>
   </div>
 </div>
-
+ 
 <!-- ══ Firebase ══ -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
-import { getAuth, onAuthStateChanged, signInAnonymously } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+ 
 const app = initializeApp({
   apiKey: "AIzaSyBuTPkpGCeBl6HPxIxrD0__K1KXBCHl6gw",
   authDomain: "krm-stocks.firebaseapp.com",
@@ -1059,39 +1109,37 @@ const app = initializeApp({
   messagingSenderId: "908147806508",
   appId: "1:908147806508:web:be9c49e1d6e23c5c91c3c1"
 });
-
+ 
 const db = getFirestore(app);
 const auth = getAuth(app);
-
+ 
 window._db = db;
 window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
-
-// ── Persistent UID: use Firebase Auth if available, else fallback to localStorage ──
-function getOrCreateLocalUID() {
-  let uid = localStorage.getItem('_krm_uid');
-  if (!uid) {
-    uid = 'local_' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
-    localStorage.setItem('_krm_uid', uid);
-  }
-  return uid;
-}
-
-signInAnonymously(auth).catch(() => {
-  // Auth failed — use persistent local UID so data survives refreshes
-  window._uid = getOrCreateLocalUID();
-});
+ 
+// ── Auth state ──
+window._auth = auth;
+window._signOut = () => signOut(auth);
+window._signIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+ 
 onAuthStateChanged(auth, user => {
   if (user) {
-    // Firebase Auth succeeded — persist this UID so future fallbacks match
     window._uid = user.uid;
     localStorage.setItem('_krm_uid', user.uid);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    const emailEl = document.getElementById('userEmailDisplay');
+    if (emailEl) emailEl.textContent = user.email || '';
+  } else {
+    window._uid = null;
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
   }
 });
 </script>
-
+ 
 <!-- ══ Main Script ══ -->
 <script type="module">
-
+ 
 // ── Globals ──
 let _currentStock = null;
 let _trades = [];
@@ -1100,18 +1148,18 @@ let _closeTradeId = null;
 let _currentMarket = 'us';
 let _currentPerfMarket = 'us';
 let _calWeekOffset = 0;
-
-// ── Halal Universe (قائمة الأسهم الحمال) ──
-const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTJ,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI\EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LoGJ,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
-
+ 
+// ── Halal Universe (قائمة الأسهم الحلال) ──
+const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
+ 
 const HALAL_SA = new Set("1020,1111,1120,1140,1150,1182,1183,1201,1202,1210,1211,1212,1213,1214,1301,1302,1303,1304,1320,1321,1322,1323,1324,1810,1820,1830,1831,1832,1833,1834,1835,2001,2010,2020,2030,2040,2050,2060,2070,2080,2081,2082,2083,2084,2090,2100,2110,2120,2130,2140,2150,2160,2170,2180,2190,2200,2210,2220,2222,2223,2230,2240,2250,2270,2280,2281,2282,2283,2284,2285,2286,2287,2288,2290,2300,2310,2320,2330,2340,2350,2360,2370,2380,2381,2382,3002,3003,3004,3005,3007,3008,3010,3020,3030,3040,3050,3060,3080,3090,3091,3092,4001,4002,4003,4004,4005,4006,4007,4008,4009,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4030,4031,4040,4050,4051,4061,4070,4071,4080,4081,4082,4083,4090,4100,4110,4130,4140,4141,4142,4143,4144,4145,4146,4147,4148,4150,4161,4162,4163,4164,4165,4170,4180,4190,4191,4192,4193,4194,4200,4210,4220,4230,4240,4250,4260,4261,4262,4263,4264,4265,4270,4290,4291,4292,4300,4310,4320,4321,4322,4323,4324,4325,4326,4327,4328,5110,6001,6002,6004,6010,6012,6013,6014,6015,6016,6017,6018,6019,6020,6022,6040,6050,6060,6070,6090,7010,7020,7030,7040,7200,7201,7202,7203,7204,7205,7211,8313".split(','));
-
+ 
 function isHalal(sym, market) {
   if (market === 'sa') return HALAL_SA.has(String(sym));
   return HALAL_US.has(String(sym).toUpperCase());
 }
-
-// بداية الارتداد: confidence >= 25 + شمعة خظراء أخيرة (c > o) + تراجع معقول
+ 
+// بداية الارتداد: confidence >= 25 + شمعة خضراء أخيرة (c > o) + تراجع معقول
 function isStartOfRebound(data) {
   // Confidence check (الثقة في الإشارة يجب أن تكون >= 25)
   if (data.confidence !== undefined && data.confidence < 25) return false;
@@ -1121,16 +1169,16 @@ function isStartOfRebound(data) {
     const close = last.c !== undefined ? last.c : last.close;
     const open  = last.o !== undefined ? last.o : last.open;
     const vol   = last.v !== undefined ? last.v : last.volume;
-    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يرال ينزل
+    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يزال ينزل
     // Volume check (اختياري)
     if (vol) {
       const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
-      if (avgVol > 0 && vol < avgVol * 0.5) return false; // حسم منخفض جداً فقط يُرفض
+      if (avgVol > 0 && vol < avgVol * 0.5) return false; // حجم منخفض جداً فقط يُرفض
     }
   }
   return true;
 }
-
+ 
 // ── Wait helpers ──
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
@@ -1146,7 +1194,7 @@ async function waitForUID() {
   }
   throw new Error('Auth timeout');
 }
-
+ 
 // ── Theme ──
 window.toggleTheme = function() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -1169,7 +1217,7 @@ window.toggleTheme = function() {
     document.getElementById('themeLabel').textContent = 'نهاري';
   }
 })();
-
+ 
 // ── Market picker dropdown ──
 window.toggleMarketDropdown = function() {
   document.getElementById('marketDropdown').classList.toggle('open');
@@ -1180,7 +1228,7 @@ window.closeMarketDropdown = function() {
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#marketPicker')) closeMarketDropdown();
 });
-
+ 
 // ── Market switch ──
 window.setMarket = function(market) {
   _currentMarket = market;
@@ -1196,7 +1244,7 @@ window.setMarket = function(market) {
   if (optSAM) optSAM.classList.toggle('selected', market === 'sa');
   reloadCurrentTab();
 };
-
+ 
 window.toggleMarketDropdownMobile = function() {
   document.getElementById('marketDropdownMobile').classList.toggle('open');
 };
@@ -1206,14 +1254,14 @@ window.closeMarketDropdownMobile = function() {
 document.addEventListener('click', function(e) {
   if (!e.target.closest('#marketPickerMobile')) closeMarketDropdownMobile();
 });
-
+ 
 // ── Bottom nav sync ──
 window.syncBottomNav = function(tab) {
   document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
   const btn = document.getElementById('bn-' + tab);
   if (btn) btn.classList.add('active');
 };
-
+ 
 // ── Performance market switch ──
 window.switchPerfMarket = function(market) {
   _currentPerfMarket = market;
@@ -1223,7 +1271,7 @@ window.switchPerfMarket = function(market) {
   if (lbl) lbl.textContent = market === 'us' ? 'الفرص والارتكاز - أمريكا 🇺🇸' : 'الفرص والارتكاز - السعودية 🇸🇦';
   loadPerformance();
 };
-
+ 
 function reloadCurrentTab() {
   const activeTab = document.querySelector('.nav-tab.active');
   if (!activeTab) return;
@@ -1233,7 +1281,7 @@ function reloadCurrentTab() {
   else if (fn && fn.includes('performance')) loadPerformance();
   else if (fn && fn.includes('portfolio')) loadPortfolio();
 }
-
+ 
 // ── Tab switch ──
 window.switchTab = function(tab, el) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -1247,7 +1295,7 @@ window.switchTab = function(tab, el) {
   else if (tab === 'portfolio') loadPortfolio();
   else if (tab === 'calendar') loadCalendar();
 };
-
+ 
 // ── Helpers ──
 function confColor(v) {
   if (v >= 70) return 'var(--green)';
@@ -1260,7 +1308,7 @@ function rsiColor(v) {
   if (v < 23 || (v > 27 && v <= 35)) return 'var(--gold)';
   return 'var(--red)';
 }
-
+ 
 // ── Chart ──
 function renderFullChart(container, candles) {
   container.innerHTML = '';
@@ -1285,7 +1333,7 @@ function renderFullChart(container, candles) {
   series.setData(candles.map(c => ({ time: c.t, open: c.o, high: c.h, low: c.l, close: c.c })));
   chart.timeScale().fitContent();
 }
-
+ 
 // ── Float shares cache & fetcher ──
 const _floatCache = {};
 async function fetchFloatShares(symbol, market) {
@@ -1309,7 +1357,7 @@ async function fetchFloatShares(symbol, market) {
     return formatted;
   } catch { return null; }
 }
-
+ 
 // ── Build FORAS card (tall rectangle with key levels) ──
 function buildForasCard(symbol, data, market) {
   const div = document.createElement('div');
@@ -1318,7 +1366,7 @@ function buildForasCard(symbol, data, market) {
   const confCol = confColor(conf);
   const isReady = conf >= 60;
   const cur = market === 'sa' ? 'ر.س ' : '$';
-
+ 
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
@@ -1364,7 +1412,7 @@ function buildForasCard(symbol, data, market) {
   });
   return div;
 }
-
+ 
 // ── Build ARKITAZ card (tall rectangle with conditions) ──
 function buildArkitazCard(symbol, data, market) {
   const div = document.createElement('div');
@@ -1372,21 +1420,21 @@ function buildArkitazCard(symbol, data, market) {
   const conf = data.confidence || 0;
   const confCol = confColor(conf);
   const cur = market === 'sa' ? 'ر.س ' : '$';
-
+ 
   const rsi = data.rsi;
   const rsiOk = rsi && rsi >= 23 && rsi <= 27;
   const macdOk = data.macd_improving;
   const maOk = data.ma_recovering;
   const supportOk = data.has_support;
   const candleOk = data.bullish_candle;
-
+ 
   const rsiLabel = rsi ? rsi.toFixed(1) : '—';
   const rsiCol = rsiColor(rsi);
-
+ 
   const checkIcon = (ok) => ok ? '✅' : (ok === false ? '❌' : '⚪');
-
+ 
   const isReady = conf >= 50 || (rsiOk && supportOk);
-
+ 
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
@@ -1440,7 +1488,7 @@ function buildArkitazCard(symbol, data, market) {
   });
   return div;
 }
-
+ 
 // ── Load FORAS ──
 async function loadForas() {
   const grid = document.getElementById('grid-foras');
@@ -1481,7 +1529,7 @@ async function loadForas() {
     grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
-
+ 
 // ── Load ARKITAZ ──
 async function loadArkitaz() {
   const grid = document.getElementById('grid-arkitaz');
@@ -1507,7 +1555,7 @@ async function loadArkitaz() {
     grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
-
+ 
 // ── Load meta ──
 async function loadMeta() {
   try {
@@ -1519,7 +1567,7 @@ async function loadMeta() {
     document.getElementById('lastUpdate').textContent = d?.lastRun ? 'آخر تحديث: ' + d.lastRun : '';
   } catch {}
 }
-
+ 
 // ── Auto-register paper trade (for performance tab) ──
 function autoRegisterPaperTrade(sym, data) {
   if (!data.confidence || data.confidence < 60) return;
@@ -1540,7 +1588,7 @@ function autoRegisterPaperTrade(sym, data) {
   };
   localStorage.setItem('paperTrades', JSON.stringify(trades));
 }
-
+ 
 // ── Load Performance (auto trades) — مفصول حسب السوق ──
 async function loadPerformance() {
   const tbody = document.getElementById('perf-tbody');
@@ -1555,7 +1603,7 @@ async function loadPerformance() {
     // Also local auto trades
     const localTrades = Object.values(JSON.parse(localStorage.getItem('paperTrades') || '{}'));
     let allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
-    // فلتر حسب السوق المحدد في تبييب الأداء
+    // فلتر حسب السوق المحدد في تبويب الأداء
     const perfMarket = _currentPerfMarket || 'us';
     const isSA = (sym) => /^\d{4}$/.test(String(sym));
     if (perfMarket === 'sa') {
@@ -1569,7 +1617,7 @@ async function loadPerformance() {
     tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
   }
 }
-
+ 
 function renderPerfTable(trades, tbody) {
   tbody.innerHTML = '';
   if (!trades.length) {
@@ -1599,7 +1647,7 @@ function renderPerfTable(trades, tbody) {
     tbody.appendChild(tr);
   });
 }
-
+ 
 function renderPerfSummary(trades) {
   const el = document.getElementById('perf-summary');
   const total = trades.length;
@@ -1624,13 +1672,13 @@ function renderPerfSummary(trades) {
     </div>
   `;
 }
-
+ 
 // ── Portfolio (manual) ──
 window.toggleAddPortfolio = function() {
   document.getElementById('addPortfolioForm').classList.toggle('open');
   document.getElementById('pf-date').valueAsDate = new Date();
 };
-
+ 
 // ── Portfolio localStorage helpers (primary storage — survives Auth failures) ──
 const LS_PORT_KEY = '_krm_portfolio';
 function lsPortLoad() {
@@ -1639,7 +1687,7 @@ function lsPortLoad() {
 function lsPortSave(map) {
   try { localStorage.setItem(LS_PORT_KEY, JSON.stringify(map)); } catch {}
 }
-
+ 
 window.savePortfolioTrade = async function() {
   const sym = document.getElementById('pf-sym').value.trim().toUpperCase();
   const entry = parseFloat(document.getElementById('pf-entry').value);
@@ -1664,7 +1712,7 @@ window.savePortfolioTrade = async function() {
   document.getElementById('addPortfolioForm').classList.remove('open');
   loadPortfolio();
 };
-
+ 
 async function loadPortfolio() {
   const tbody = document.getElementById('portfolio-tbody');
   tbody.innerHTML = '';
@@ -1690,7 +1738,7 @@ async function loadPortfolio() {
     return;
   }
   trades.forEach(t => {
-    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغققة</span>';
+    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${t.symbol || t.sym}</strong></td>
@@ -1707,7 +1755,7 @@ async function loadPortfolio() {
     tbody.appendChild(tr);
   });
 }
-
+ 
 window.removePortfolioTrade = async function(id) {
   if (!confirm('حذف هذه الصفقة؟')) return;
   // Remove from localStorage immediately
@@ -1723,10 +1771,10 @@ window.removePortfolioTrade = async function(id) {
   } catch {}
   loadPortfolio();
 };
-
+ 
 // ── News Calendar ──
 const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-
+ 
 function getWeekStart(offset = 0) {
   const now = new Date();
   const day = now.getDay(); // 0=Sun
@@ -1735,25 +1783,25 @@ function getWeekStart(offset = 0) {
   sun.setHours(0,0,0,0);
   return sun;
 }
-
+ 
 async function loadCalendar() {
   const grid = document.getElementById('calDaysGrid');
-
+ 
   // Replace calendar grid with TradingView widgets
   grid.innerHTML = '';
   grid.style.display = 'block';
-
+ 
   // Hide the prev/next week buttons and label — TradingView widget handles navigation
   const calHeaderEl = document.querySelector('.cal-header');
   if (calHeaderEl) calHeaderEl.style.display = 'none';
-
+ 
   // Create wrapper for widgets
   const wrapper = document.createElement('div');
   wrapper.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
   grid.appendChild(wrapper);
-
+ 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-
+ 
   // ── Economic Calendar Widget (investing.com) ──
   const calSection = document.createElement('div');
   calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📅 التقويم الاقتصادي</div>`;
@@ -1769,7 +1817,7 @@ async function loadCalendar() {
   calIframe.style.cssText = 'border-radius:12px;overflow:hidden;display:block;';
   calSection.appendChild(calIframe);
   wrapper.appendChild(calSection);
-
+ 
   // ── News Section (Arabic translated headlines) ──
   const newsSection = document.createElement('div');
   newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار <span id="news-status" style="font-weight:400;font-size:11px;opacity:.6"></span></div>`;
@@ -1779,11 +1827,11 @@ async function loadCalendar() {
   newsListEl.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⏳ جاري تحميل الأخبار...</div>';
   newsSection.appendChild(newsListEl);
   wrapper.appendChild(newsSection);
-
+ 
   // Fetch & translate news headlines
   loadTranslatedNews(newsListEl, isDark);
 }
-
+ 
 async function translateText(text) {
   try {
     const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ar`;
@@ -1795,7 +1843,7 @@ async function translateText(text) {
   } catch(e) {}
   return text; // fallback to original
 }
-
+ 
 async function loadTranslatedNews(container, isDark) {
   const statusEl = document.getElementById('news-status');
   try {
@@ -1806,7 +1854,7 @@ async function loadTranslatedNews(container, isDark) {
       { url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069', name: 'CNBC Markets' },
       { url: 'https://www.investing.com/rss/news_25.rss', name: 'Investing.com' },
     ];
-
+ 
     let items = [];
     let feedName = 'Finance News';
     for (const feed of RSS_FEEDS) {
@@ -1826,29 +1874,29 @@ async function loadTranslatedNews(container, isDark) {
         }
       } catch(e) {}
     }
-
+ 
     if (!items.length) throw new Error('لا توجد أخبار');
-
+ 
     container.innerHTML = '';
     if (statusEl) statusEl.textContent = '(جاري الترجمة...)';
-
+ 
     const bg = isDark ? '#1e2130' : '#f4f6fb';
     const border = isDark ? '#2a2f45' : '#e0e4ef';
     const textColor = isDark ? '#c8d0e8' : '#2a2f45';
     const subColor = isDark ? '#6b7299' : '#8a90a8';
-
+ 
     // Translate all titles in parallel
     const titles = items.map(it => it.title);
     const translated = await Promise.all(titles.map(t => translateText(t)));
-
+ 
     if (statusEl) statusEl.textContent = '';
-
+ 
     items.forEach((item, i) => {
       const link = item.link;
       const pubDate = item.pubDate;
       const source = item.source;
       const dateStr = pubDate ? new Date(pubDate).toLocaleString('ar-SA', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
-
+ 
       const card = document.createElement('a');
       card.href = link;
       card.target = '_blank';
@@ -1863,31 +1911,31 @@ async function loadTranslatedNews(container, isDark) {
       `;
       container.appendChild(card);
     });
-
+ 
   } catch(err) {
     container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبار: ${err.message}</div>`;
     if (statusEl) statusEl.textContent = '';
   }
 }
-
+ 
 window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
 window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
-
+ 
 // ── Detail page ──
 function openDetail(symbol, data, market) {
   _currentStock = { symbol, data, market };
   document.getElementById('detailSymbol').textContent = symbol;
-
+ 
   const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
   document.getElementById('detailTvLink').href = `https://www.tradingview.com/chart/?symbol=${tvSuffix}`;
-
+ 
   const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
   const btn = document.getElementById('btnBuyDetail');
   if (openTrade) { btn.textContent = '✅ تم الشراء'; btn.classList.add('bought'); }
   else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
   document.getElementById('buyFormDetail').classList.remove('open');
   document.getElementById('saveIndicator').textContent = '';
-
+ 
   const conf = data.confidence || 0;
   document.getElementById('detailStats').innerHTML = `
     <div class="stat-box">
@@ -1926,7 +1974,7 @@ function openDetail(symbol, data, market) {
     if (val) { el.textContent = val; el.style.color = 'var(--text)'; }
     else { el.textContent = '—'; el.style.color = 'var(--text2)'; }
   });
-
+ 
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
       <div class="tl-title">مستويات التداول</div>
@@ -1939,7 +1987,7 @@ function openDetail(symbol, data, market) {
   } else {
     document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُضاف بعد التحديث</div>';
   }
-
+ 
   // Arkitaz conditions in detail
   if (data.rsi || data.consReason) {
     const rsi = data.rsi;
@@ -1983,7 +2031,7 @@ function openDetail(symbol, data, market) {
       </div>
     `;
   }
-
+ 
   const news = data.news || [];
   const newsEl = document.getElementById('detailNews');
   if (news.length) {
@@ -1996,7 +2044,7 @@ function openDetail(symbol, data, market) {
   } else {
     newsEl.style.display = 'none';
   }
-
+ 
   const chartDiv = document.getElementById('detailChart');
   chartDiv.innerHTML = '';
   if (data.candles && data.candles.length) {
@@ -2004,13 +2052,13 @@ function openDetail(symbol, data, market) {
   } else {
     chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">الشارت سيظهر بعد التحديث</div></div>';
   }
-
+ 
   document.getElementById('buyDateD').valueAsDate = new Date();
   if (data.close) document.getElementById('buyPriceD').value = data.close.toFixed(2);
   document.getElementById('detail-page').classList.add('open');
   window.scrollTo(0, 0);
 }
-
+ 
 window.closeDetail = function() {
   document.getElementById('detail-page').classList.remove('open');
 };
@@ -2019,7 +2067,7 @@ window.detailBuy = function() {
   if (openTrade) return;
   document.getElementById('buyFormDetail').classList.toggle('open');
 };
-
+ 
 // ── Save buy ──
 window.saveBuyDetail = async function() {
   if (!_currentStock) return;
@@ -2055,7 +2103,7 @@ window.saveBuyDetail = async function() {
     document.getElementById('saveIndicator').textContent = '❌ ' + err.message;
   }
 };
-
+ 
 // ── Close trade ──
 window.openCloseTrade = function(id) {
   _closeTradeId = id;
@@ -2077,7 +2125,7 @@ window.confirmCloseTrade = async function() {
     loadPerformance();
   } catch(err) { alert('خطأ: ' + err.message); }
 };
-
+ 
 window.removeTrade = async function(id) {
   if (!confirm('حذف هذه الصفقة؟')) return;
   try {
@@ -2092,16 +2140,18 @@ window.removeTrade = async function(id) {
     loadPerformance();
   } catch(err) { alert('خطأ: ' + err.message); }
 };
-
+ 
 // ── Init ──
 loadForas();
-
+ 
 window.openDetail = openDetail;
 window.openCloseTrade = window.openCloseTrade;
 window.removeTrade = window.removeTrade;
 window.confirmCloseTrade = window.confirmCloseTrade;
 window.saveBuyDetail = window.saveBuyDetail;
-
+ 
 </script>
+</div><!-- /#app -->
 </body>
 </html>
+ 
