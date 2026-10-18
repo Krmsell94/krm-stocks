@@ -7,7 +7,7 @@ KRM Stocks Screener - v2
  
 import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import numpy as np
 import yfinance as yf
 import firebase_admin
@@ -594,7 +594,9 @@ def index_snapshot(yf_symbol):
  
 def run_market_indices():
     print(f"\n{'='*40}\n📈 مؤشرات السوق\n{'='*40}")
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    # بتوقيت الرياض لا UTC: يُعرض بجانب ساعة الرياض الحية في الواجهة
+    riyadh = timezone(timedelta(hours=3))
+    today = datetime.now(riyadh).strftime("%Y-%m-%d %H:%M")
     for mk, rows in MARKET_INDICES.items():
         data = {}
         for yf_sym, key, label in rows:
