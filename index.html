@@ -243,8 +243,42 @@ body {
 /* ── Cards grid ── */
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 14px;
+}
+ 
+/* ── Section headings (جاهز للدخول / متابعة) ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.section-head:first-child { margin-top: 0; }
+.section-ready { color: var(--green); }
+.section-watch { color: var(--text2); }
+.section-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg3);
+  color: var(--text2);
+}
+.section-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text2);
+}
+.section-empty {
+  font-size: 12px;
+  color: var(--text2);
+  padding: 14px 4px;
+  opacity: 0.8;
 }
  
 /* ── Stock card (tall rectangle) ── */
@@ -775,7 +809,35 @@ body {
   .trades-table th, .trades-table td { padding: 7px 6px; }
   /* Performance tabs row wraps nicely */
   .perf-market-tabs { flex-wrap: wrap; }
+  /* Bigger touch targets in bottom nav */
+  .bottom-nav-btn { padding: 10px 4px; font-size: 11px; }
+  .bottom-nav-icon { font-size: 20px; }
+  /* Readable empty/section text on phones */
+  .empty { font-size: 14px; line-height: 1.7; padding: 28px 16px; }
+  .section-head { font-size: 13px; margin: 16px 0 8px; }
 }
+ 
+/* ── Narrow phones: one card per row (cards are detail-heavy) ── */
+@media (max-width: 430px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .detail-stats { grid-template-columns: 1fr 1fr; }
+}
+ 
+/* ── Tablet / small laptop: collapse sidebar to icons ── */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .sidebar { width: 72px; min-width: 72px; padding: 12px 0; }
+  .sidebar .tab-label,
+  .sidebar #themeLabel { display: none; }
+  .sidebar-header { padding: 0 6px 12px; text-align: center; }
+  .sidebar-logo { font-size: 13px; justify-content: center; gap: 2px; }
+  .nav-tab { justify-content: center; padding: 12px 0; }
+  .tab-icon { font-size: 20px; }
+  .sidebar-footer { padding: 0 6px; }
+  .sidebar-footer button { font-size: 10px !important; line-height: 1.3; padding: 7px 2px !important; }
+  .theme-toggle { justify-content: center; }
+  .market-dropdown { min-width: 130px; }
+}
+ 
 /* Hide bottom nav on desktop */
 .bottom-nav { display: none; }
 /* Hide mobile topbar on desktop */
@@ -921,7 +983,21 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <div class="page-title">🚀 الفرص</div>
         <span id="lastUpdate">جاري التحميل...</span>
       </div>
-      <div class="cards-grid" id="grid-foras"></div>
+      <div id="foras-wrap">
+        <div class="section-head section-ready">
+          ✅ جاهز للدخول
+          <span class="section-count" id="cnt-ready">0</span>
+          <span class="section-hint">ثقة 60%+ وإشارة ارتداد مؤكدة</span>
+        </div>
+        <div class="cards-grid" id="grid-ready"></div>
+        <div class="section-head section-watch">
+          👀 متابعة
+          <span class="section-count" id="cnt-watch">0</span>
+          <span class="section-hint">قريب من القاع، لم تكتمل الشروط</span>
+        </div>
+        <div class="cards-grid" id="grid-watch"></div>
+      </div>
+      <div id="foras-msg"></div>
     </div>
  
     <!-- ── ARKITAZ PAGE ── -->
@@ -1359,7 +1435,7 @@ async function fetchFloatShares(symbol, market) {
 }
  
 // ── Build FORAS card (tall rectangle with key levels) ──
-function buildForasCard(symbol, data, market) {
+function buildForasCard(symbol, data, market, autoRegister = true) {
   const div = document.createElement('div');
   div.className = 'stock-card';
   const conf = data.confidence || 0;
@@ -1404,7 +1480,8 @@ function buildForasCard(symbol, data, market) {
     <div class="card-note">${data.note || ''}</div>
   `;
   div.onclick = () => openDetail(symbol, data, market);
-  autoRegisterPaperTrade(symbol, data);
+  // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
+  if (autoRegister) autoRegisterPaperTrade(symbol, data);
   // جلب الأسهم الحرة في الخلفية
   fetchFloatShares(symbol, market).then(val => {
     const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
@@ -1490,43 +1567,75 @@ function buildArkitazCard(symbol, data, market) {
 }
  
 // ── Load FORAS ──
+// حد الثقة لفئة "جاهز للدخول" — نفس الحد المستخدم في شارة البطاقة
+const READY_CONF = 60;
+ 
 async function loadForas() {
-  const grid = document.getElementById('grid-foras');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  const wrap    = document.getElementById('foras-wrap');
+  const msgEl   = document.getElementById('foras-msg');
+  const gReady  = document.getElementById('grid-ready');
+  const gWatch  = document.getElementById('grid-watch');
+  const cReady  = document.getElementById('cnt-ready');
+  const cWatch  = document.getElementById('cnt-watch');
+ 
+  wrap.style.display = 'none';
+  msgEl.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+ 
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
     const snap = await getDocs(collection(window._db, collName));
-    grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص — قاعدة البيانات فارغة</div>'; return; }
-    let count = 0;
-    let countHalal = 0;
-    let countRebound = 0;
+ 
+    gReady.innerHTML = '';
+    gWatch.innerHTML = '';
+    msgEl.innerHTML = '';
+ 
+    if (snap.empty) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص — قاعدة البيانات فارغة</div>';
+      loadMeta();
+      return;
+    }
+ 
+    let nReady = 0, nWatch = 0, countHalal = 0;
+ 
     snap.forEach(d => {
       const data = d.data();
-      const halal = isHalal(d.id, _currentMarket);
+      if (!isHalal(d.id, _currentMarket)) return;
+      countHalal++;
+      const conf    = data.confidence || 0;
       const rebound = isStartOfRebound(data);
-      if (halal) countHalal++;
-      if (halal && rebound) { countRebound++; }
-      if (halal && rebound) {
-        grid.appendChild(buildForasCard(d.id, data, _currentMarket));
-        count++;
+      const ready   = rebound && conf >= READY_CONF;
+      if (ready) {
+        gReady.appendChild(buildForasCard(d.id, data, _currentMarket, true));
+        nReady++;
+      } else {
+        gWatch.appendChild(buildForasCard(d.id, data, _currentMarket, false));
+        nWatch++;
       }
     });
-    if (count === 0) {
-      const total = snap.size;
-      let msg = '🔍 لا توجد أسهم في بداية الارتداد حالياً';
-      if (total > 0 && countHalal === 0) {
-        msg = `⚠️ يوجد ${total} سهم في القاعدة لكن لا شيء في قائمة الحلال`;
-      } else if (total > 0 && countHalal > 0 && countRebound === 0) {
-        msg = `⏳ يوجد ${countHalal} سهم حلال لكن لا توجد إشارة ارتداد بعد (Confidence < 25 أو شمعة حمراء)`;
-      }
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">📊</div>${msg}</div>`;
+ 
+    cReady.textContent = nReady;
+    cWatch.textContent = nWatch;
+ 
+    if (nReady === 0) {
+      gReady.innerHTML = '<div class="section-empty">⏳ لا يوجد سهم مستوفٍ لشروط الدخول حالياً</div>';
     }
+    if (nWatch === 0) {
+      gWatch.innerHTML = '<div class="section-empty">لا توجد أسهم تحت المتابعة</div>';
+    }
+ 
+    if (countHalal === 0) {
+      wrap.style.display = 'none';
+      msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>يوجد ${snap.size} سهم في القاعدة لكن لا شيء في قائمة الحلال</div>`;
+    } else {
+      wrap.style.display = '';
+    }
+ 
     loadMeta();
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+    wrap.style.display = 'none';
+    msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
  
