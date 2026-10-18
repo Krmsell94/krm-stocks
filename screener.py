@@ -395,6 +395,50 @@ def confidence_score(prox, wyckoff, elliott):
     total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)
     return round(total * 100)
  
+# ─── جاهزية الفرص ────────────────────────────────────────────────
+# معادلة الثقة تمنح القرب من القاع وزن 0.60، وهذا يرفع درجة السهم
+# الساقط لأنه يصنع قيعاناً جديدة كل يوم. فالقرب من القاع ليس دليل
+# ارتداد. لذلك الجاهزية تشترط تأكيداً بنيوياً من وايكوف أو إليوت،
+# وتوقفاً فعلياً للنزول، ولا تكتفي بالدرجة وشمعة خضراء واحدة.
+def foras_readiness(hist, wyckoff, elliott, confidence):
+    close, low, op, vol = hist["Close"], hist["Low"], hist["Open"], hist["Volume"]
+    c = float(close.iloc[-1])
+    missing = []
+ 
+    conf_ok = bool(confidence >= 60)
+    if not conf_ok:
+        missing.append(f"ثقة {confidence}%")
+ 
+    # لا يكفي القرب من القاع — لا بد أن تؤكد إحدى الطبقتين البنيويتين
+    structure_ok = bool(wyckoff >= 0.6 or elliott >= 0.6)
+    if not structure_ok:
+        missing.append("لا تأكيد وايكوف/إليوت")
+ 
+    # لم يعمّق قاعه: قيعان آخر ثلاث جلسات ليست أدنى مما قبلها
+    base_ok = False
+    if len(low) >= 6:
+        base_ok = bool(float(low.iloc[-3:].min()) >= float(low.iloc[-6:-3].min()) * 0.98)
+    if not base_ok:
+        missing.append("ما زال يعمّق القاع")
+ 
+    # ارتد فعلاً خلال ثلاث جلسات، لا شمعة خضراء واحدة داخل نزول
+    turned_up = bool(len(close) >= 4 and c > float(close.iloc[-4]))
+    if not turned_up:
+        missing.append("لم يرتد بعد")
+ 
+    green = bool(c > float(op.iloc[-1]))
+    if not green:
+        missing.append("شمعة حمراء")
+ 
+    vol_ok = False
+    if len(vol) >= 20:
+        vol_ok = bool(float(vol.iloc[-1]) >= float(vol.iloc[-20:].mean()) * 0.8)
+    if not vol_ok:
+        missing.append("فوليوم ضعيف")
+ 
+    ready = bool(conf_ok and structure_ok and base_ok and turned_up and green and vol_ok)
+    return ready, missing
+ 
 # ─── مستويات التداول ─────────────────────────────────────────────
 def trading_levels(hist, wyckoff, elliott, close):
     closes = hist["Close"].values
@@ -461,7 +505,8 @@ def screen_stock(symbol, market="us"):
         elliott = elliott_score(hist)
         consolidating, cons_reason = is_consolidating(hist)
         confidence = confidence_score(score, wyckoff, elliott)
-        ark = arkitaz_conditions(hist)      # شروط فيصل
+        ark = arkitaz_conditions(hist)      # شروط فيصل (تبويب الارتكاز)
+        foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence)
  
         note    = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
         candles = build_candles(hist)
@@ -483,9 +528,12 @@ def screen_stock(symbol, market="us"):
  
         ark_mark = '🟢 جاهز' if ark["ark_ready"] else ('🟡 مرشح' if ark["ark_candidate"] else '✗')
         print(f"  ✅ {symbol}: سكور={score:.3f} | ثقة={confidence}% | Wyckoff={wyckoff} | "
-              f"Elliott={elliott} | RSI={ark['rsi']} | ارتكاز={ark_mark}")
+              f"Elliott={elliott} | RSI={ark['rsi']} | فرص={'🟢 جاهز' if foras_ready else '🟡 متابعة'} "
+              f"| ارتكاز={ark_mark}")
+        if not foras_ready:
+            print(f"      فرص ناقص: {'، '.join(foras_missing)}")
         if ark["ark_candidate"] and not ark["ark_ready"]:
-            print(f"      ناقص: {'، '.join(ark['ark_missing'])}")
+            print(f"      ارتكاز ناقص: {'، '.join(ark['ark_missing'])}")
  
         return {
             "score":         float(score),
@@ -505,6 +553,8 @@ def screen_stock(symbol, market="us"):
             "target1":       float(levels["target1"]),
             "target2":       float(levels["target2"]),
             "news":          news,
+            "foras_ready":   foras_ready,
+            "foras_missing": foras_missing,
             **ark,
         }
  
