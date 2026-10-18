@@ -4,60 +4,72 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KRM Stocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
 <style>
 :root {
-  --bg: #ffffff;
-  --bg2: #f5f5f7;
-  --bg3: #ebebef;
-  --text: #1a1a2e;
-  --text2: #555577;
-  --border: #d0d0e0;
-  --card-bg: #ffffff;
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.08)
-  --green: #16a34a;
-  --red: #dc2626;
-  --gold: #ca8a04;
-  --blue: #2563eb;
-  --sidebar-bg: #f8f8fc;
-  --sidebar-border: #e0e0ee;
-  --tab-active-bg: #1a1a2e;
-  --tab-active-text: #ffffff;
-  --tab-hover: #e8e8f4;
-  --market-btn-bg: #f0f0f8;
-  --market-btn-active: #1a1a2e;
+  --bg: #EEF1F5;
+  --bg2: #F6F8FA;
+  --bg3: #E4E9EF;
+  --text: #0D1520;
+  --text2: #596778;
+  --border: #D4DBE4;
+  --card-bg: #FFFFFF;
+  --card-shadow: 0 1px 3px rgba(13,21,32,.05), 0 6px 24px rgba(13,21,32,.06);
+  --green: #0E7A56;
+  --red: #C03428;
+  --gold: #A16A0A;
+  --blue: #1A5C8A;
+  --up-bg: #D8F0E4;
+  --down-bg: #F7DDD9;
+  --warn-bg: #F4EAD2;
+  --brand-bg: #DBE7F1;
+  --sidebar-bg: #F6F8FA;
+  --sidebar-border: #D4DBE4;
+  --tab-active-bg: #0D1520;
+  --tab-active-text: #FFFFFF;
+  --tab-hover: #E4E9EF;
+  --market-btn-bg: #F6F8FA;
+  --market-btn-active: #0D1520;
   --market-btn-active-text: #fff;
-  --badge-ready: #dcfce7;
-  --badge-ready-text: #16a34a;
+  --badge-ready: #D8F0E4;
+  --badge-ready-text: #0E7A56;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
 }
 [data-theme="dark"] {
-  --bg: #0d0d1a;
-  --bg2: #13131f;
-  --bg3: #1a1a2e;
-  --text: #e8e8ff;
-  --text2: #8888aa;
-  --border: #2a2a3a;
-  --card-bg: #16162a;
-  --card-shadow: 0 2px 8px rgba(0,0,0,0.4);
-  --green: #22c55e;
-  --red: #ef4444;
-  --gold: #f59e0b;
-  --blue: #60a5fa;
-  --sidebar-bg: #111122;
-  --sidebar-border: #2a2a3a;
-  --tab-active-bg: #5555ff;
-  --tab-active-text: #ffffff;
-  --tab-hover: #1e1e30;
-  --market-btn-bg: #1e1e30;
-  --market-btn-active: #5555ff;
-  --market-btn-active-text: #fff;
-  --badge-ready: #14532d;
-  --badge-ready-text: #22c55e;
+  --bg: #0A1018;
+  --bg2: #0E1720;
+  --bg3: #192530;
+  --text: #E4EAF0;
+  --text2: #8A9AAC;
+  --border: #1F2F3E;
+  --card-bg: #111B26;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.35), 0 6px 24px rgba(0,0,0,.2);
+  --green: #42C88E;
+  --red: #F07066;
+  --gold: #E2AE48;
+  --blue: #6CADD8;
+  --up-bg: #102E24;
+  --down-bg: #381A18;
+  --warn-bg: #332710;
+  --brand-bg: #142D48;
+  --sidebar-bg: #0E1720;
+  --sidebar-border: #1F2F3E;
+  --tab-active-bg: #142D48;
+  --tab-active-text: #E4EAF0;
+  --tab-hover: #192530;
+  --market-btn-bg: #192530;
+  --market-btn-active: #142D48;
+  --market-btn-active-text: #E4EAF0;
+  --badge-ready: #102E24;
+  --badge-ready-text: #42C88E;
 }
  
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+  font-family: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
@@ -239,6 +251,79 @@ body {
   font-size: 12px;
   color: var(--text2);
 }
+ 
+/* ══ شريط السوق: الساعتان + حالة الجلسة + المؤشرات ══ */
+.topband {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+.clockbar {
+  --hb: #0E1A27; --hi: #EAF0F6; --hm: #8FA3B8; --gold: #D9B45A;
+  background: radial-gradient(130% 160% at 50% -10%, #1E3550 0%, #142638 40%, var(--hb) 80%);
+  color: var(--hi);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 16px 22px; position: relative;
+}
+.clockbar::after {
+  content: ""; position: absolute; inset-inline: 22px; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .55;
+}
+.clk { display: flex; flex-direction: column; gap: 2px; }
+.clk:last-child { align-items: flex-end; text-align: left; }
+.clk .city { font-size: 12px; letter-spacing: .12em; color: var(--gold); font-weight: 600; }
+.clk b {
+  font: 500 34px/1.1 var(--mono); letter-spacing: .02em;
+  font-variant-numeric: tabular-nums; color: var(--hi);
+}
+.clk .dt { font-size: 12.5px; color: var(--hm); }
+.sess {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 18px; border: 1px solid rgba(217,180,90,.35);
+  border-radius: 999px; background: rgba(255,255,255,.04); text-align: center;
+}
+.sess b { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.sess b::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #8FA3B8; flex: none;
+}
+.sess.open  b::before { background: #42C88E; box-shadow: 0 0 0 3px rgba(66,200,142,.25); }
+.sess.pre   b::before,
+.sess.post  b::before { background: #E2AE48; box-shadow: 0 0 0 3px rgba(226,174,72,.22); }
+.sess.closed b::before { background: #F07066; box-shadow: 0 0 0 3px rgba(240,112,102,.22); }
+.sess span { font-size: 12.5px; color: var(--hm); font-variant-numeric: tabular-nums; }
+ 
+.mkt { background: var(--card-bg); }
+.mkt-h {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  padding: 10px 14px; border-bottom: 1px solid var(--bg3);
+}
+.mkt-h > b { font-size: 14px; }
+.mkt-v { font-size: 13.5px; color: var(--text2); }
+.mkt-v .tag { margin-inline-end: 6px; }
+.mkt-g { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.mkt-g > div { padding: 10px 14px; border-inline-start: 1px solid var(--bg3); }
+.mkt-g > div:first-child { border-inline-start: 0; }
+.mkt-g .sy { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.mkt-g .sy b { font: 600 14px var(--mono); }
+.mkt-g .sy span { font-size: 11.5px; color: var(--text2); }
+.mkt-g .pxrow { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.mkt-g .px { font: 600 17px var(--mono); direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.mkt-g .ch { font: 500 12.5px var(--mono); direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.mkt-g .ch.up { color: var(--green); }
+.mkt-g .ch.down { color: var(--red); }
+.mkt-g .tr { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.mkt-g .tr .tag { font-size: 11px; padding: 1px 7px; }
+.tag {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .01em;
+}
+.tag.up   { background: var(--up-bg);    color: var(--green); }
+.tag.down { background: var(--down-bg);  color: var(--red); }
+.tag.warn { background: var(--warn-bg);  color: var(--gold); }
+.tag.info { background: var(--brand-bg); color: var(--blue); }
  
 /* ── Cards grid ── */
 .cards-grid {
@@ -820,6 +905,18 @@ body {
   .trades-table th, .trades-table td { padding: 7px 6px; }
   /* Performance tabs row wraps nicely */
   .perf-market-tabs { flex-wrap: wrap; }
+  /* شريط السوق على الجوال: الساعتان بصف، وحالة الجلسة بصف كامل تحتهما */
+  .clockbar { flex-wrap: wrap; padding: 14px 16px; gap: 10px; }
+  .clk b { font-size: 26px; }
+  .clk .dt { font-size: 11px; }
+  .sess {
+    order: 3; width: 100%; flex-direction: row; justify-content: center;
+    flex-wrap: wrap; gap: 4px 10px; padding: 7px 14px;
+  }
+  .sess b { font-size: 13px; }
+  .mkt-g { grid-template-columns: 1fr 1fr; }
+  .mkt-g > div:nth-child(odd) { border-inline-start: 0; }
+  .mkt-h { padding: 10px 12px; }
   /* Bigger touch targets in bottom nav */
   .bottom-nav-btn { padding: 10px 4px; font-size: 11px; }
   .bottom-nav-icon { font-size: 20px; }
@@ -987,6 +1084,19 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
  
   <!-- ══ MAIN CONTENT ══ -->
   <main class="main-content">
+ 
+    <!-- ══ شريط السوق ══ -->
+    <div class="topband" id="topband">
+      <div class="clockbar">
+        <div class="clk"><span class="city">الرياض</span><b id="ckR" dir="ltr">--:--:--</b><span class="dt" id="ckRd"></span></div>
+        <div class="sess" id="sess"><b id="sessT">—</b><span id="sessC"></span></div>
+        <div class="clk"><span class="city">نيويورك</span><b id="ckN" dir="ltr">--:--:--</b><span class="dt" id="ckNd"></span></div>
+      </div>
+      <section class="mkt" id="mkt">
+        <div class="mkt-h"><b>حالة السوق</b><span class="mkt-v" id="mktV">جاري التحميل...</span></div>
+        <div class="mkt-g" id="mktG"></div>
+      </section>
+    </div>
  
     <!-- ── FORAS PAGE ── -->
     <div id="page-foras" class="page active">
@@ -1321,6 +1431,151 @@ function notReadyReason(data) {
   return null;
 }
  
+// ══ شريط السوق: ساعتان + حالة الجلسة + بطاقات المؤشرات ══
+const _dtf = (tz, o) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour12: false, ...o });
+const _arDate = tz => new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',
+  { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' });
+function _hms(ms) {
+  const t = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(t / 86400), h = Math.floor(t % 86400 / 3600), m = Math.floor(t % 3600 / 60);
+  return (d ? d + ' يوم ' : '') + (h ? h + ' س ' : '') + m + ' د';
+}
+function _parts(tz, date) {
+  const p = {};
+  _dtf(tz, { weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    .formatToParts(date).forEach(x => p[x.type] = x.value);
+  return p;
+}
+const _WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ 
+function marketTick() {
+  const now = new Date();
+  try {
+    document.getElementById('ckR').textContent  = _dtf('Asia/Riyadh',      { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(now);
+    document.getElementById('ckN').textContent  = _dtf('America/New_York', { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(now);
+    document.getElementById('ckRd').textContent = _arDate('Asia/Riyadh').format(now);
+    document.getElementById('ckNd').textContent = _arDate('America/New_York').format(now);
+ 
+    let cls, t, c;
+    if (_currentMarket === 'sa') {
+      // تداول: الأحد–الخميس 10:00–15:00 بتوقيت الرياض
+      const p = _parts('Asia/Riyadh', now);
+      const w = _WD.indexOf(p.weekday);
+      const mm = (+p.hour % 24) * 60 + +p.minute + +p.second / 60;
+      const to = m => (m - mm) * 60000;
+      const trading = d => d >= 0 && d <= 4;
+      const nxt = () => {
+        if (trading(w) && mm < 600) return to(600);
+        let add = 0, d = w;
+        do { add++; d = (d + 1) % 7; } while (!trading(d));
+        return to(600 + add * 1440);
+      };
+      if (!trading(w))                   { cls='closed'; t='تداول مغلق · عطلة نهاية الأسبوع'; c='يفتح بعد ' + _hms(nxt()); }
+      else if (mm >= 600 && mm < 900)    { cls='open';   t='تداول مفتوح';      c='يغلق بعد ' + _hms(to(900)); }
+      else if (mm >= 570 && mm < 600)    { cls='pre';    t='ما قبل الافتتاح';  c='يفتح بعد ' + _hms(to(600)); }
+      else if (mm >= 900 && mm < 910)    { cls='post';   t='مزاد الإغلاق';     c='ينتهي بعد ' + _hms(to(910)); }
+      else                               { cls='closed'; t='تداول مغلق';       c='يفتح بعد ' + _hms(nxt()); }
+    } else {
+      // نيويورك: الإثنين–الجمعة 9:30–16:00
+      const p = _parts('America/New_York', now);
+      const wd = _WD.indexOf(p.weekday);
+      const mins = (+p.hour % 24) * 60 + +p.minute + +p.second / 60;
+      const toMs = m => (m - mins) * 60000;
+      const nextOpen = () => {
+        let add = 0, d = wd;
+        if (d >= 1 && d <= 5 && mins < 570) return toMs(570);
+        do { add++; d = (d + 1) % 7; } while (d === 0 || d === 6);
+        return toMs(570 + add * 1440);
+      };
+      if (wd === 0 || wd === 6)            { cls='closed'; t='السوق مغلق · عطلة نهاية الأسبوع'; c='يفتح بعد ' + _hms(nextOpen()); }
+      else if (mins >= 570 && mins < 960)  { cls='open';   t='السوق مفتوح';     c='يغلق بعد ' + _hms(toMs(960)); }
+      else if (mins >= 240 && mins < 570)  { cls='pre';    t='ما قبل الافتتاح'; c='يفتح بعد ' + _hms(toMs(570)); }
+      else if (mins >= 960 && mins < 1200) { cls='post';   t='ما بعد الإغلاق';  c='الافتتاح الجاي بعد ' + _hms(nextOpen()); }
+      else                                 { cls='closed'; t='السوق مغلق';      c='يفتح بعد ' + _hms(nextOpen()); }
+    }
+    const S = document.getElementById('sess');
+    S.className = 'sess ' + cls;
+    document.getElementById('sessT').textContent = t;
+    document.getElementById('sessC').textContent = c;
+  } catch (e) { /* الساعات ليست حرجة */ }
+}
+ 
+function paintMarket(d, updated) {
+  const g = document.getElementById('mktG');
+  g.innerHTML = '';
+  const fmt = v => v >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 2 })
+                 : v >= 100  ? v.toFixed(2) : v.toFixed(2);
+  Object.entries(d).forEach(([key, v]) => {
+    const tk = v.ticker || key.split(':')[1];
+    const vix = tk === 'VIX';
+    const tags = vix
+      ? [v.close < 20 ? ['هادئ','up'] : v.close < 25 ? ['متوتر','warn'] : ['خوف','down']]
+      : [[v.close > v.SMA50  ? 'فوق م50'  : 'تحت م50',  v.close > v.SMA50  ? 'up' : 'down'],
+         [v.close > v.SMA200 ? 'فوق م200' : 'تحت م200', v.close > v.SMA200 ? 'up' : 'down']];
+    const ch = v.change;
+    const box = document.createElement('div');
+    box.innerHTML =
+      `<div class="sy"><b>${tk === 'BRN1!' ? 'BRENT' : tk}</b><span>${v.label || ''}</span></div>
+       <div class="pxrow"><span class="px">${fmt(v.close)}</span>` +
+      (ch != null ? `<span class="ch ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span>` : '') +
+      `</div><div class="tr">` +
+      tags.map(([t, c]) => `<span class="tag ${c}">${t}</span>`).join('') +
+      (!vix && v.RSI != null ? `<span class="tag info">RSI ${Math.round(v.RSI)}</span>` : '') +
+      `</div>`;
+    g.appendChild(box);
+  });
+ 
+  // قراءة الجو العام
+  const V = document.getElementById('mktV');
+  let st, cl, msg;
+  if (_currentMarket === 'sa') {
+    const t = d['TADAWUL:TASI'], b = d['ICEEUR:BRN1!'];
+    if (!t) { V.textContent = 'ما وصلت بيانات المؤشرات.'; return; }
+    if (t.close < t.SMA200 && t.close < t.SMA50) {
+      st='سلبي'; cl='down'; msg='المؤشر العام تحت متوسطي 50 و200. السوق هابط، وصيد القيعان فيه مخاطرة عالية.';
+    } else if (t.close < t.SMA50 || (b && b.SMA50 && b.close < b.SMA50)) {
+      st='حذر'; cl='warn'; msg='المؤشر العام تحت متوسط 50. ادخل في الإشارات المكتملة فقط وبحجم أصغر.';
+    } else {
+      st='إيجابي'; cl='up'; msg='المؤشر العام فوق متوسطاته. الجو مناسب لصيد القيعان.';
+    }
+    if (t.RSI != null && t.RSI < 30) msg += ` المؤشر في تشبع بيع (RSI ${Math.round(t.RSI)}).`;
+    V.innerHTML = `<span class="tag ${cl}">جو تاسي: ${st}</span>${msg}` +
+                  (updated ? ` <span style="color:var(--text2);font-size:12px">· ${updated}</span>` : '');
+    return;
+  }
+  const iwm = d['AMEX:IWM'], iwc = d['AMEX:IWC'], vx = d['CBOE:VIX'];
+  if (!iwm) { V.textContent = 'ما وصلت بيانات المؤشرات.'; return; }
+  const vxv = vx ? vx.close : 0;
+  if (iwm.close < iwm.SMA200 || vxv > 25) {
+    st='سلبي'; cl='down'; msg='الأسهم الصغيرة تحت متوسط 200 أو الخوف عالي. أغلب محاولات صيد القاع تفشل في هالجو، خفّف الدخول جداً.';
+  } else if (iwm.close < iwm.SMA50 || (iwc && iwc.close < iwc.SMA50) || vxv >= 20) {
+    st='حذر'; cl='warn'; msg='الأسهم الصغيرة تحت متوسط 50 (ضعف قصير المدى). ادخل في الإشارات المكتملة فقط وبحجم أصغر.';
+  } else {
+    st='إيجابي'; cl='up'; msg='الأسهم الصغيرة والمتناهية الصغر فوق متوسطات 50 و200 والخوف هادئ. الجو مناسب لصيد القيعان.';
+  }
+  V.innerHTML = `<span class="tag ${cl}">جو الأسهم الصغيرة: ${st}</span>${msg}` +
+                (updated ? ` <span style="color:var(--text2);font-size:12px">· ${updated}</span>` : '');
+}
+ 
+async function loadMarket() {
+  const V = document.getElementById('mktV');
+  try {
+    await waitForDB();
+    const { getDoc, doc } = window._firestoreOps;
+    const snap = await getDoc(doc(window._db, 'market', _currentMarket));
+    if (!snap.exists()) {
+      document.getElementById('mktG').innerHTML = '';
+      V.textContent = 'بيانات المؤشرات تُكتب مع أول تشغيل للسكربت بعد هذا التحديث.';
+      return;
+    }
+    const v = snap.data();
+    paintMarket(v.data || {}, v.updated);
+  } catch (err) {
+    document.getElementById('mktG').innerHTML = '';
+    V.textContent = 'تعذّر تحميل المؤشرات.';
+  }
+}
+ 
 // ── Wait helpers ──
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
@@ -1374,6 +1629,11 @@ document.addEventListener('click', function(e) {
 // ── Market switch ──
 window.setMarket = function(market) {
   _currentMarket = market;
+  // الشريط يتبع السوق المختار: ساعة الجلسة ومؤشراته يختلفان
+  document.getElementById('mktG').innerHTML = '';
+  document.getElementById('mktV').textContent = 'جاري التحميل...';
+  marketTick();
+  loadMarket();
   const flag = market === 'us' ? '🇺🇸' : '🇸🇦';
   document.getElementById('marketFlag').textContent = flag;
   const mf = document.getElementById('marketFlagMobile');
@@ -2356,6 +2616,11 @@ window.removeTrade = async function(id) {
  
 // ── Init ──
 loadForas();
+ 
+// شريط السوق: الساعات تعمل فوراً، والمؤشرات تنتظر Firebase
+marketTick();
+setInterval(marketTick, 1000);
+loadMarket();
  
 window.openDetail = openDetail;
 window.openCloseTrade = window.openCloseTrade;
