@@ -1255,6 +1255,27 @@ function isStartOfRebound(data) {
   return true;
 }
  
+// حد الثقة لفئة "جاهز للدخول"
+const READY_CONF = 60;
+ 
+// سبب عدم الجاهزية — يرجع null إذا السهم مستوفٍ لكل شروط الدخول
+function notReadyReason(data) {
+  const conf = data.confidence || 0;
+  if (conf < READY_CONF) return `ثقة ${conf}%`;
+  if (data.candles && data.candles.length >= 2) {
+    const last  = data.candles[data.candles.length - 1];
+    const close = last.c !== undefined ? last.c : last.close;
+    const open  = last.o !== undefined ? last.o : last.open;
+    const vol   = last.v !== undefined ? last.v : last.volume;
+    if (close !== undefined && open !== undefined && close <= open) return 'شمعة حمراء';
+    if (vol) {
+      const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
+      if (avgVol > 0 && vol < avgVol * 0.5) return 'حجم ضعيف';
+    }
+  }
+  return null;
+}
+ 
 // ── Wait helpers ──
 async function waitForDB() {
   for (let i = 0; i < 50; i++) {
@@ -1440,13 +1461,16 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
   div.className = 'stock-card';
   const conf = data.confidence || 0;
   const confCol = confColor(conf);
-  const isReady = conf >= 60;
+  // الشارة تتبع نفس شروط قسم "جاهز للدخول" بالضبط
+  const reason  = notReadyReason(data);
+  const isReady = reason === null;
+  const badgeTxt = isReady ? '✅ جاهز' : `⏳ ${reason}`;
   const cur = market === 'sa' ? 'ر.س ' : '$';
  
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
       <div class="card-symbol">${symbol}</div>
-      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '✅ جاهز' : '⏳ انتظار'}</span>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${badgeTxt}</span>
     </div>
     <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : '—'}</div>
     <hr class="card-divider">
@@ -1567,9 +1591,6 @@ function buildArkitazCard(symbol, data, market) {
 }
  
 // ── Load FORAS ──
-// حد الثقة لفئة "جاهز للدخول" — نفس الحد المستخدم في شارة البطاقة
-const READY_CONF = 60;
- 
 async function loadForas() {
   const wrap    = document.getElementById('foras-wrap');
   const msgEl   = document.getElementById('foras-msg');
@@ -1603,9 +1624,7 @@ async function loadForas() {
       const data = d.data();
       if (!isHalal(d.id, _currentMarket)) return;
       countHalal++;
-      const conf    = data.confidence || 0;
-      const rebound = isStartOfRebound(data);
-      const ready   = rebound && conf >= READY_CONF;
+      const ready = notReadyReason(data) === null;
       if (ready) {
         gReady.appendChild(buildForasCard(d.id, data, _currentMarket, true));
         nReady++;
