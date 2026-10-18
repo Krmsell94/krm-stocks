@@ -1275,6 +1275,15 @@ const READY_CONF = 60;
  
 // سبب عدم الجاهزية — يرجع null إذا السهم مستوفٍ لكل شروط الدخول
 function notReadyReason(data) {
+  // حكم السكربت أولاً: فيه تأكيد وايكوف/إليوت وفحص توقف النزول،
+  // وهي أشياء لا تُقرأ من الشموع وحدها في الواجهة.
+  if (typeof data.foras_ready === 'boolean') {
+    if (data.foras_ready) return null;
+    return (Array.isArray(data.foras_missing) && data.foras_missing.length)
+      ? data.foras_missing[0]
+      : 'لم تكتمل الشروط';
+  }
+  // احتياطي للبيانات المكتوبة قبل تشغيل السكربت الجديد
   const conf = data.confidence || 0;
   if (conf < READY_CONF) return `ثقة ${conf}%`;
   if (data.candles && data.candles.length >= 2) {
@@ -1516,7 +1525,11 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
       <span class="card-detail-label">📊 أسهم حرة</span>
       <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
     </div>
-    <div class="card-note">${data.note || ''}</div>
+    <div class="card-note">${
+      (!isReady && Array.isArray(data.foras_missing) && data.foras_missing.length)
+        ? 'ناقص: ' + data.foras_missing.join('، ')
+        : (data.note || '')
+    }</div>
   `;
   div.onclick = () => openDetail(symbol, data, market, 'foras');
   // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
