@@ -1149,11 +1149,6 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
       <div class="page-header">
         <div class="page-title">📊 الأداء</div>
       </div>
-      <!-- فصل السوقين -->
-      <div class="perf-market-tabs">
-        <button class="perf-market-tab active" id="perf-tab-us" onclick="switchPerfMarket('us')">🇺🇸 أمريكا</button>
-        <button class="perf-market-tab" id="perf-tab-sa" onclick="switchPerfMarket('sa')">🇸🇦 السعودية</button>
-      </div>
       <div class="perf-section">
         <div class="perf-section-title">⚡ صفقات تلقائية (<span id="perf-market-label">الفرص والارتكاز</span>)</div>
         <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
@@ -1358,7 +1353,7 @@ let _trades = [];
 let _portfolioTrades = [];
 let _closeTradeId = null;
 let _currentMarket = 'us';
-let _currentPerfMarket = 'us';
+// الأداء يتبع السوق المختار عالمياً، فلا حالة منفصلة له
 let _calWeekOffset = 0;
  
 // ── Halal Universe (قائمة الأسهم الحلال) ──
@@ -1634,6 +1629,7 @@ window.setMarket = function(market) {
   document.getElementById('mktV').textContent = 'جاري التحميل...';
   marketTick();
   loadMarket();
+  paintPerfLabel();   // الأداء يتبع السوق المختار
   const flag = market === 'us' ? '🇺🇸' : '🇸🇦';
   document.getElementById('marketFlag').textContent = flag;
   const mf = document.getElementById('marketFlagMobile');
@@ -1665,14 +1661,14 @@ window.syncBottomNav = function(tab) {
 };
  
 // ── Performance market switch ──
-window.switchPerfMarket = function(market) {
-  _currentPerfMarket = market;
-  document.getElementById('perf-tab-us').classList.toggle('active', market === 'us');
-  document.getElementById('perf-tab-sa').classList.toggle('active', market === 'sa');
+function paintPerfLabel() {
   const lbl = document.getElementById('perf-market-label');
-  if (lbl) lbl.textContent = market === 'us' ? 'الفرص والارتكاز - أمريكا 🇺🇸' : 'الفرص والارتكاز - السعودية 🇸🇦';
-  loadPerformance();
-};
+  if (lbl) lbl.textContent = _currentMarket === 'us'
+    ? 'الفرص والارتكاز - أمريكا 🇺🇸'
+    : 'الفرص والارتكاز - السعودية 🇸🇦';
+}
+// أُبقيت للتوافق مع أي استدعاء قديم: السوق صار يُحدَّد من الأعلى
+window.switchPerfMarket = function() { paintPerfLabel(); loadPerformance(); };
  
 function reloadCurrentTab() {
   const activeTab = document.querySelector('.nav-tab.active');
@@ -2071,7 +2067,7 @@ async function loadPerformance() {
     const localTrades = Object.values(JSON.parse(localStorage.getItem('paperTrades') || '{}'));
     let allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
     // فلتر حسب السوق المحدد في تبويب الأداء
-    const perfMarket = _currentPerfMarket || 'us';
+    const perfMarket = _currentMarket || 'us';
     const isSA = (sym) => /^\d{4}$/.test(String(sym));
     if (perfMarket === 'sa') {
       allAutoTrades = allAutoTrades.filter(t => isSA(t.sym || t.symbol));
