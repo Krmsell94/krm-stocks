@@ -1004,9 +1004,23 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
     <div id="page-arkitaz" class="page">
       <div class="page-header">
         <div class="page-title">🎯 الارتكاز</div>
-        <span style="font-size:11px;color:var(--text2)">RSI 23-27 + دعم + MACD</span>
+        <span style="font-size:11px;color:var(--text2)">شروط فيصل: دعم + RSI 23-27 + MACD + شمعة</span>
       </div>
-      <div class="cards-grid" id="grid-arkitaz"></div>
+      <div id="ark-wrap">
+        <div class="section-head section-ready">
+          ✅ جاهز للدخول
+          <span class="section-count" id="cnt-ark-ready">0</span>
+          <span class="section-hint">اكتملت الشروط وفشل الهبوط</span>
+        </div>
+        <div class="cards-grid" id="grid-ark-ready"></div>
+        <div class="section-head section-watch">
+          👀 تحت المراقبة
+          <span class="section-count" id="cnt-ark-watch">0</span>
+          <span class="section-hint">مضغوط عند دعم، لم تكتمل الشروط</span>
+        </div>
+        <div class="cards-grid" id="grid-arkitaz"></div>
+      </div>
+      <div id="ark-msg"></div>
     </div>
  
     <!-- ── PERFORMANCE PAGE ── -->
@@ -1218,6 +1232,7 @@ onAuthStateChanged(auth, user => {
  
 // ── Globals ──
 let _currentStock = null;
+let _detailSource = 'foras';
 let _trades = [];
 let _portfolioTrades = [];
 let _closeTradeId = null;
@@ -1503,7 +1518,7 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
     </div>
     <div class="card-note">${data.note || ''}</div>
   `;
-  div.onclick = () => openDetail(symbol, data, market);
+  div.onclick = () => openDetail(symbol, data, market, 'foras');
   // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
   if (autoRegister) autoRegisterPaperTrade(symbol, data);
   // جلب الأسهم الحرة في الخلفية
@@ -1579,9 +1594,15 @@ function buildArkitazCard(symbol, data, market) {
       <span class="card-detail-label">📊 أسهم حرة</span>
       <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
     </div>
-    <div class="card-note">${data.consReason || data.note || ''}</div>
+    <div class="card-note">${
+      data.ark_ready
+        ? '✅ اكتملت الشروط — الدخول قرب الدعم بأمر Limit'
+        : (Array.isArray(data.ark_missing) && data.ark_missing.length
+            ? 'ناقص: ' + data.ark_missing.join('، ')
+            : (data.consReason || data.note || ''))
+    }</div>
   `;
-  div.onclick = () => openDetail(symbol, data, market);
+  div.onclick = () => openDetail(symbol, data, market, 'arkitaz');
   // جلب الأسهم الحرة في الخلفية
   fetchFloatShares(symbol, market).then(val => {
     const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
@@ -1660,27 +1681,45 @@ async function loadForas() {
  
 // ── Load ARKITAZ ──
 async function loadArkitaz() {
-  const grid = document.getElementById('grid-arkitaz');
-  grid.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  const wrap   = document.getElementById('ark-wrap');
+  const msgEl  = document.getElementById('ark-msg');
+  const gReady = document.getElementById('grid-ark-ready');
+  const gWatch = document.getElementById('grid-arkitaz');
+ 
+  wrap.style.display = 'none';
+  msgEl.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
   try {
     await waitForDB();
     const { getDocs, collection } = window._firestoreOps;
     const collName = _currentMarket === 'sa' ? 'consolidation_sa' : 'consolidation_us';
     const snap = await getDocs(collection(window._db, collName));
-    grid.innerHTML = '';
-    if (snap.empty) { grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>'; return; }
-    let count = 0;
-    snap.forEach(d => {
-      if (isHalal(d.id, _currentMarket)) {
-        grid.appendChild(buildArkitazCard(d.id, d.data(), _currentMarket));
-        count++;
-      }
-    });
-    if (count === 0) {
-      grid.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز حلال حالياً</div>';
+    gReady.innerHTML = ''; gWatch.innerHTML = ''; msgEl.innerHTML = '';
+ 
+    if (snap.empty) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>';
+      return;
     }
+    let nReady = 0, nWatch = 0, total = 0;
+    snap.forEach(d => {
+      if (!isHalal(d.id, _currentMarket)) return;
+      total++;
+      const data = d.data();
+      if (data.ark_ready) { gReady.appendChild(buildArkitazCard(d.id, data, _currentMarket)); nReady++; }
+      else                { gWatch.appendChild(buildArkitazCard(d.id, data, _currentMarket)); nWatch++; }
+    });
+    document.getElementById('cnt-ark-ready').textContent = nReady;
+    document.getElementById('cnt-ark-watch').textContent = nWatch;
+ 
+    if (total === 0) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز حلال حالياً</div>';
+      return;
+    }
+    if (nReady === 0) gReady.innerHTML = '<div class="section-empty">⏳ لا يوجد سهم اكتملت شروطه — الارتكاز متابعة لا دخول فوري</div>';
+    if (nWatch === 0) gWatch.innerHTML = '<div class="section-empty">لا توجد أسهم تحت المراقبة</div>';
+    wrap.style.display = '';
   } catch(err) {
-    grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+    wrap.style.display = 'none';
+    msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
   }
 }
  
@@ -2050,8 +2089,9 @@ window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
 window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
  
 // ── Detail page ──
-function openDetail(symbol, data, market) {
+function openDetail(symbol, data, market, source = 'foras') {
   _currentStock = { symbol, data, market };
+  _detailSource = source;
   document.getElementById('detailSymbol').textContent = symbol;
  
   const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
@@ -2116,8 +2156,10 @@ function openDetail(symbol, data, market) {
     document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُضاف بعد التحديث</div>';
   }
  
-  // Arkitaz conditions in detail
-  if (data.rsi || data.consReason) {
+  // طبقات التفاصيل: الارتكاز يعرض شروط فيصل، والفرص يعرض وايكوف/إليوت/كلاسيكي.
+  // التفرّع على مصدر السهم لا على وجود الحقول، لأن السكربت صار يكتب rsi
+  // لكل الأسهم، فالتفرّع بوجوده كان يقلب صفحة الفرص إلى عرض الارتكاز.
+  if (_detailSource === 'arkitaz') {
     const rsi = data.rsi;
     const rsiOk = rsi && rsi >= 23 && rsi <= 27;
     document.getElementById('detailLayers').innerHTML = `
