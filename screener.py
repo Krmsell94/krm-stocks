@@ -562,6 +562,60 @@ def screen_stock(symbol, market="us"):
         print(f"  ⚠️  {symbol}: خطأ {e}")
         return None
  
+# ─── مؤشرات السوق (لشريط حالة السوق في الواجهة) ─────────────────
+# الواجهة على GitHub Pages استضافة ساكنة بلا MCP، فلا تستطيع جلب
+# هذي البيانات بنفسها. نجلبها هنا ونكتبها في Firestore.
+MARKET_INDICES = {
+    "us": [("IWM",  "AMEX:IWM",  "الأسهم الصغيرة"),
+           ("IWC",  "AMEX:IWC",  "المتناهية الصغر"),
+           ("^VIX", "CBOE:VIX",  "مؤشر الخوف"),
+           ("SPY",  "AMEX:SPY",  "السوق كله")],
+    "sa": [("^TASI.SR", "TADAWUL:TASI", "المؤشر العام"),
+           ("BZ=F",     "ICEEUR:BRN1!", "خام برنت")],
+}
+ 
+def index_snapshot(yf_symbol):
+    """إغلاق + تغير% + متوسط 50 و200 + RSI14 لمؤشر واحد."""
+    t = yf.Ticker(yf_symbol)
+    hist = t.history(period="300d", interval="1d")
+    if hist.empty or len(hist) < 30:
+        return None
+    close = hist["Close"]
+    c    = float(close.iloc[-1])
+    prev = float(close.iloc[-2])
+    out = {
+        "close":  round(c, 4),
+        "change": round((c - prev) / prev * 100, 2) if prev else None,
+        "SMA50":  round(float(close.rolling(50).mean().iloc[-1]), 4)  if len(close) >= 50  else None,
+        "SMA200": round(float(close.rolling(200).mean().iloc[-1]), 4) if len(close) >= 200 else None,
+        "RSI":    round(float(rsi_series(close).iloc[-1]), 1),
+    }
+    return out
+ 
+def run_market_indices():
+    print(f"\n{'='*40}\n📈 مؤشرات السوق\n{'='*40}")
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")
+    for mk, rows in MARKET_INDICES.items():
+        data = {}
+        for yf_sym, key, label in rows:
+            try:
+                snap = index_snapshot(yf_sym)
+            except Exception as e:
+                print(f"  ⚠️  {yf_sym}: {e}")
+                continue
+            if not snap:
+                print(f"  ⚠️  {yf_sym}: لا بيانات")
+                continue
+            snap["label"] = label
+            snap["ticker"] = key.split(":")[1]
+            data[key] = snap
+            print(f"  ✅ {key}: {snap['close']} ({snap['change']}%) RSI={snap['RSI']}")
+        if not data:
+            print(f"  ❌ {mk}: لم تُجلب أي مؤشرات — أُبقي القراءة السابقة")
+            continue
+        db.collection("market").document(mk).set({"data": data, "updated": today})
+        print(f"  💾 market/{mk} ← {len(data)} مؤشر")
+ 
 # ─── فرز وحفظ ────────────────────────────────────────────────────
 def run_market(watchlist, collection_us, collection_cons, market_label, market_code):
     print(f"\n{'='*40}")
@@ -648,6 +702,11 @@ if __name__ == "__main__":
         "suggestions_sa", "consolidation_sa",
         "سعودي", "sa"
     )
+ 
+    try:
+        run_market_indices()
+    except Exception as e:
+        print(f"⚠️  مؤشرات السوق فشلت ولم تؤثر على الفرز: {e}")
  
     print("\n" + "="*40)
     print("📊 ملخص")
