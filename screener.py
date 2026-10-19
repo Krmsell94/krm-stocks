@@ -851,7 +851,7 @@ INDEX_COMPOSITES = {
     "TADAWUL:TASI": {
         "members": ["2222.SR", "1120.SR", "2010.SR", "1180.SR",
                     "7010.SR", "1211.SR", "2350.SR", "1150.SR"],
-        "label":   "بديل تاسي (كبار الشركات)",
+        "label":   "بديل تاسي · كبار الشركات (أساس 100)",
     },
 }
  
@@ -907,11 +907,12 @@ def run_market_indices():
                     snap = composite_snapshot(comp["members"])
                     if snap:
                         label = comp["label"]
+                        used  = "مركّب"
                         print(f"  🧮 {key}: مؤشر مركّب من {snap['members']} شركة")
             if not snap:
                 print(f"  ❌ {key}: فشلت كل البدائل {candidates}")
                 continue
-            if used != candidates[0]:
+            if used and used != candidates[0]:
                 print(f"  ↩️  {key}: استُخدم البديل {used}")
             snap["label"] = label
             snap["ticker"] = key.split(":")[1]
