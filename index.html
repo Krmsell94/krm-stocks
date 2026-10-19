@@ -2123,6 +2123,7 @@ async function loadPerformance() {
     _trades = [];
     snap.forEach(d => _trades.push({...d.data(), id: d.id}));
  
+    // الأداء يقيس النظام وحده، فلا تدخله صفقات المستخدم الشخصية.
     // الصفقات الورقية: Firestore هو المرجع لأن السكربت يغلقها هناك،
     // والسجل المحلي يكمّل ما لم يُزامَن بعد.
     const localTrades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
@@ -2139,10 +2140,7 @@ async function loadPerformance() {
       localStorage.setItem('paperTrades', JSON.stringify(back));
     } catch (e) { /* نكمل بالسجل المحلي */ }
  
-    let allAutoTrades = [
-      ..._trades.filter(t => t.source === 'auto' || !t.source),
-      ...Object.values(byKey).filter(lt => !_trades.find(t => t.id === lt.id))
-    ];
+    let allAutoTrades = Object.values(byKey);
     // فلتر حسب السوق المحدد في تبويب الأداء
     const perfMarket = _currentMarket || 'us';
     const isSA = (sym) => /^\d{4}$/.test(String(sym));
@@ -2226,6 +2224,23 @@ window.toggleAddPortfolio = function() {
 };
  
 // ── Portfolio localStorage helpers (primary storage — survives Auth failures) ──
+// مراكزي المفتوحة — تُقرأ من المحفظة، فهي مكان الشراء الفعلي.
+// صفحة التفاصيل تعتمد عليها لعرض "تم الشراء" ومنع الشراء مرتين.
+async function refreshMyPositions() {
+  try {
+    const local = Object.values(lsPortLoad());
+    _trades = local;
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
+    const map = {};
+    local.forEach(t => { map[t.id] = t; });
+    snap.forEach(d => { map[d.id] = { ...d.data(), id: d.id }; });
+    _trades = Object.values(map);
+  } catch (e) { /* يبقى ما حُمّل محلياً */ }
+}
+ 
 const LS_PORT_KEY = '_krm_portfolio';
 function lsPortLoad() {
   try { return JSON.parse(localStorage.getItem(LS_PORT_KEY) || '{}'); } catch { return {}; }
@@ -2279,6 +2294,7 @@ async function loadPortfolio() {
     trades = Object.values(merged);
   } catch {}
   _portfolioTrades = trades;
+  _trades = trades;   // نفس المصدر: المحفظة هي مراكزي
   if (!trades.length) {
     tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
     return;
@@ -2634,15 +2650,17 @@ window.saveBuyDetail = async function() {
     strategy: data.strategy_type || 'manual',
     registeredAt: new Date().toISOString(),
     status: 'open',
-    source: 'auto'
+    source: 'manual'      // شراؤك أنت، فمكانه المحفظة لا سجل أداء النظام
   };
   try {
     await waitForDB();
     const uid = await waitForUID();
     const { doc, setDoc } = window._firestoreOps;
-    await setDoc(doc(window._db, 'users', uid, 'trades', trade.id), trade);
+    // تُحفظ في محفظتك الخاصة؛ الأداء يبقى قياساً لترشيحات النظام وحدها
+    await setDoc(doc(window._db, 'users', uid, 'portfolio', trade.id), trade);
+    try { const m = lsPortLoad(); m[trade.id] = trade; lsPortSave(m); } catch (e) {}
     _trades.push(trade);
-    document.getElementById('saveIndicator').textContent = '✅ تم الحفظ';
+    document.getElementById('saveIndicator').textContent = '✅ أُضيفت إلى محفظتي';
     document.getElementById('buyFormDetail').classList.remove('open');
     document.getElementById('btnBuyDetail').textContent = '✅ تم الشراء';
     document.getElementById('btnBuyDetail').classList.add('bought');
@@ -2690,6 +2708,8 @@ window.removeTrade = async function(id) {
  
 // ── Init ──
 loadForas();
+ 
+refreshMyPositions();   // حتى تعرف صفحة التفاصيل ما اشتريته
  
 // شريط السوق: الساعات تعمل فوراً، والمؤشرات تنتظر Firebase
 marketTick();
