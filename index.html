@@ -836,6 +836,14 @@ body {
 }
  
 /* ── Responsive / Mobile ── */
+/* الافتراضي (سطح المكتب): شريط الجوال السفلي والعلوي مخفيان.
+   يجب أن تسبق هذه القواعد استعلام الوسائط أدناه، لأن قاعدة بنفس
+   التخصيص تأتي بعده تغلبه مهما كان عرض الشاشة. كانت توضع بعده،
+   فاختفى شريطا التنقّل على الجوال تماماً، وبقي المستخدم محبوساً
+   في تبويب الفرص بلا طريقة لتبديل التبويب أو السوق. */
+.bottom-nav { display: none; }
+.mobile-topbar { display: none; }
+ 
 @media (max-width: 700px) {
   /* Hide sidebar — use bottom nav instead */
   .sidebar {
@@ -948,10 +956,6 @@ body {
   .market-dropdown { min-width: 130px; }
 }
  
-/* Hide bottom nav on desktop */
-.bottom-nav { display: none; }
-/* Hide mobile topbar on desktop */
-.mobile-topbar { display: none; }
 </style>
 </head>
 <body>
@@ -2682,6 +2686,32 @@ refreshMyPositions();   // حتى تعرف صفحة التفاصيل ما اشت
 // شريط السوق: الساعات تعمل فوراً، والمؤشرات تنتظر Firebase
 marketTick();
 setInterval(marketTick, 1000);
+ 
+// ── تحديث تلقائي ──
+// الساعة حيّة، لكن المؤشرات والبطاقات كانت تُقرأ مرة واحدة عند فتح
+// الصفحة فقط. والفارز يكتب أربع مرات يومياً، فالصفحة المفتوحة على
+// الجوال تبقى على بيانات الصباح حتى تُغلق وتُفتح. نراقب رقم إصدار
+// الفرز كل خمس دقائق — قراءة مستند واحد — ونعيد التحميل حين يتغيّر
+// فقط، لا كل مرة، فلا تُستهلك قراءات بلا داعٍ.
+const _seenVersion = {};
+async function checkForNewRun() {
+  try {
+    await waitForDB();
+    const { getDoc, doc } = window._firestoreOps;
+    const mk   = _currentMarket;
+    const snap = await getDoc(doc(window._db, 'meta', 'suggestions_' + mk));
+    if (!snap.exists()) return;
+    const v = snap.data().version;
+    if (_seenVersion[mk] === undefined) { _seenVersion[mk] = v; return; }
+    if (v !== _seenVersion[mk]) {
+      _seenVersion[mk] = v;
+      loadMarket();
+      reloadCurrentTab();
+    }
+  } catch (e) { /* التحديث التلقائي ليس حرجاً؛ الفشل صامت */ }
+}
+setInterval(checkForNewRun, 5 * 60 * 1000);
+checkForNewRun();
 loadMarket();
  
 window.openDetail = openDetail;
