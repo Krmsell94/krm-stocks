@@ -20,14 +20,16 @@ firebase_admin.initialize_app(cred)
 db = firestore.client()
  
 # ─── أسهم المراقبة ───────────────────────────────────────────────
+# أُزيلت رموز ردّ عليها Yahoo بأنها ملغاة الإدراج:
+# LILM, NKLA, FSR, ARVL, ASTR, VORB, SFET
 US_WATCHLIST = [
     "EVLV", "PHAT", "SOUN", "ABAT", "LZ",
     "LFMD", "BW", "MARA", "RIOT", "CLSK",
     "CIFR", "WULF", "HIVE", "BTBT", "BSRT",
-    "ACHR", "JOBY", "LILM", "EOSE", "BLNK",
-    "CHPT", "NKLA", "HYLN", "FSR", "ARVL",
-    "SPCE", "RKLB", "ASTR", "MNTS", "ASTS",
-    "LUNR", "RDW", "VORB", "SFET", "FLNC",
+    "ACHR", "JOBY", "EOSE", "BLNK",
+    "CHPT", "HYLN", 
+    "SPCE", "RKLB", "MNTS", "ASTS",
+    "LUNR", "RDW", "FLNC",
     "BE", "FCEL", "PLUG", "BLDP", "NFGC",
 ]
  
@@ -47,23 +49,47 @@ TOP_N         = 999
  
 # ─── طبقة 1: كلاسيكي ─────────────────────────────────────────────
 def proximity_score(hist):
-    """(close - period_low) / (period_high - period_low)"""
-    if hist.empty or len(hist) < 20:
+    """(close - period_low) / (period_high - period_low)
+ 
+    تنبيه: بيانات السوق السعودي تأتي أحياناً بصفوف فيها NaN، فكانت
+    النتيجة nan. وnan لا يساوي None ولا يزيد على أي رقم، فكان يمرّ
+    من فلتر الفرز بلا رفض، ويُخرج ثقة 0% لكل سهم سعودي. لذلك ننظّف
+    الصفوف الناقصة أولاً ونرفض أي نتيجة غير منتهية.
+    """
+    h = hist.dropna(subset=["High", "Low", "Close"])
+    if h.empty or len(h) < 20:
         return None
-    period_high = hist["High"].max()
-    period_low  = hist["Low"].min()
+    period_high = float(h["High"].max())
+    period_low  = float(h["Low"].min())
+    if not np.isfinite(period_high) or not np.isfinite(period_low):
+        return None
     if period_high == period_low:
         return None
-    close = hist["Close"].iloc[-1]
-    return round((close - period_low) / (period_high - period_low), 4)
+    close = float(h["Close"].iloc[-1])
+    score = (close - period_low) / (period_high - period_low)
+    if not np.isfinite(score):
+        return None
+    return round(score, 4)
  
 def hourly_drop(ticker_obj):
+    """تراجع السعر خلال آخر 4 أيام، مقيساً من أعلى إغلاق ساعي.
+ 
+    كان يقيس من أعلى High لحظي، فذيل شمعة واحد — وهو شائع في الأسهم
+    الصغيرة ضعيفة السيولة — يُنتج "تراجعاً" يصل 10% أو أكثر لسهم لم
+    يتحرك فعلياً، فيُرفض بلا سبب. الإغلاق هو السعر الذي تراضى عليه
+    السوق، فالقياس منه يصف الهبوط الحقيقي لا ضجيج الذيول.
+    """
     try:
         h = ticker_obj.history(period="4d", interval="1h")
         if h.empty:
             return 0.0
-        high_72 = h["High"].max()
-        last    = h["Close"].iloc[-1]
+        closes = h["Close"].dropna()
+        if closes.empty:
+            return 0.0
+        high_72 = float(closes.max())
+        last    = float(closes.iloc[-1])
+        if not np.isfinite(high_72) or not np.isfinite(last) or high_72 <= 0:
+            return 0.0
         return round((last - high_72) / high_72, 4)
     except:
         return 0.0
@@ -88,29 +114,97 @@ def wyckoff_score(hist):
     return round(score, 2)
  
 # ─── طبقة 3: Elliott Wave (مبسّط) ───────────────────────────────
+def _zigzag(values, pct=0.08):
+    """نقاط انعطاف السعر: كل انعكاس بنسبة pct أو أكثر يُسجّل محوراً.
+    هذه هي الطريقة المتعارف عليها لتقسيم الحركة إلى موجات."""
+    vals = [float(v) for v in values]
+    n = len(vals)
+    if n < 3:
+        return []
+    piv = [(0, vals[0])]
+    ei, ev = 0, vals[0]      # الطرف الحالي (أعلى قمة أو أدنى قاع منذ آخر محور)
+    trend = 0                # 0 غير محدد، 1 صاعد، -1 هابط
+    for i in range(1, n):
+        v = vals[i]
+        if trend == 0:
+            if v >= vals[0] * (1 + pct):
+                trend, ei, ev = 1, i, v
+            elif v <= vals[0] * (1 - pct):
+                trend, ei, ev = -1, i, v
+            elif v > ev:
+                ei, ev = i, v
+        elif trend == 1:
+            if v > ev:
+                ei, ev = i, v
+            elif v <= ev * (1 - pct):
+                piv.append((ei, ev))
+                trend, ei, ev = -1, i, v
+        else:
+            if v < ev:
+                ei, ev = i, v
+            elif v >= ev * (1 + pct):
+                piv.append((ei, ev))
+                trend, ei, ev = 1, i, v
+    if piv[-1][0] != ei:
+        piv.append((ei, ev))
+    return piv
+ 
+ 
 def elliott_score(hist):
-    if len(hist) < 60:
+    """إليوت في سياق البحث عن القاع.
+ 
+    الصيغة القديمة كانت تقيس عمق التصحيح كنسبة فيبوناتشي من موجة
+    صاعدة سابقة، وتشترط أن يكون بين 38% و79%. لكن كل سهم يمرّ فلترنا
+    هو أصلاً على بعد 10% من أدنى 220 يوماً، أي أنه هبط تحت قاعدة
+    الموجة نفسها، فتصير النسبة أكبر من 1 وتُرجع الدالة صفراً — وهذا
+    ما ظهر في السجل: إليوت = 0.0 لستين رمزاً بلا استثناء، فكان وزنه
+    (0.15) مهدوراً وسقف الثقة 85%.
+ 
+    البديل يقيس ما يفيد فعلاً عند القاع: هل اكتمل التصحيح بنيوياً؟
+      • ساقان هابطتان على الأقل (A و C) = بنية تصحيح لا بداية انهيار
+      • الساق الأخيرة أضعف من الأولى = استنفاد البائعين
+      • تباعد موجب: قاع أدنى في السعر مع RSI أعلى
+    """
+    h = hist.dropna(subset=["High", "Low", "Close"])
+    if len(h) < 60:
         return 0.0
-    closes = hist["Close"].values
-    peak_idx = np.argmax(closes[-60:])
-    peak_val = closes[-60:][peak_idx]
-    current  = closes[-1]
-    if current >= peak_val * 0.95:
+    closes = h["Close"].values
+    peak_idx = int(np.argmax(closes))
+    if len(closes) - 1 - peak_idx < 20:
+        return 0.0                       # القمة حديثة جداً، لا هبوط نحلّله
+    peak = float(closes[peak_idx])
+    cur  = float(closes[-1])
+    if not np.isfinite(peak) or not np.isfinite(cur) or peak <= 0:
         return 0.0
-    if peak_idx < 5:
+    if cur >= peak * 0.90:
+        return 0.0                       # لم يصحّح بما يكفي ليكون قاعاً
+ 
+    piv = _zigzag(closes[peak_idx:], pct=0.08)
+    if len(piv) < 3:
         return 0.0
-    base_val = closes[-60:][:peak_idx].min()
-    if peak_val <= base_val:
-        return 0.0
-    wave_size    = peak_val - base_val
-    correction   = peak_val - current
-    retrace_pct  = correction / wave_size
-    score = 0.0
-    if 0.382 <= retrace_pct <= 0.786:
-        score += 0.6
-        if 0.50 <= retrace_pct <= 0.618:
-            score += 0.4
+    legs = [(v1 - v2) / v1 for (_, v1), (_, v2) in zip(piv, piv[1:])
+            if v2 < v1 and v1 > 0]
+    if len(legs) < 2:
+        return 0.0                       # ساق واحدة = انهيار مستمر لا تصحيح مكتمل
+ 
+    score = 0.4
+    if legs[-1] < legs[0] * 0.9:
+        score += 0.3                     # استنفاد: الساق الأخيرة أقصر من الأولى
+ 
+    rsi = rsi_series(h["Close"])
+    if len(rsi) == len(closes) and len(closes) >= 50:
+        tail = closes[-30:]
+        last_low = int(np.argmin(tail)) + len(closes) - 30
+        prev     = closes[:len(closes) - 30]
+        if len(prev) >= 15:
+            prev_low = int(np.argmin(prev))
+            r1, r2 = float(rsi.iloc[last_low]), float(rsi.iloc[prev_low])
+            if (np.isfinite(r1) and np.isfinite(r2)
+                    and closes[last_low] < closes[prev_low] and r1 > r2 + 2):
+                score += 0.3             # تباعد موجب
+ 
     return round(min(score, 1.0), 2)
+ 
  
 # ═══════════════════════════════════════════════════════════════
 # شروط سهم الارتكاز — مطابقة لدليل طريقة فيصل (ص 64-66، 73)
@@ -221,17 +315,30 @@ def find_support(hist, lookback=60, tol=0.03, min_gap=3):
     if not pivots:
         return None, 0
  
-    best_level, best_touches = None, 0
+    cur = float(hist["Close"].iloc[-1])
+    best = None
     for lvl in sorted(set(pivots)):
+        if lvl <= 0 or lvl > cur * 1.03:
+            continue      # مستوى فوق السعر الحالي مقاومة لا دعم
         hits, last = 0, -99
         for j, lo in enumerate(lows):
-            if lo <= lvl * (1 + tol) and j - last >= min_gap:
+            # اللمسة قاع دخل نطاق المستوى، لا أي قاع أدنى منه. كان
+            # الشرط (lo <= lvl*(1+tol)) بلا حدّ أدنى، فكل سعر تحت
+            # المستوى يُحتسب لمسة، فيفوز أعلى محور بعدد لمسات وهمي
+            # ويُرجع مستوى فوق السعر، فيسقط has_support لكل سهم —
+            # وهذا سبب خروج صفر مرشح ارتكاز في السوقين.
+            if lvl * (1 - tol) <= lo <= lvl * (1 + tol) and j - last >= min_gap:
                 hits += 1
                 last = j
-        # الأكثر اختباراً، وعند التساوي الأدنى سعراً لأن الدعم مرجع وقف الخسارة
-        if hits > best_touches or (hits == best_touches and best_level is not None and lvl < best_level):
-            best_level, best_touches = lvl, hits
-    return (round(best_level, 4) if best_level else None), best_touches
+        if hits < 2:
+            continue
+        # الأكثر اختباراً، وعند التساوي الأقرب للسعر لأنه الدعم العامل
+        key = (hits, -abs(cur - lvl))
+        if best is None or key > best[0]:
+            best = (key, lvl, hits)
+    if best is None:
+        return None, 0
+    return round(best[1], 4), best[2]
  
 def failed_breakdown(hist, support, bars=10):
     """ص65/73: سحب سيولة أو فشل كسر الدعم ثم استرداد."""
@@ -294,7 +401,17 @@ def arkitaz_conditions(hist):
     if not (swept or stable):    missing.append("الهبوط لم يفشل بعد")
     if not ma_rec:               missing.append("لم يستعد المتوسطات")
  
+    # ثقة الارتكاز مستقلة عن ثقة الفرص: تلك وزنها 0.60 للقرب من أدنى
+    # 220 يوماً، وسهم الارتكاز قد يكون أعلى من قاعه بكثير وهو مع ذلك
+    # على دعم ممتاز. فنقيسها بشروط فيصل نفسها.
+    ark_conf = round(100 * (
+        (0.25 if has_sup   else 0) + (0.20 if rsi_ok   else 0) +
+        (0.15 if macd_ok   else 0) + (0.15 if (swept or stable) else 0) +
+        (0.10 if candle_ok else 0) + (0.10 if ma_rec   else 0) +
+        (0.05 if vol_ok    else 0)))
+ 
     return {
+        "ark_confidence": ark_conf,
         "rsi":            rsi_val,
         "rsi_low15":      rsi_low,
         "rsi_ideal":      rsi_ideal,
@@ -391,7 +508,9 @@ def build_note(score, drop, wyckoff, elliott, consolidating, cons_reason):
  
 # ─── حساب درجة الثقة الكلية ──────────────────────────────────────
 def confidence_score(prox, wyckoff, elliott):
-    prox_score = max(0, 1 - (prox / 0.10))
+    if prox is None or not np.isfinite(prox):
+        return 0
+    prox_score = max(0.0, 1.0 - (prox / 0.10))
     total = (prox_score * 0.60) + (wyckoff * 0.25) + (elliott * 0.15)
     return round(total * 100)
  
@@ -506,15 +625,27 @@ def screen_stock(symbol, market="us"):
                 print(f"  ❌ {symbol}: حجم منخفض")
                 return None
  
+        # فلاتر الفرص (القرب من القاع + التراجع الساعي) تخصّ تبويب الفرص
+        # وحده. الارتكاز عند فيصل سهم على دعم حقيقي، وقد يكون أعلى من
+        # أدنى 220 يوماً بكثير. فلو رفضنا السهم هنا لما وصل الارتكاز
+        # أبداً — وهذا ما حدث: صفر مرشح ارتكاز في السوقين، لأن التبويب
+        # كان يُغذّى من ناجي فلاتر الفرص فقط. فنفصل: الرفض يُعلّم السهم
+        # بأنه ليس فرصة، لا أن يُحذف من الفرز كله.
         score = proximity_score(hist)
-        if score is None or score > MAX_SCORE:
-            print(f"  ❌ {symbol}: سكور {score}")
-            return None
+        prox_ok = bool(score is not None and np.isfinite(score) and score <= MAX_SCORE)
  
-        drop = hourly_drop(t)
-        if drop < HOURLY_DROP:
-            print(f"  ❌ {symbol}: تراجع ساعي {drop*100:.1f}%")
-            return None
+        if prox_ok:
+            drop = hourly_drop(t)
+            drop_ok = bool(drop >= HOURLY_DROP)
+            if not drop_ok:
+                print(f"  ⤵️  {symbol}: خارج الفرص — تراجع ساعي {drop*100:.1f}%")
+        else:
+            drop, drop_ok = 0.0, True      # لا داعي لنداء شبكة إضافي
+            print(f"  ⤵️  {symbol}: خارج الفرص — سكور {score}")
+ 
+        foras_pass = bool(prox_ok and drop_ok)
+        if score is None or not np.isfinite(score):
+            score = 1.0                     # بعيد عن القاع: لا يحتسب في الفرص
  
         wyckoff = wyckoff_score(hist)
         elliott = elliott_score(hist)
@@ -523,6 +654,9 @@ def screen_stock(symbol, market="us"):
         ark = arkitaz_conditions(hist)      # شروط فيصل (تبويب الارتكاز)
         flt = float_shares(t)
         foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence)
+        if not foras_pass:
+            foras_ready = False
+            foras_missing = ["خارج فلاتر الفرص"] + foras_missing
  
         note    = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
         candles = build_candles(hist)
@@ -543,10 +677,12 @@ def screen_stock(symbol, market="us"):
             news = []
  
         ark_mark = '🟢 جاهز' if ark["ark_ready"] else ('🟡 مرشح' if ark["ark_candidate"] else '✗')
+        foras_mark = ('🟢 جاهز' if foras_ready
+                      else ('🟡 متابعة' if foras_pass else '✗ خارج'))
         print(f"  ✅ {symbol}: سكور={score:.3f} | ثقة={confidence}% | Wyckoff={wyckoff} | "
-              f"Elliott={elliott} | RSI={ark['rsi']} | فرص={'🟢 جاهز' if foras_ready else '🟡 متابعة'} "
-              f"| ارتكاز={ark_mark}")
-        if not foras_ready:
+              f"Elliott={elliott} | RSI={ark['rsi']} | فرص={foras_mark} "
+              f"| ارتكاز={ark_mark} ({ark['ark_confidence']}%)")
+        if foras_pass and not foras_ready:
             print(f"      فرص ناقص: {'، '.join(foras_missing)}")
         if ark["ark_candidate"] and not ark["ark_ready"]:
             print(f"      ارتكاز ناقص: {'، '.join(ark['ark_missing'])}")
@@ -570,6 +706,7 @@ def screen_stock(symbol, market="us"):
             "target2":       float(levels["target2"]),
             "news":          news,
             "float_shares":  flt,
+            "foras_pass":    foras_pass,
             "foras_ready":   foras_ready,
             "foras_missing": foras_missing,
             **ark,
@@ -668,8 +805,9 @@ MARKET_INDICES = {
            ("IWC",  "AMEX:IWC",  "المتناهية الصغر"),
            ("^VIX", "CBOE:VIX",  "مؤشر الخوف"),
            ("SPY",  "AMEX:SPY",  "السوق كله")],
-    "sa": [("^TASI.SR", "TADAWUL:TASI", "المؤشر العام"),
-           ("BZ=F",     "ICEEUR:BRN1!", "خام برنت")],
+    # ^TASI.SR لم يرجع بيانات في التشغيل، فنجرّب عدة رموز بالترتيب
+    "sa": [(["^TASI", "^TASI.SR", "TASI.SR"], "TADAWUL:TASI", "المؤشر العام"),
+           (["BZ=F", "BNO"],                  "ICEEUR:BRN1!", "خام برنت")],
 }
  
 def index_snapshot(yf_symbol):
@@ -698,14 +836,24 @@ def run_market_indices():
     for mk, rows in MARKET_INDICES.items():
         data = {}
         for yf_sym, key, label in rows:
-            try:
-                snap = index_snapshot(yf_sym)
-            except Exception as e:
-                print(f"  ⚠️  {yf_sym}: {e}")
-                continue
+            # قد يكون الرمز قائمة بدائل (تاسي مثلاً)، فنجرّبها بالترتيب
+            candidates = yf_sym if isinstance(yf_sym, (list, tuple)) else [yf_sym]
+            snap, used = None, None
+            for cand in candidates:
+                try:
+                    snap = index_snapshot(cand)
+                except Exception as e:
+                    print(f"  ⚠️  {cand}: {e}")
+                    snap = None
+                if snap:
+                    used = cand
+                    break
+                print(f"  ⚠️  {cand}: لا بيانات")
             if not snap:
-                print(f"  ⚠️  {yf_sym}: لا بيانات")
+                print(f"  ❌ {key}: فشلت كل البدائل {candidates}")
                 continue
+            if used != candidates[0]:
+                print(f"  ↩️  {key}: استُخدم البديل {used}")
             snap["label"] = label
             snap["ticker"] = key.split(":")[1]
             data[key] = snap
@@ -729,8 +877,10 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
         print(f"\n▶ {sym}")
         data = screen_stock(sym, market_code)
         if data:
-            results[sym] = data
-            # تبويب الارتكاز = شروط فيصل، لا الشروط القديمة
+            # الفرص: من مرّ فلاتر القرب من القاع والتراجع الساعي
+            if data["foras_pass"]:
+                results[sym] = data
+            # الارتكاز: شروط فيصل وحدها، مستقلة عن فلاتر الفرص
             if data["ark_candidate"]:
                 consolidating[sym] = data
  
