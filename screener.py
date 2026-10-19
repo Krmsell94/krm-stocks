@@ -103,15 +103,16 @@ HALAL_SA = set(
 # ─── أسهم المراقبة ───────────────────────────────────────────────
 # أُزيلت رموز ردّ عليها Yahoo بأنها ملغاة الإدراج:
 # LILM, NKLA, FSR, ARVL, ASTR, VORB, SFET, BSRT
+# وبعد تشغيل 19-10: ORLA وARMN وBITF (لا بيانات)،
+#                   XPON وSLNG (حجم أقل من 100 ألف)
 US_WATCHLIST = [
     "EVLV", "PHAT", "SOUN", "ABAT", "LZ",
     "LFMD", "BW", "RIOT", "BE", "PLUG",
     "FLNC", "LUNR", "SHLS", "ENPH", "BEEM",
     "SLDP", "FSLR", "UUUU", "URG", "MUX",
-    "SVM", "CDE", "HBM", "ORLA", "ARMN",
-    "SPIR", "BKSY", "AMSC", "HIMX", "OUST",
-    "AEHR", "ACMR", "MXL", "BITF", "BKKT",
-    "VXRT", "NEOV", "XPON", "LOOP", "SLNG",
+    "SVM", "CDE", "HBM", "SPIR", "BKSY",
+    "AMSC", "HIMX", "OUST", "AEHR", "ACMR",
+    "MXL", "BKKT", "VXRT", "NEOV", "LOOP",
 ]
  
 SA_WATCHLIST = [
@@ -138,6 +139,8 @@ PERIOD_DAYS   = 220
 MAX_SCORE     = 0.10
 HOURLY_DROP   = -0.10
 MIN_VOLUME    = 100_000
+PRICE_MIN     = 1.0     # نطاق أسهمك: من دولار إلى تسعة. لم يكن
+PRICE_MAX     = 9.0     # هذا الشرط موجوداً في الفارز إطلاقاً
 TOP_N         = 999
  
 # ─── طبقة 1: كلاسيكي ─────────────────────────────────────────────
@@ -726,6 +729,13 @@ def screen_stock(symbol, market="us"):
             avg_vol = hist["Volume"].tail(20).mean()
             if avg_vol < MIN_VOLUME:
                 print(f"  ❌ {symbol}: حجم منخفض")
+                return None
+            # نطاق السعر: سهم خارجه ليس قابلاً للشراء أصلاً، فرفضه
+            # هنا أرخص من حساب كل شروطه ثم إخفائه. يخصّ السوق
+            # الأمريكي وحده لأن النطاق بالدولار.
+            px = float(hist["Close"].iloc[-1])
+            if not np.isfinite(px) or not (PRICE_MIN <= px <= PRICE_MAX):
+                print(f"  ❌ {symbol}: السعر ${px:.2f} خارج ${PRICE_MIN:g}-${PRICE_MAX:g}")
                 return None
  
         # فلاتر الفرص (القرب من القاع + التراجع الساعي) تخصّ تبويب الفرص
