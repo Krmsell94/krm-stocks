@@ -8,6 +8,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<!-- شارت حي من TradingView؛ وإن تعذّر تحميله نرجع للشموع المحفوظة -->
+<script src="https://s3.tradingview.com/tv.js"></script>
 <style>
 :root {
   --bg: #EEF1F5;
@@ -593,7 +595,7 @@ body {
 .layer-fill { height: 100%; border-radius: 4px; }
  
 #detailChart {
-  height: 280px;
+  height: 420px;
   background: var(--bg2);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -1708,6 +1710,48 @@ function rsiColor(v) {
 }
  
 // ── Chart ──
+// شارت حي من TradingView. الأرقام التي يحسبها الموقع تأتي من السكربت،
+// وهذا للعرض فقط — الـ widget إطار مغلق لا تُقرأ منه قيم بالجافاسكربت.
+let _tvWidget = null;
+function renderLiveChart(container, tvSymbol, candles) {
+  container.innerHTML = '';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+ 
+  if (window.TradingView && typeof window.TradingView.widget === 'function' && tvSymbol) {
+    const holder = document.createElement('div');
+    holder.id = 'tvChartHolder';
+    holder.style.cssText = 'width:100%;height:100%';
+    container.appendChild(holder);
+    try {
+      _tvWidget = new window.TradingView.widget({
+        container_id: 'tvChartHolder',
+        symbol: tvSymbol,
+        interval: 'D',
+        timezone: 'Asia/Riyadh',
+        theme: isDark ? 'dark' : 'light',
+        style: '1',
+        locale: 'ar_AE',
+        autosize: true,
+        hide_side_toolbar: false,
+        allow_symbol_change: false,
+        save_image: false,
+        withdateranges: true,
+      });
+      return;
+    } catch (e) { /* نسقط للشموع المحفوظة */ }
+  }
+ 
+  // ارتداد: الشموع المحفوظة في Firestore.
+  // كلتا المكتبتين من شبكات خارجية، فقد تفشلان معاً على اتصال ضعيف.
+  if (candles && candles.length && window.LightweightCharts) {
+    try { renderFullChart(container, candles); return; } catch (e) { /* للرسالة أدناه */ }
+  }
+  const why = candles && candles.length ? 'تعذّر تحميل الشارت' : 'الشارت يظهر بعد أول تحديث';
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;'
+    + 'height:100%;color:var(--text2);flex-direction:column;gap:8px">'
+    + `<div>📊</div><div style="font-size:12px">${why}</div></div>`;
+}
+ 
 function renderFullChart(container, candles) {
   container.innerHTML = '';
   if (!candles || !candles.length) {
@@ -2515,12 +2559,7 @@ function openDetail(symbol, data, market, source = 'foras') {
   }
  
   const chartDiv = document.getElementById('detailChart');
-  chartDiv.innerHTML = '';
-  if (data.candles && data.candles.length) {
-    setTimeout(() => renderFullChart(chartDiv, data.candles), 50);
-  } else {
-    chartDiv.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#888;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">الشارت سيظهر بعد التحديث</div></div>';
-  }
+  setTimeout(() => renderLiveChart(chartDiv, tvSuffix, data.candles), 50);
  
   document.getElementById('buyDateD').valueAsDate = new Date();
   if (data.close) document.getElementById('buyPriceD').value = data.close.toFixed(2);
