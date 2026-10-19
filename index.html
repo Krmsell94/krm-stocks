@@ -2078,11 +2078,15 @@ async function loadMeta() {
 // ── Auto-register paper trade (for performance tab) ──
 function autoRegisterPaperTrade(sym, data) {
   if (!data.confidence || data.confidence < 60) return;
+  if (!data.entry && !data.close) return;
+  if (!data.stop_loss || !data.target1) return;   // بلا وقف وهدف لا يمكن إغلاقها آلياً
+ 
   const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
   if (trades[sym]) return;
-  trades[sym] = {
+  const rec = {
     id: sym + '_' + Date.now(),
     sym, symbol: sym,
+    market: _currentMarket || 'us',
     entry: data.entry || data.close,
     stop_loss: data.stop_loss,
     target1: data.target1,
@@ -2093,7 +2097,18 @@ function autoRegisterPaperTrade(sym, data) {
     status: 'open',
     source: 'auto'
   };
+  trades[sym] = rec;
   localStorage.setItem('paperTrades', JSON.stringify(trades));
+ 
+  // تُكتب في Firestore ليراها السكربت ويغلقها عند الهدف أو الوقف
+  (async () => {
+    try {
+      await waitForDB();
+      const { doc, setDoc } = window._firestoreOps;
+      const id = `${rec.market}_${sym}`;
+      await setDoc(doc(window._db, 'paper_trades', id), rec, { merge: true });
+    } catch (e) { /* يبقى السجل المحلي على أي حال */ }
+  })();
 }
  
 // ── Load Performance (auto trades) — مفصول حسب السوق ──
@@ -2107,9 +2122,27 @@ async function loadPerformance() {
     const snap = await getDocs(collection(window._db, 'users', uid, 'trades'));
     _trades = [];
     snap.forEach(d => _trades.push({...d.data(), id: d.id}));
-    // Also local auto trades
-    const localTrades = Object.values(JSON.parse(localStorage.getItem('paperTrades') || '{}'));
-    let allAutoTrades = [..._trades.filter(t => t.source === 'auto' || !t.source), ...localTrades.filter(lt => !_trades.find(t => t.id === lt.id))];
+ 
+    // الصفقات الورقية: Firestore هو المرجع لأن السكربت يغلقها هناك،
+    // والسجل المحلي يكمّل ما لم يُزامَن بعد.
+    const localTrades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+    const byKey = {};
+    Object.values(localTrades).forEach(t => {
+      byKey[`${t.market || 'us'}_${t.sym || t.symbol}`] = t;
+    });
+    try {
+      const ps = await getDocs(collection(window._db, 'paper_trades'));
+      ps.forEach(d => { byKey[d.id] = { ...(byKey[d.id] || {}), ...d.data(), id: d.id }; });
+      // أعِد المُغلقة إلى السجل المحلي حتى يتسق العرض دون اتصال
+      const back = {};
+      Object.values(byKey).forEach(t => { back[t.sym || t.symbol] = t; });
+      localStorage.setItem('paperTrades', JSON.stringify(back));
+    } catch (e) { /* نكمل بالسجل المحلي */ }
+ 
+    let allAutoTrades = [
+      ..._trades.filter(t => t.source === 'auto' || !t.source),
+      ...Object.values(byKey).filter(lt => !_trades.find(t => t.id === lt.id))
+    ];
     // فلتر حسب السوق المحدد في تبويب الأداء
     const perfMarket = _currentMarket || 'us';
     const isSA = (sym) => /^\d{4}$/.test(String(sym));
@@ -2157,27 +2190,33 @@ function renderPerfTable(trades, tbody) {
  
 function renderPerfSummary(trades) {
   const el = document.getElementById('perf-summary');
-  const total = trades.length;
+  const open   = trades.filter(t => t.status === 'open');
   const closed = trades.filter(t => t.status !== 'open');
-  const wins = closed.filter(t => t.close_price && t.entry && t.close_price > t.entry);
-  el.innerHTML = `
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">إجمالي</div>
-      <div style="font-size:20px;font-weight:700">${total}</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">مفتوحة</div>
-      <div style="font-size:20px;font-weight:700;color:var(--blue)">${trades.filter(t => t.status === 'open').length}</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">ربح</div>
-      <div style="font-size:20px;font-weight:700;color:var(--green)">${wins.length}</div>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center">
-      <div style="font-size:11px;color:var(--text2)">خسارة</div>
-      <div style="font-size:20px;font-weight:700;color:var(--red)">${closed.length - wins.length}</div>
-    </div>
-  `;
+  const pnl    = t => (t.pnl_pct != null) ? t.pnl_pct
+                    : (t.close_price && t.entry ? (t.close_price - t.entry) / t.entry * 100 : null);
+  const wins   = closed.filter(t => { const p = pnl(t); return p != null && p > 0; });
+  const losses = closed.filter(t => { const p = pnl(t); return p != null && p <= 0; });
+  const rate   = closed.length ? Math.round(wins.length / closed.length * 100) : null;
+  const avg    = closed.length
+    ? (closed.reduce((s, t) => s + (pnl(t) || 0), 0) / closed.length) : null;
+  const rateCol = rate == null ? 'var(--text2)' : rate >= 50 ? 'var(--green)' : 'var(--red)';
+ 
+  const box = (label, value, color, hint) => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:92px">
+      <div style="font-size:11px;color:var(--text2)">${label}</div>
+      <div style="font-size:20px;font-weight:700${color ? ';color:' + color : ''}">${value}</div>
+      ${hint ? `<div style="font-size:10px;color:var(--text2)">${hint}</div>` : ''}
+    </div>`;
+ 
+  el.innerHTML =
+    box('إجمالي', trades.length, null, '') +
+    box('مفتوحة', open.length, 'var(--blue)', '') +
+    box('ربح', wins.length, 'var(--green)', '') +
+    box('خسارة', losses.length, 'var(--red)', '') +
+    box('نسبة النجاح', rate == null ? '—' : rate + '%', rateCol,
+        closed.length ? `من ${closed.length} مغلقة` : 'لا مغلقة بعد') +
+    box('متوسط الصفقة', avg == null ? '—' : (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%',
+        avg == null ? null : (avg >= 0 ? 'var(--green)' : 'var(--red)'), '');
 }
  
 // ── Portfolio (manual) ──
