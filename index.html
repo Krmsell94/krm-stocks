@@ -1845,7 +1845,10 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
 function buildArkitazCard(symbol, data, market) {
   const div = document.createElement('div');
   div.className = 'stock-card';
-  const conf = data.confidence || 0;
+  // ثقة الارتكاز لا ثقة الفرص: تلك وزنها 0.60 للقرب من أدنى 220 يوماً،
+  // وسهم الارتكاز قد يكون أعلى من قاعه بكثير وهو على دعم ممتاز.
+  const conf = (data.ark_confidence != null ? data.ark_confidence
+                                            : (data.confidence || 0));
   const confCol = confColor(conf);
   const cur = market === 'sa' ? 'ر.س ' : '$';
  
@@ -1861,7 +1864,9 @@ function buildArkitazCard(symbol, data, market) {
  
   const checkIcon = (ok) => ok ? '✅' : (ok === false ? '❌' : '⚪');
  
-  const isReady = conf >= 50 || (rsiOk && supportOk);
+  // الجاهزية تُقرأ من الفارز وحده. تعريف ثانٍ هنا كان يسبب تناقض
+  // الشارة مع القسم تماماً كما حدث في الفرص قبل.
+  const isReady = data.ark_ready === true;
  
   div.innerHTML = `
     <div style="display:flex;justify-content:space-between;align-items:flex-start">
