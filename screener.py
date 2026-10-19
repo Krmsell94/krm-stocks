@@ -9,6 +9,7 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 import numpy as np
+import pandas as pd
 import yfinance as yf
 import firebase_admin
 from firebase_admin import credentials, firestore
@@ -21,11 +22,11 @@ db = firestore.client()
  
 # ─── أسهم المراقبة ───────────────────────────────────────────────
 # أُزيلت رموز ردّ عليها Yahoo بأنها ملغاة الإدراج:
-# LILM, NKLA, FSR, ARVL, ASTR, VORB, SFET
+# LILM, NKLA, FSR, ARVL, ASTR, VORB, SFET, BSRT
 US_WATCHLIST = [
     "EVLV", "PHAT", "SOUN", "ABAT", "LZ",
     "LFMD", "BW", "MARA", "RIOT", "CLSK",
-    "CIFR", "WULF", "HIVE", "BTBT", "BSRT",
+    "CIFR", "WULF", "HIVE", "BTBT",
     "ACHR", "JOBY", "EOSE", "BLNK",
     "CHPT", "HYLN", 
     "SPCE", "RKLB", "MNTS", "ASTS",
@@ -519,10 +520,20 @@ def confidence_score(prox, wyckoff, elliott):
 # الساقط لأنه يصنع قيعاناً جديدة كل يوم. فالقرب من القاع ليس دليل
 # ارتداد. لذلك الجاهزية تشترط تأكيداً بنيوياً من وايكوف أو إليوت،
 # وتوقفاً فعلياً للنزول، ولا تكتفي بالدرجة وشمعة خضراء واحدة.
-def foras_readiness(hist, wyckoff, elliott, confidence):
+def foras_readiness(hist, wyckoff, elliott, confidence, drop=0.0):
     close, low, op, vol = hist["Close"], hist["Low"], hist["Open"], hist["Volume"]
     c = float(close.iloc[-1])
     missing = []
+ 
+    # التراجع الساعي صار شرط جاهزية لا فلتر حذف. كفلتر كان يرفض 18
+    # من 33 سهماً في يوم قفز فيه مؤشر الخوف 21%، وفيهم أعلى ستة
+    # أسهم ثقة (70، 70، 69، 69، 68، 68) بينما بقي ما دونها. فهو لم
+    # يكن يفرز جودة بل يحجب السوق كله يوم ينزل — وهو اليوم الذي
+    # تتكوّن فيه القيعان أصلاً. الآن يظهر السهم في المتابعة ويُمنع
+    # من "جاهز" حتى يهدأ نزوله.
+    drop_ok = bool(drop >= HOURLY_DROP)
+    if not drop_ok:
+        missing.append(f"ما زال ينزل بعنف ({drop*100:.1f}%)")
  
     conf_ok = bool(confidence >= 60)
     if not conf_ok:
@@ -555,7 +566,7 @@ def foras_readiness(hist, wyckoff, elliott, confidence):
     if not vol_ok:
         missing.append("فوليوم ضعيف")
  
-    ready = bool(conf_ok and structure_ok and base_ok and turned_up and green and vol_ok)
+    ready = bool(drop_ok and conf_ok and structure_ok and base_ok and turned_up and green and vol_ok)
     return ready, missing
  
 # ─── مستويات التداول ─────────────────────────────────────────────
@@ -636,14 +647,11 @@ def screen_stock(symbol, market="us"):
  
         if prox_ok:
             drop = hourly_drop(t)
-            drop_ok = bool(drop >= HOURLY_DROP)
-            if not drop_ok:
-                print(f"  ⤵️  {symbol}: خارج الفرص — تراجع ساعي {drop*100:.1f}%")
         else:
-            drop, drop_ok = 0.0, True      # لا داعي لنداء شبكة إضافي
+            drop = 0.0                      # لا داعي لنداء شبكة إضافي
             print(f"  ⤵️  {symbol}: خارج الفرص — سكور {score}")
  
-        foras_pass = bool(prox_ok and drop_ok)
+        foras_pass = prox_ok
         if score is None or not np.isfinite(score):
             score = 1.0                     # بعيد عن القاع: لا يحتسب في الفرص
  
@@ -653,7 +661,7 @@ def screen_stock(symbol, market="us"):
         confidence = confidence_score(score, wyckoff, elliott)
         ark = arkitaz_conditions(hist)      # شروط فيصل (تبويب الارتكاز)
         flt = float_shares(t)
-        foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence)
+        foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence, drop)
         if not foras_pass:
             foras_ready = False
             foras_missing = ["خارج فلاتر الفرص"] + foras_missing
@@ -810,22 +818,66 @@ MARKET_INDICES = {
            (["BZ=F", "BNO"],                  "ICEEUR:BRN1!", "خام برنت")],
 }
  
-def index_snapshot(yf_symbol):
-    """إغلاق + تغير% + متوسط 50 و200 + RSI14 لمؤشر واحد."""
-    t = yf.Ticker(yf_symbol)
-    hist = t.history(period="300d", interval="1d")
-    if hist.empty or len(hist) < 30:
+def series_metrics(close):
+    """إغلاق + تغير% + متوسط 50 و200 + RSI14 من سلسلة أسعار."""
+    close = close.dropna()
+    if len(close) < 30:
         return None
-    close = hist["Close"]
     c    = float(close.iloc[-1])
     prev = float(close.iloc[-2])
-    out = {
+    if not np.isfinite(c) or not np.isfinite(prev):
+        return None
+    return {
         "close":  round(c, 4),
         "change": round((c - prev) / prev * 100, 2) if prev else None,
         "SMA50":  round(float(close.rolling(50).mean().iloc[-1]), 4)  if len(close) >= 50  else None,
         "SMA200": round(float(close.rolling(200).mean().iloc[-1]), 4) if len(close) >= 200 else None,
         "RSI":    round(float(rsi_series(close).iloc[-1]), 1),
     }
+ 
+def index_snapshot(yf_symbol):
+    t = yf.Ticker(yf_symbol)
+    hist = t.history(period="300d", interval="1d")
+    if hist.empty or len(hist) < 30:
+        return None
+    return series_metrics(hist["Close"])
+ 
+# ياهو لا يوفّر مؤشر تاسي بأي من رموزه: جرّبنا ^TASI و^TASI.SR
+# وTASI.SR فردّ 404 "Quote not found" على الثلاثة. فبدل أن يبقى
+# شريط السوق السعودي فارغاً نبني بديلاً من كبار الشركات نفسها —
+# وهي رموز .SR مؤكّدة العمل لأن الفارز يسحبها كل يوم. يُسمّى
+# "بديل تاسي" صراحةً في الواجهة لأنه ليس المؤشر الرسمي.
+INDEX_COMPOSITES = {
+    "TADAWUL:TASI": {
+        "members": ["2222.SR", "1120.SR", "2010.SR", "1180.SR",
+                    "7010.SR", "1211.SR", "2350.SR", "1150.SR"],
+        "label":   "بديل تاسي (كبار الشركات)",
+    },
+}
+ 
+def composite_snapshot(symbols, min_members=3):
+    """مؤشر مرجّح بالتساوي: كل شركة تُعاير إلى 100 في بداية الفترة
+    ثم يؤخذ المتوسط، فلا يطغى سهم غالي السعر على البقية."""
+    frames = []
+    for sym in symbols:
+        try:
+            h = yf.Ticker(sym).history(period="300d", interval="1d")
+        except Exception:
+            continue
+        if h.empty or len(h) < 60:
+            continue
+        c = h["Close"].dropna()
+        if c.empty or not np.isfinite(float(c.iloc[0])) or float(c.iloc[0]) <= 0:
+            continue
+        c.index = c.index.tz_localize(None) if c.index.tz is not None else c.index
+        frames.append(c / float(c.iloc[0]) * 100.0)
+    if len(frames) < min_members:
+        print(f"  ⚠️  المؤشر المركّب: {len(frames)} شركة فقط، والحد الأدنى {min_members}")
+        return None
+    comp = pd.concat(frames, axis=1).mean(axis=1, skipna=True).dropna()
+    out = series_metrics(comp)
+    if out:
+        out["members"] = len(frames)
     return out
  
 def run_market_indices():
@@ -849,6 +901,13 @@ def run_market_indices():
                     used = cand
                     break
                 print(f"  ⚠️  {cand}: لا بيانات")
+            if not snap:
+                comp = INDEX_COMPOSITES.get(key)
+                if comp:
+                    snap = composite_snapshot(comp["members"])
+                    if snap:
+                        label = comp["label"]
+                        print(f"  🧮 {key}: مؤشر مركّب من {snap['members']} شركة")
             if not snap:
                 print(f"  ❌ {key}: فشلت كل البدائل {candidates}")
                 continue
