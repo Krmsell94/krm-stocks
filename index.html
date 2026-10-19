@@ -1777,28 +1777,8 @@ function renderFullChart(container, candles) {
 }
  
 // ── Float shares cache & fetcher ──
-const _floatCache = {};
-async function fetchFloatShares(symbol, market) {
-  const key = symbol + '_' + market;
-  if (_floatCache[key] !== undefined) return _floatCache[key];
-  _floatCache[key] = null; // prevent duplicate requests
-  try {
-    const ticker = market === 'sa' ? symbol + '.SR' : symbol;
-    const url = `https://query1.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(ticker)}?modules=defaultKeyStatistics`;
-    const resp = await fetch(url, { headers: { 'Accept': 'application/json' } }).catch(() => null);
-    if (!resp || !resp.ok) return null;
-    const json = await resp.json().catch(() => null);
-    const stats = json?.quoteSummary?.result?.[0]?.defaultKeyStatistics;
-    const floatVal = stats?.floatShares?.raw || stats?.sharesOutstanding?.raw || null;
-    if (!floatVal || floatVal <= 0) return null;
-    let formatted;
-    if (floatVal >= 1e9) formatted = (floatVal / 1e9).toFixed(2) + 'B';
-    else if (floatVal >= 1e6) formatted = (floatVal / 1e6).toFixed(1) + 'M';
-    else formatted = floatVal.toLocaleString();
-    _floatCache[key] = formatted;
-    return formatted;
-  } catch { return null; }
-}
+// الأسهم الحرة تُجلب في السكربت وتصل جاهزة في data.float_shares
+// (المتصفح يُحجب عن Yahoo، فكان الحقل يبقى "—" دائماً)
  
 // ── Build FORAS card (tall rectangle with key levels) ──
 function buildForasCard(symbol, data, market, autoRegister = true) {
@@ -1847,7 +1827,7 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
     </div>
     <div class="card-detail-row">
       <span class="card-detail-label">📊 أسهم حرة</span>
-      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+      <span class="card-detail-val" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</span>
     </div>
     <div class="card-note">${
       (!isReady && Array.isArray(data.foras_missing) && data.foras_missing.length)
@@ -1858,11 +1838,6 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
   div.onclick = () => openDetail(symbol, data, market, 'foras');
   // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
   if (autoRegister) autoRegisterPaperTrade(symbol, data);
-  // جلب الأسهم الحرة في الخلفية
-  fetchFloatShares(symbol, market).then(val => {
-    const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
-    if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
-  });
   return div;
 }
  
@@ -1932,7 +1907,7 @@ function buildArkitazCard(symbol, data, market) {
     </div>
     <div class="card-detail-row" style="margin-top:4px">
       <span class="card-detail-label">📊 أسهم حرة</span>
-      <span class="card-detail-val card-float-${symbol.replace(/[^a-z0-9]/gi,'_')}" style="color:var(--text2)">—</span>
+      <span class="card-detail-val" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</span>
     </div>
     <div class="card-note">${
       data.ark_ready
@@ -1943,11 +1918,6 @@ function buildArkitazCard(symbol, data, market) {
     }</div>
   `;
   div.onclick = () => openDetail(symbol, data, market, 'arkitaz');
-  // جلب الأسهم الحرة في الخلفية
-  fetchFloatShares(symbol, market).then(val => {
-    const el = div.querySelector('.card-float-' + symbol.replace(/[^a-z0-9]/gi,'_'));
-    if (el && val) { el.textContent = val; el.style.color = 'var(--text)'; }
-  });
   return div;
 }
  
@@ -2526,20 +2496,13 @@ function openDetail(symbol, data, market, source = 'foras') {
     </div>
     <div class="stat-box">
       <div class="stat-label">الأسهم الحرة</div>
-      <div class="stat-value" id="detailFloatVal" style="color:var(--text2)">⏳</div>
+      <div class="stat-value" id="detailFloatVal" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</div>
     </div>
     <div class="stat-box">
       <div class="stat-label">آخر تحديث</div>
       <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || '—'}</div>
     </div>
   `;
-  // جلب الأسهم الحرة في الخلفية
-  fetchFloatShares(symbol, market).then(val => {
-    const el = document.getElementById('detailFloatVal');
-    if (!el) return;
-    if (val) { el.textContent = val; el.style.color = 'var(--text)'; }
-    else { el.textContent = '—'; el.style.color = 'var(--text2)'; }
-  });
  
   if (data.entry) {
     document.getElementById('detailLevels').innerHTML = `
