@@ -475,6 +475,21 @@ def trading_levels(hist, wyckoff, elliott, close):
     }
  
 # ─── فحص سهم واحد ────────────────────────────────────────────────
+def float_shares(ticker_obj):
+    """الأسهم الحرة. المتصفح لا يستطيع جلبها (يحجب Yahoo الاستدعاء
+    من نطاق آخر)، فنجلبها هنا ونكتبها جاهزة للعرض."""
+    try:
+        info = ticker_obj.info or {}
+    except Exception:
+        return None
+    val = info.get("floatShares") or info.get("sharesOutstanding")
+    if not val or val <= 0:
+        return None
+    val = float(val)
+    if val >= 1e9:  return f"{val/1e9:.2f}B"
+    if val >= 1e6:  return f"{val/1e6:.1f}M"
+    return f"{val:,.0f}"
+ 
 def screen_stock(symbol, market="us"):
     tv_symbol = f"{symbol}.SR" if market == "sa" else symbol
     try:
@@ -506,6 +521,7 @@ def screen_stock(symbol, market="us"):
         consolidating, cons_reason = is_consolidating(hist)
         confidence = confidence_score(score, wyckoff, elliott)
         ark = arkitaz_conditions(hist)      # شروط فيصل (تبويب الارتكاز)
+        flt = float_shares(t)
         foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence)
  
         note    = build_note(score, drop, wyckoff, elliott, consolidating, cons_reason)
@@ -553,6 +569,7 @@ def screen_stock(symbol, market="us"):
             "target1":       float(levels["target1"]),
             "target2":       float(levels["target2"]),
             "news":          news,
+            "float_shares":  flt,
             "foras_ready":   foras_ready,
             "foras_missing": foras_missing,
             **ark,
