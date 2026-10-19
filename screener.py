@@ -107,10 +107,31 @@ HALAL_SA = set(
 #                   XPON وSLNG (حجم أقل من 100 ألف)
 # وأزيلت 20 رمزاً خارج نطاق $1-$9 بأسعارها الحقيقية من السجل.
 # المسح الاستكشافي في آخر الملف يكتشف البدائل بدل التخمين.
+# قائمة احتياطية: ناتج مسح 19-10-2026. تُستعمل فقط إن فشل
+# المسح الحيّ عند التشغيل، فلا يبقى الفرز بلا قائمة.
 US_WATCHLIST = [
-    "EVLV", "PHAT", "SOUN", "ABAT", "LZ",
-    "LFMD", "BW", "PLUG", "FLNC", "SHLS",
-    "SLDP", "UUUU", "SPIR", "BKKT", "NEOV",
+    "PLUG", "BTG", "BTE", "SOUN", "BKYI", "UUUU",
+    "COUR", "FLNC", "BFLY", "IPDN", "MNKD", "VISN",
+    "NAT", "BW", "VSTM", "PGEN", "BCRX", "SFIX",
+    "SHLS", "ABAT", "RSKD", "ASM", "SLDP", "LZ",
+    "CYCU", "MRVI", "YSS", "EVLV", "RES", "FWDI",
+    "BIAF", "ZENA", "VITL", "ANGX", "AUTL", "CTKB",
+    "NEOV", "WEAV", "ITRG", "RGNX", "HNST", "CNET",
+    "BKKT", "PHAT", "OABI", "GSM", "MDXG", "TSSI",
+    "GRRR", "INNV", "PLX", "OSS", "LTRX", "SRTA",
+    "PRQR", "VTEX", "GILT", "KODK", "NMAX", "SSYS",
+    "AMPG", "ARVN", "LFMD", "BYRN", "XMAX", "NRXP",
+    "MGNX", "FVRR", "CRCT", "SOPH", "TRON", "SPIR",
+    "SMRT", "NAGE", "QTRX", "STXS", "VLN", "CURI",
+    "CGNT", "WRAP", "RGP", "TLSI", "IMPP", "TRT",
+    "AZ", "WYY", "CEPL", "SVCO", "SCZM", "XPER",
+    "INGN", "HDSN", "XGN", "EPM", "SSTI", "HYFT",
+    "EGAN", "KRMD", "GRWG", "MTLS", "III", "TMCI",
+    "KLTR", "LVWR", "ACIU", "CXDO", "XNET", "MWYN",
+    "SBC", "DERM", "BNTC", "USIO", "OPRX", "RLGT",
+    "TOMZ", "CV", "NTWK", "LAW", "ACTG", "FTEK",
+    "GYRE", "ANNA", "TRVG", "DIBS", "NTRB", "MAKO",
+    "RAVE", "CLAR", "SWVL", "VRME",
 ]
  
 SA_WATCHLIST = [
@@ -760,7 +781,11 @@ def screen_stock(symbol, market="us"):
         consolidating, cons_reason = is_consolidating(hist)
         confidence = confidence_score(score, wyckoff, elliott)
         ark = arkitaz_conditions(hist)      # شروط فيصل (تبويب الارتكاز)
-        flt = float_shares(t)
+        # .info والأخبار أبطأ نداءين في الدورة. مع 130 سهماً كانا
+        # سيستهلكان أغلب مهلة الوركفلو الخمس عشرة دقيقة. ولا فائدة
+        # منهما لسهم لن يُخزَّن أصلاً، فنؤجلهما حتى نعرف مصيره.
+        will_store = bool(foras_pass or ark["ark_candidate"])
+        flt = float_shares(t) if will_store else None
         foras_ready, foras_missing = foras_readiness(hist, wyckoff, elliott, confidence, drop)
         if not foras_pass:
             foras_ready = False
@@ -773,7 +798,7 @@ def screen_stock(symbol, market="us"):
  
         news = []
         try:
-            raw_news = t.news or []
+            raw_news = (t.news or []) if will_store else []
             for n in raw_news[:5]:
                 news.append({
                     "title":     n.get("title", ""),
@@ -1105,6 +1130,10 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
 # يُسحب على دفعات بنداء واحد لكل مئة رمز، فلا يحتاج 857 نداءً.
 # معزول تماماً: لا يكتب في Firestore ولا يؤثر على الفرز إن فشل.
 UNIVERSE_CHUNK = 100
+# سقف أمان: مهلة الوركفلو 15 دقيقة. 130 سهماً تمرّ مرتاحة، لكن لو
+# كبرت قائمة الحلال أو هبطت أسعار كثيرة إلى النطاق فقد تتجاوزها.
+# القائمة مرتّبة بالسيولة، فالسقف يُبقي الأنشط تداولاً.
+MAX_SCAN = 150
  
 def universe_scan(symbols, label):
     print(f"\n{'='*40}\n🔭 مسح الكون الحلال — {label} ({len(symbols)} رمز)\n{'='*40}")
@@ -1158,8 +1187,25 @@ if __name__ == "__main__":
     print("🚀 بدء الفرز اليومي - v2")
     print(f"⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
  
+    # القائمة تُبنى حيّاً كل تشغيل: سهم خرج من نطاق $1-$9 يسقط
+    # وحده، وسهم دخله يظهر وحده، بلا تعديل يدوي. وإن فشل المسح
+    # أو جاء هزيلاً نرجع للقائمة الاحتياطية أعلاه.
+    us_list = US_WATCHLIST
+    try:
+        discovered = universe_scan(sorted(HALAL_US), "أمريكا")
+        if len(discovered) >= 20:
+            us_list = _only_halal([sym for sym, _, _ in discovered][:MAX_SCAN],
+                                  HALAL_US, "المسح الحيّ")
+            if len(discovered) > MAX_SCAN:
+                print(f"  ✂️  {len(discovered)} مؤهّل، اكتُفي بأنشط {MAX_SCAN}")
+            print(f"\n  ✅ قائمة المراقبة من المسح الحيّ: {len(us_list)} سهم")
+        else:
+            print(f"\n  ⚠️  المسح أخرج {len(discovered)} فقط — نستعمل الاحتياطية ({len(US_WATCHLIST)})")
+    except Exception as e:
+        print(f"⚠️  المسح فشل، نستعمل القائمة الاحتياطية: {e}")
+ 
     us_top, us_cons = run_market(
-        US_WATCHLIST,
+        us_list,
         "suggestions_us", "consolidation_us",
         "أمريكي", "us"
     )
@@ -1186,10 +1232,5 @@ if __name__ == "__main__":
     print(f"🇺🇸 ارتكاز: {[s for s,_ in us_cons]}")
     print(f"🇸🇦 فرص: {[s for s,_ in sa_top]}")
     print(f"🇸🇦 ارتكاز: {[s for s,_ in sa_cons]}")
-    try:
-        universe_scan(sorted(HALAL_US), "أمريكا")
-    except Exception as e:
-        print(f"⚠️  المسح الاستكشافي فشل ولم يؤثر على الفرز: {e}")
- 
     print("\n✅ انتهى الفرز")
  
