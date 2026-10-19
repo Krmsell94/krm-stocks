@@ -105,14 +105,12 @@ HALAL_SA = set(
 # LILM, NKLA, FSR, ARVL, ASTR, VORB, SFET, BSRT
 # وبعد تشغيل 19-10: ORLA وARMN وBITF (لا بيانات)،
 #                   XPON وSLNG (حجم أقل من 100 ألف)
+# وأزيلت 20 رمزاً خارج نطاق $1-$9 بأسعارها الحقيقية من السجل.
+# المسح الاستكشافي في آخر الملف يكتشف البدائل بدل التخمين.
 US_WATCHLIST = [
     "EVLV", "PHAT", "SOUN", "ABAT", "LZ",
-    "LFMD", "BW", "RIOT", "BE", "PLUG",
-    "FLNC", "LUNR", "SHLS", "ENPH", "BEEM",
-    "SLDP", "FSLR", "UUUU", "URG", "MUX",
-    "SVM", "CDE", "HBM", "SPIR", "BKSY",
-    "AMSC", "HIMX", "OUST", "AEHR", "ACMR",
-    "MXL", "BKKT", "VXRT", "NEOV", "LOOP",
+    "LFMD", "BW", "PLUG", "FLNC", "SHLS",
+    "SLDP", "UUUU", "SPIR", "BKKT", "NEOV",
 ]
  
 SA_WATCHLIST = [
@@ -1100,6 +1098,62 @@ def run_market(watchlist, collection_us, collection_cons, market_label, market_c
     return top, top_cons
  
 # ─── Main ────────────────────────────────────────────────────────
+# ─── مسح الكون الحلال ────────────────────────────────────────────
+# اختيار قائمة المراقبة يدوياً لا يصلح: من 28 رمزاً اخترتها بالقطاع
+# نجا 6 فقط من نطاق السعر، لأني لا أعرف أسعارها. فبدل التخمين
+# يمسح الفارز قائمة الحلال كلها ويطبع ما يقع داخل النطاق والسيولة.
+# يُسحب على دفعات بنداء واحد لكل مئة رمز، فلا يحتاج 857 نداءً.
+# معزول تماماً: لا يكتب في Firestore ولا يؤثر على الفرز إن فشل.
+UNIVERSE_CHUNK = 100
+ 
+def universe_scan(symbols, label):
+    print(f"\n{'='*40}\n🔭 مسح الكون الحلال — {label} ({len(symbols)} رمز)\n{'='*40}")
+    qualified, seen = [], 0
+    for i in range(0, len(symbols), UNIVERSE_CHUNK):
+        chunk = symbols[i:i + UNIVERSE_CHUNK]
+        try:
+            df = yf.download(chunk, period="1mo", interval="1d",
+                             group_by="ticker", progress=False,
+                             threads=True, auto_adjust=True)
+        except Exception as e:
+            print(f"  ⚠️  دفعة {i // UNIVERSE_CHUNK + 1}: {e}")
+            continue
+        if df is None or df.empty:
+            print(f"  ⚠️  دفعة {i // UNIVERSE_CHUNK + 1}: لا بيانات")
+            continue
+        multi = isinstance(df.columns, pd.MultiIndex)
+        for sym in chunk:
+            try:
+                if multi:
+                    if sym not in df.columns.get_level_values(0):
+                        continue
+                    sub = df[sym]
+                else:
+                    sub = df
+                close = sub["Close"].dropna()
+                vol   = sub["Volume"].dropna()
+                if close.empty or vol.empty:
+                    continue
+                seen += 1
+                px  = float(close.iloc[-1])
+                avg = float(vol.tail(20).mean())
+                if not np.isfinite(px) or not np.isfinite(avg):
+                    continue
+                if PRICE_MIN <= px <= PRICE_MAX and avg >= MIN_VOLUME:
+                    qualified.append((sym, round(px, 2), int(avg)))
+            except Exception:
+                continue
+    qualified.sort(key=lambda x: -x[2])
+    print(f"\n  قُرئ {seen} رمز | مؤهّل {len(qualified)} "
+          f"(${PRICE_MIN:g}-${PRICE_MAX:g} وحجم ≥ {MIN_VOLUME:,})")
+    for sym, px, avg in qualified:
+        print(f"     {sym:6} ${px:<8.2f} حجم {avg:,}")
+    if qualified:
+        print("\n  نسخة جاهزة للصق:")
+        print("  " + ", ".join(f'"{s}"' for s, _, _ in qualified))
+    return qualified
+ 
+ 
 if __name__ == "__main__":
     print("🚀 بدء الفرز اليومي - v2")
     print(f"⏰ {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
@@ -1132,5 +1186,10 @@ if __name__ == "__main__":
     print(f"🇺🇸 ارتكاز: {[s for s,_ in us_cons]}")
     print(f"🇸🇦 فرص: {[s for s,_ in sa_top]}")
     print(f"🇸🇦 ارتكاز: {[s for s,_ in sa_cons]}")
+    try:
+        universe_scan(sorted(HALAL_US), "أمريكا")
+    except Exception as e:
+        print(f"⚠️  المسح الاستكشافي فشل ولم يؤثر على الفرز: {e}")
+ 
     print("\n✅ انتهى الفرز")
  
