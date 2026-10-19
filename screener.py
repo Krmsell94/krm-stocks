@@ -562,6 +562,87 @@ def screen_stock(symbol, market="us"):
         print(f"  ⚠️  {symbol}: خطأ {e}")
         return None
  
+# ─── إغلاق الصفقات الورقية آلياً ─────────────────────────────────
+# بدون هذا تبقى الخاسرة مفتوحة إلى الأبد بينما تُغلق الرابحة لجني
+# الربح، فتميل نسبة النجاح لصالح الرابحين ببنية القياس لا بالأداء.
+MAX_HOLD_DAYS = 30   # صفقة لم تبلغ هدفاً ولا وقفاً خلال شهر تُغلق بسعر السوق
+ 
+def close_open_paper_trades():
+    print(f"\n{'='*40}\n🧾 الصفقات الورقية\n{'='*40}")
+    riyadh = timezone(timedelta(hours=3))
+    col = db.collection("paper_trades")
+    try:
+        docs = list(col.stream())
+    except Exception as e:
+        print(f"  ⚠️  تعذّرت القراءة: {e}")
+        return
+ 
+    opened = [d for d in docs if (d.to_dict() or {}).get("status") == "open"]
+    if not opened:
+        print("  لا توجد صفقات مفتوحة")
+        return
+ 
+    closed_n = 0
+    for d in opened:
+        t = d.to_dict()
+        sym    = t.get("symbol")
+        market = t.get("market", "us")
+        entry  = t.get("entry")
+        stop   = t.get("stop_loss")
+        tgt    = t.get("target1")
+        since  = t.get("registeredAt", "")[:10]
+        if not (sym and entry and stop and tgt and since):
+            continue
+ 
+        yf_sym = f"{sym}.SR" if market == "sa" else sym
+        try:
+            hist = yf.Ticker(yf_sym).history(start=since, interval="1d")
+        except Exception as e:
+            print(f"  ⚠️  {sym}: {e}")
+            continue
+        if hist.empty:
+            continue
+ 
+        close_price = close_date = outcome = None
+        for idx, row in hist.iterrows():
+            lo, hi = float(row["Low"]), float(row["High"])
+            # لو لمس الوقف والهدف في نفس الجلسة نفترض الوقف أولاً.
+            # الشمعة اليومية لا تكشف الترتيب، والافتراض المتحفظ أصدق.
+            if lo <= stop:
+                close_price, outcome = stop, "stop"
+            elif hi >= tgt:
+                close_price, outcome = tgt, "target"
+            if close_price is not None:
+                close_date = idx.strftime("%Y-%m-%d")
+                break
+ 
+        if close_price is None:
+            held = (datetime.now(timezone.utc).date()
+                    - datetime.strptime(since, "%Y-%m-%d").date()).days
+            if held >= MAX_HOLD_DAYS:
+                close_price = round(float(hist["Close"].iloc[-1]), 4)
+                close_date  = hist.index[-1].strftime("%Y-%m-%d")
+                outcome     = "expired"
+ 
+        if close_price is None:
+            continue
+ 
+        pnl = round((close_price - entry) / entry * 100, 2)
+        col.document(d.id).update({
+            "status":      "closed",
+            "close_price": round(float(close_price), 4),
+            "close_date":  close_date,
+            "outcome":     outcome,
+            "pnl_pct":     pnl,
+            "closedBy":    "auto",
+            "closedAt":    datetime.now(riyadh).strftime("%Y-%m-%d %H:%M"),
+        })
+        closed_n += 1
+        mark = {"target": "🎯 هدف", "stop": "🛑 وقف", "expired": "⌛ انتهت المدة"}[outcome]
+        print(f"  {mark} {sym}: دخول {entry} → {close_price} ({pnl:+.2f}%)")
+ 
+    print(f"\n  أُغلقت {closed_n} من {len(opened)} مفتوحة")
+ 
 # ─── مؤشرات السوق (لشريط حالة السوق في الواجهة) ─────────────────
 # الواجهة على GitHub Pages استضافة ساكنة بلا MCP، فلا تستطيع جلب
 # هذي البيانات بنفسها. نجلبها هنا ونكتبها في Firestore.
@@ -709,6 +790,11 @@ if __name__ == "__main__":
         run_market_indices()
     except Exception as e:
         print(f"⚠️  مؤشرات السوق فشلت ولم تؤثر على الفرز: {e}")
+ 
+    try:
+        close_open_paper_trades()
+    except Exception as e:
+        print(f"⚠️  إغلاق الصفقات فشل ولم يؤثر على الفرز: {e}")
  
     print("\n" + "="*40)
     print("📊 ملخص")
