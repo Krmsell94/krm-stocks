@@ -836,6 +836,17 @@ body {
 }
  
 /* ── Responsive / Mobile ── */
+/* ── زر "قائمتي" في أسفل البطاقة ── */
+.star-btn {
+  display: block; width: 100%; margin-top: 10px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 9px;
+  background: transparent; color: var(--text2);
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.star-btn:hover { background: var(--card-hover, rgba(127,127,127,.08)); color: var(--text); }
+.star-btn.on { border-color: var(--gold, #B8860B); color: var(--gold, #B8860B); font-weight: 700; }
+ 
 /* الافتراضي (سطح المكتب): شريط الجوال السفلي والعلوي مخفيان.
    يجب أن تسبق هذه القواعد استعلام الوسائط أدناه، لأن قاعدة بنفس
    التخصيص تأتي بعده تغلبه مهما كان عرض الشاشة. كانت توضع بعده،
@@ -1062,6 +1073,10 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <span class="tab-icon">🎯</span>
         <span class="tab-label">الارتكاز</span>
       </button>
+      <button class="nav-tab" onclick="switchTab('mylist', this)">
+        <span class="tab-icon">⭐</span>
+        <span class="tab-label">قائمتي</span>
+      </button>
       <button class="nav-tab" onclick="switchTab('performance', this)">
         <span class="tab-icon">📊</span>
         <span class="tab-label">الأداء</span>
@@ -1148,6 +1163,16 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <div class="cards-grid" id="grid-arkitaz"></div>
       </div>
       <div id="ark-msg"></div>
+    </div>
+ 
+    <!-- ── MY LIST PAGE ── -->
+    <div id="page-mylist" class="page">
+      <div class="page-header">
+        <div class="page-title">⭐ قائمتي</div>
+        <span id="mylist-sub"></span>
+      </div>
+      <div id="mylist-msg"></div>
+      <div class="cards-grid" id="grid-mylist"></div>
     </div>
  
     <!-- ── PERFORMANCE PAGE ── -->
@@ -1247,13 +1272,16 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
   <button class="bottom-nav-btn" id="bn-arkitaz" onclick="switchTab('arkitaz', document.querySelector('.nav-tab:nth-child(2)') || this); syncBottomNav('arkitaz')">
     <span class="bottom-nav-icon">🎯</span>الارتكاز
   </button>
-  <button class="bottom-nav-btn" id="bn-performance" onclick="switchTab('performance', document.querySelector('.nav-tab:nth-child(3)') || this); syncBottomNav('performance')">
+  <button class="bottom-nav-btn" id="bn-mylist" onclick="switchTab('mylist', document.querySelector('.nav-tab:nth-child(3)') || this); syncBottomNav('mylist')">
+    <span class="bottom-nav-icon">⭐</span><span>قائمتي</span>
+  </button>
+  <button class="bottom-nav-btn" id="bn-performance" onclick="switchTab('performance', document.querySelector('.nav-tab:nth-child(4)') || this); syncBottomNav('performance')">
     <span class="bottom-nav-icon">📊</span>الأداء
   </button>
-  <button class="bottom-nav-btn" id="bn-portfolio" onclick="switchTab('portfolio', document.querySelector('.nav-tab:nth-child(4)') || this); syncBottomNav('portfolio')">
+  <button class="bottom-nav-btn" id="bn-portfolio" onclick="switchTab('portfolio', document.querySelector('.nav-tab:nth-child(5)') || this); syncBottomNav('portfolio')">
     <span class="bottom-nav-icon">💼</span>محفظتي
   </button>
-  <button class="bottom-nav-btn" id="bn-calendar" onclick="switchTab('calendar', document.querySelector('.nav-tab:nth-child(5)') || this); syncBottomNav('calendar')">
+  <button class="bottom-nav-btn" id="bn-calendar" onclick="switchTab('calendar', document.querySelector('.nav-tab:nth-child(6)') || this); syncBottomNav('calendar')">
     <span class="bottom-nav-icon">📅</span>الأخبار
   </button>
 </nav>
@@ -1682,6 +1710,7 @@ function reloadCurrentTab() {
   const fn = activeTab.getAttribute('onclick');
   if (fn && fn.includes('foras')) loadForas();
   else if (fn && fn.includes('arkitaz')) loadArkitaz();
+  else if (fn && fn.includes('mylist')) loadMyList();
   else if (fn && fn.includes('performance')) loadPerformance();
   else if (fn && fn.includes('portfolio')) loadPortfolio();
 }
@@ -1695,6 +1724,7 @@ window.switchTab = function(tab, el) {
   syncBottomNav(tab);
   if (tab === 'foras') loadForas();
   else if (tab === 'arkitaz') loadArkitaz();
+  else if (tab === 'mylist') loadMyList();
   else if (tab === 'performance') loadPerformance();
   else if (tab === 'portfolio') loadPortfolio();
   else if (tab === 'calendar') loadCalendar();
@@ -1840,6 +1870,7 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
     }</div>
   `;
   div.onclick = () => openDetail(symbol, data, market, 'foras');
+  attachStarButton(div, symbol, data, market, 'foras');
   // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
   if (autoRegister) autoRegisterPaperTrade(symbol, data);
   return div;
@@ -1927,6 +1958,7 @@ function buildArkitazCard(symbol, data, market) {
     }</div>
   `;
   div.onclick = () => openDetail(symbol, data, market, 'arkitaz');
+  attachStarButton(div, symbol, data, market, 'arkitaz');
   return div;
 }
  
@@ -2686,6 +2718,126 @@ refreshMyPositions();   // حتى تعرف صفحة التفاصيل ما اشت
 // شريط السوق: الساعات تعمل فوراً، والمؤشرات تنتظر Firebase
 marketTick();
 setInterval(marketTick, 1000);
+ 
+// ════════════════════════════════════════════════════════════════
+//  قائمتي — متابعة شخصية لكل مستخدم
+//  إضافة محضة: لا تمسّ الفرص ولا الارتكاز ولا الأداء ولا محفظتي.
+//  تُحفظ في users/{uid}/watchlist فتكون لكل إيميل على حدة، ومرآة
+//  في localStorage ليظهر المحتوى فوراً قبل أن يردّ Firestore.
+//  نخزّن نسخة من بيانات السهم وقت الإضافة، فالفارز يحذف الوثائق
+//  ويعيد كتابتها كل تشغيل، ولو خزّنّا الرمز وحده لضاع السهم من
+//  قائمتك بمجرد أن يخرج من الفرز — وهذا نقيض الغرض.
+// ════════════════════════════════════════════════════════════════
+const MYLIST_LS = '_krm_mylist';
+let _myList = {};              // key -> record
+let _myListLoaded = false;
+ 
+const mlKey = (sym, market) => market + '_' + sym;
+ 
+function mlLoadLS() {
+  try { return JSON.parse(localStorage.getItem(MYLIST_LS) || '{}'); }
+  catch { return {}; }
+}
+function mlSaveLS(map) {
+  try { localStorage.setItem(MYLIST_LS, JSON.stringify(map)); } catch {}
+}
+ 
+async function mlSync() {
+  _myList = mlLoadLS();
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'watchlist'));
+    const fs = {};
+    snap.forEach(d => { fs[d.id] = { ...d.data(), id: d.id }; });
+    // Firestore هو المرجع: ما حُذف من جهاز آخر يجب أن يختفي هنا
+    _myList = fs;
+    mlSaveLS(_myList);
+  } catch {}
+  _myListLoaded = true;
+  return _myList;
+}
+ 
+window.toggleMyList = async function(ev, symbol, market, source) {
+  ev.stopPropagation();                 // لا نفتح صفحة التفاصيل
+  const key = mlKey(symbol, market);
+  const btn = ev.currentTarget;
+  const adding = !_myList[key];
+  const data = btn._data || {};
+ 
+  if (adding) {
+    _myList[key] = { symbol, market, source: source || 'foras',
+                     addedAt: new Date().toISOString(), data };
+  } else {
+    delete _myList[key];
+  }
+  mlSaveLS(_myList);
+  paintStar(btn, adding);
+  updateMyListCount();
+  if (document.getElementById('page-mylist').classList.contains('active')) loadMyList();
+ 
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc, deleteDoc } = window._firestoreOps;
+    const ref = doc(window._db, 'users', uid, 'watchlist', key);
+    if (adding) await setDoc(ref, _myList[key]);
+    else        await deleteDoc(ref);
+  } catch (e) {
+    // الحفظ المحلي تمّ؛ المزامنة تُعاد عند الفتح القادم
+  }
+};
+ 
+function paintStar(btn, on) {
+  btn.classList.toggle('on', on);
+  btn.textContent = on ? '✓ في قائمتي' : '⭐ أضف لقائمتي';
+}
+ 
+function updateMyListCount() {
+  const n = Object.keys(_myList).length;
+  const sub = document.getElementById('mylist-sub');
+  if (sub) sub.textContent = n ? `${n} سهم تتابعه` : '';
+}
+ 
+// يُستدعى من نهاية باني البطاقة، فيصلح للفرص والارتكاز معاً
+function attachStarButton(div, symbol, data, market, source) {
+  const btn = document.createElement('button');
+  btn.className = 'star-btn';
+  btn._data = data;
+  paintStar(btn, !!_myList[mlKey(symbol, market)]);
+  btn.onclick = ev => window.toggleMyList(ev, symbol, market, source);
+  div.appendChild(btn);
+}
+ 
+async function loadMyList() {
+  const grid = document.getElementById('grid-mylist');
+  const msg  = document.getElementById('mylist-msg');
+  msg.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  if (!_myListLoaded) await mlSync();
+  grid.innerHTML = ''; msg.innerHTML = '';
+  updateMyListCount();
+ 
+  const rows = Object.values(_myList)
+    .filter(r => r.market === _currentMarket)
+    .sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || ''));
+ 
+  if (!rows.length) {
+    const other = Object.values(_myList).length;
+    msg.innerHTML = '<div class="empty"><div class="empty-icon">⭐</div>'
+      + 'قائمتك فارغة في هذا السوق.<br>افتح الفرص أو الارتكاز واضغط '
+      + '"⭐ أضف لقائمتي" أسفل أي بطاقة تريد متابعتها.'
+      + (other ? '<br><span style="opacity:.7">عندك ' + other + ' في السوق الآخر.</span>' : '')
+      + '</div>';
+    return;
+  }
+  rows.forEach(r => {
+    const card = r.source === 'arkitaz'
+      ? buildArkitazCard(r.symbol, r.data || {}, r.market)
+      : buildForasCard(r.symbol, r.data || {}, r.market, false);
+    grid.appendChild(card);
+  });
+}
  
 // ── تحديث تلقائي ──
 // الساعة حيّة، لكن المؤشرات والبطاقات كانت تُقرأ مرة واحدة عند فتح
