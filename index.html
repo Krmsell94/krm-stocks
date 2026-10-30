@@ -1,0 +1,2998 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KRM Stocks</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.1.1/dist/lightweight-charts.standalone.production.js"></script>
+<!-- شارت حي من TradingView؛ وإن تعذّر تحميله نرجع للشموع المحفوظة -->
+<script src="https://s3.tradingview.com/tv.js"></script>
+<style>
+:root {
+  --bg: #EEF1F5;
+  --bg2: #F6F8FA;
+  --bg3: #E4E9EF;
+  --text: #0D1520;
+  --text2: #596778;
+  --border: #D4DBE4;
+  --card-bg: #FFFFFF;
+  --card-shadow: 0 1px 3px rgba(13,21,32,.05), 0 6px 24px rgba(13,21,32,.06);
+  --green: #0E7A56;
+  --red: #C03428;
+  --gold: #A16A0A;
+  --blue: #1A5C8A;
+  --up-bg: #D8F0E4;
+  --down-bg: #F7DDD9;
+  --warn-bg: #F4EAD2;
+  --brand-bg: #DBE7F1;
+  --sidebar-bg: #F6F8FA;
+  --sidebar-border: #D4DBE4;
+  --tab-active-bg: #0D1520;
+  --tab-active-text: #FFFFFF;
+  --tab-hover: #E4E9EF;
+  --market-btn-bg: #F6F8FA;
+  --market-btn-active: #0D1520;
+  --market-btn-active-text: #fff;
+  --badge-ready: #D8F0E4;
+  --badge-ready-text: #0E7A56;
+  --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+[data-theme="dark"] {
+  --bg: #0A1018;
+  --bg2: #0E1720;
+  --bg3: #192530;
+  --text: #E4EAF0;
+  --text2: #8A9AAC;
+  --border: #1F2F3E;
+  --card-bg: #111B26;
+  --card-shadow: 0 1px 3px rgba(0,0,0,.35), 0 6px 24px rgba(0,0,0,.2);
+  --green: #42C88E;
+  --red: #F07066;
+  --gold: #E2AE48;
+  --blue: #6CADD8;
+  --up-bg: #102E24;
+  --down-bg: #381A18;
+  --warn-bg: #332710;
+  --brand-bg: #142D48;
+  --sidebar-bg: #0E1720;
+  --sidebar-border: #1F2F3E;
+  --tab-active-bg: #142D48;
+  --tab-active-text: #E4EAF0;
+  --tab-hover: #192530;
+  --market-btn-bg: #192530;
+  --market-btn-active: #142D48;
+  --market-btn-active-text: #E4EAF0;
+  --badge-ready: #102E24;
+  --badge-ready-text: #42C88E;
+}
+ 
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'IBM Plex Sans Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  transition: background 0.3s, color 0.3s;
+}
+ 
+/* ── Layout ── */
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+ 
+/* ── Sidebar ── */
+.sidebar {
+  width: 180px;
+  min-width: 180px;
+  background: var(--sidebar-bg);
+  border-left: 1px solid var(--sidebar-border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+ 
+.sidebar-header {
+  padding: 0 14px 14px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+ 
+.sidebar-logo {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+ 
+/* ── Market selector (above tabs) ── */
+.market-selector {
+  padding: 14px 10px 10px;
+  border-bottom: 1px solid var(--sidebar-border);
+}
+.market-label {
+  font-size: 11px;
+  color: var(--text2);
+  margin-bottom: 6px;
+  text-align: center;
+}
+/* ── Market picker ── */
+.market-picker {
+  position: relative;
+}
+.market-picker-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--market-btn-bg);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.market-picker-btn:hover { background: var(--bg3); }
+.market-picker-btn .arrow {
+  font-size: 9px;
+  opacity: 0.5;
+  margin-right: 2px;
+}
+.market-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  z-index: 200;
+  overflow: hidden;
+  min-width: 110px;
+}
+.market-dropdown.open { display: block; }
+.market-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.15s;
+  color: var(--text);
+}
+.market-option:hover { background: var(--bg3); }
+.market-option.selected { font-weight: 700; color: var(--blue); }
+.market-option .flag { font-size: 18px; }
+ 
+/* ── Nav tabs ── */
+.sidebar-nav {
+  flex: 1;
+  padding: 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.nav-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 14px;
+  transition: all 0.2s;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: right;
+}
+.nav-tab:hover { background: var(--tab-hover); color: var(--text); }
+.nav-tab.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  font-weight: 600;
+}
+.nav-tab .tab-icon { font-size: 16px; }
+ 
+/* ── Dark mode toggle ── */
+.sidebar-footer {
+  padding: 12px 10px;
+  border-top: 1px solid var(--sidebar-border);
+}
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--market-btn-bg);
+  border: 1px solid var(--border);
+  color: var(--text2);
+  font-size: 13px;
+  width: 100%;
+  justify-content: center;
+}
+.theme-toggle:hover { background: var(--tab-hover); }
+ 
+/* ── Main content ── */
+.main-content {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
+ 
+.page { display: none; }
+.page.active { display: block; }
+ 
+/* ── Page header ── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+}
+#lastUpdate {
+  font-size: 12px;
+  color: var(--text2);
+}
+ 
+/* ══ شريط السوق: الساعتان + حالة الجلسة + المؤشرات ══ */
+.topband {
+  margin-bottom: 16px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+}
+.clockbar {
+  --hb: #0E1A27; --hi: #EAF0F6; --hm: #8FA3B8; --gold: #D9B45A;
+  background: radial-gradient(130% 160% at 50% -10%, #1E3550 0%, #142638 40%, var(--hb) 80%);
+  color: var(--hi);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 14px; padding: 16px 22px; position: relative;
+}
+.clockbar::after {
+  content: ""; position: absolute; inset-inline: 22px; bottom: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: .55;
+}
+.clk { display: flex; flex-direction: column; gap: 2px; }
+.clk:last-child { align-items: flex-end; text-align: left; }
+.clk .city { font-size: 12px; letter-spacing: .12em; color: var(--gold); font-weight: 600; }
+.clk b {
+  font: 500 34px/1.1 var(--mono); letter-spacing: .02em;
+  font-variant-numeric: tabular-nums; color: var(--hi);
+}
+.clk .dt { font-size: 12.5px; color: var(--hm); }
+.sess {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 8px 18px; border: 1px solid rgba(217,180,90,.35);
+  border-radius: 999px; background: rgba(255,255,255,.04); text-align: center;
+}
+.sess b { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.sess b::before {
+  content: ""; width: 8px; height: 8px; border-radius: 50%;
+  background: #8FA3B8; flex: none;
+}
+.sess.open  b::before { background: #42C88E; box-shadow: 0 0 0 3px rgba(66,200,142,.25); }
+.sess.pre   b::before,
+.sess.post  b::before { background: #E2AE48; box-shadow: 0 0 0 3px rgba(226,174,72,.22); }
+.sess.closed b::before { background: #F07066; box-shadow: 0 0 0 3px rgba(240,112,102,.22); }
+.sess span { font-size: 12.5px; color: var(--hm); font-variant-numeric: tabular-nums; }
+ 
+.mkt { background: var(--card-bg); }
+.mkt-h {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px;
+  padding: 10px 14px; border-bottom: 1px solid var(--bg3);
+}
+.mkt-h > b { font-size: 14px; }
+.mkt-v { font-size: 13.5px; color: var(--text2); }
+.mkt-v .tag { margin-inline-end: 6px; }
+.mkt-g { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.mkt-g > div { padding: 10px 14px; border-inline-start: 1px solid var(--bg3); }
+.mkt-g > div:first-child { border-inline-start: 0; }
+.mkt-g .sy { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; }
+.mkt-g .sy b { font: 600 14px var(--mono); }
+.mkt-g .sy span { font-size: 11.5px; color: var(--text2); }
+.mkt-g .pxrow { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.mkt-g .px { font: 600 17px var(--mono); direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.mkt-g .ch { font: 500 12.5px var(--mono); direction: ltr; unicode-bidi: isolate; display: inline-block; }
+.mkt-g .ch.up { color: var(--green); }
+.mkt-g .ch.down { color: var(--red); }
+.mkt-g .tr { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
+.mkt-g .tr .tag { font-size: 11px; padding: 1px 7px; }
+.tag {
+  display: inline-block; padding: 2px 10px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; letter-spacing: .01em;
+}
+.tag.up   { background: var(--up-bg);    color: var(--green); }
+.tag.down { background: var(--down-bg);  color: var(--red); }
+.tag.warn { background: var(--warn-bg);  color: var(--gold); }
+.tag.info { background: var(--brand-bg); color: var(--blue); }
+ 
+/* ── Cards grid ── */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+ 
+/* ── Section headings (جاهز للدخول / متابعة) ── */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.section-head:first-child { margin-top: 0; }
+.section-ready { color: var(--green); }
+.section-watch { color: var(--text2); }
+.section-count {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg3);
+  color: var(--text2);
+}
+.section-hint {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--text2);
+}
+.section-empty {
+  font-size: 12px;
+  color: var(--text2);
+  padding: 14px 4px;
+  opacity: 0.8;
+}
+ 
+/* ── Stock card (tall rectangle) ── */
+.stock-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--card-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.stock-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  border-color: var(--blue);
+}
+.card-coname {
+  font-size: 11px;
+  color: var(--text2);
+  font-weight: 500;
+  margin-top: 1px;
+  line-height: 1.3;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.card-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gold);
+}
+.card-detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+.card-detail-label { color: var(--text2); }
+.card-detail-val { font-weight: 600; color: var(--text); }
+.card-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 2px 0;
+}
+.card-note {
+  font-size: 11px;
+  color: var(--text2);
+  line-height: 1.4;
+}
+.conf-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.conf-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--bg3);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.conf-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.conf-pct { font-size: 12px; font-weight: 700; min-width: 32px; text-align: left; }
+ 
+.badge-ready {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--badge-ready);
+  color: var(--badge-ready-text);
+}
+.badge-wait {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 11px;
+  background: var(--bg3);
+  color: var(--text2);
+}
+ 
+/* ── Arkitaz card specific ── */
+.ark-conditions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ark-condition {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+}
+.ark-condition .cond-icon { font-size: 12px; }
+.ark-condition .cond-label { color: var(--text2); flex: 1; }
+.ark-condition .cond-val { font-weight: 600; font-size: 11px; }
+.cond-ok { color: var(--green); }
+.cond-warn { color: var(--gold); }
+.cond-bad { color: var(--red); }
+ 
+/* ── Empty state ── */
+.empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text2);
+}
+.empty-icon { font-size: 48px; margin-bottom: 12px; }
+ 
+/* ── Detail page ── */
+#detail-page {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: var(--bg);
+  z-index: 100;
+  overflow-y: auto;
+  padding: 20px;
+}
+#detail-page.open { display: block; }
+ 
+.detail-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.btn-back {
+  padding: 8px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 14px;
+}
+.btn-back:hover { background: var(--tab-hover); }
+ 
+#detailSymbol { font-size: 24px; font-weight: 700; }
+ 
+.detail-actions {
+  display: flex;
+  gap: 8px;
+  margin-right: auto;
+}
+.btn-buy {
+  padding: 8px 16px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-buy.bought { background: var(--bg3); color: var(--text2); cursor: default; }
+.btn-tv-link {
+  padding: 8px 14px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+}
+ 
+.detail-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.stat-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.stat-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.stat-value { font-size: 16px; font-weight: 700; }
+ 
+.tl-title { font-size: 13px; color: var(--text2); margin-bottom: 10px; font-weight: 600; }
+.tl-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.tl-item {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+.tl-item-label { font-size: 11px; color: var(--text2); margin-bottom: 3px; }
+.tl-item-val { font-size: 16px; font-weight: 700; }
+.tl-entry .tl-item-val { color: var(--blue); }
+.tl-stop .tl-item-val { color: var(--red); }
+.tl-t1 .tl-item-val { color: var(--green); }
+.tl-t2 .tl-item-val { color: #a855f7; }
+ 
+.detail-layers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.layer-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+}
+.layer-name { font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+.layer-val { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.layer-bar { height: 4px; background: var(--bg3); border-radius: 4px; overflow: hidden; }
+.layer-fill { height: 100%; border-radius: 4px; }
+ 
+#detailChart {
+  height: 420px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 16px;
+  overflow: hidden;
+}
+ 
+.buy-form { display: none; background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-top: 10px; }
+.buy-form.open { display: block; }
+.buy-form label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; margin-top: 10px; }
+.buy-form input, .buy-form select {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+.btn-save-buy {
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px;
+  background: var(--green);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.btn-cancel-buy {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+}
+#saveIndicator { font-size: 13px; color: var(--green); margin-top: 8px; }
+ 
+.news-item { padding: 10px 0; border-bottom: 1px solid var(--border); }
+.news-item a { color: var(--blue); text-decoration: none; font-size: 13px; }
+.news-item a:hover { text-decoration: underline; }
+.news-meta { font-size: 11px; color: var(--text2); margin-top: 3px; }
+.news-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+ 
+/* ── Close Trade Dialog ── */
+.dialog-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.dialog-overlay.open { display: flex; }
+.dialog-box {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  width: 320px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+}
+.dialog-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; }
+ 
+/* ── Performance / Portfolio tables ── */
+.perf-section { margin-bottom: 24px; }
+.perf-section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.trades-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.trades-table th {
+  background: var(--bg2);
+  padding: 10px 12px;
+  text-align: right;
+  color: var(--text2);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.trades-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.trades-table tr:last-child td { border-bottom: none; }
+.trades-table tr:hover td { background: var(--bg2); }
+.pnl-pos { color: var(--green); font-weight: 600; }
+.pnl-neg { color: var(--red); font-weight: 600; }
+.btn-close-trade {
+  padding: 4px 10px;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.btn-remove-trade {
+  padding: 4px 10px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text2);
+  font-size: 12px;
+}
+.status-open { color: var(--blue); font-weight: 600; }
+.status-closed { color: var(--text2); }
+.status-profit { color: var(--green); font-weight: 600; }
+.status-loss { color: var(--red); font-weight: 600; }
+ 
+/* ── Portfolio manual add ── */
+.btn-add-portfolio {
+  padding: 8px 16px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+.add-portfolio-form {
+  display: none;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+.add-portfolio-form.open { display: block; }
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.form-grid label { font-size: 12px; color: var(--text2); display: block; margin-bottom: 4px; }
+.form-grid input {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+}
+ 
+/* ── News calendar ── */
+.news-calendar {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-title { font-size: 15px; font-weight: 700; }
+.cal-nav-btn {
+  padding: 6px 14px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 600;
+}
+.cal-nav-btn:hover { background: var(--tab-hover); }
+.cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-day {
+  border-right: 1px solid var(--border);
+  min-height: 120px;
+}
+.cal-day:last-child { border-right: none; }
+.cal-day-header {
+  background: var(--bg2);
+  padding: 8px;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-bottom: 1px solid var(--border);
+}
+.cal-day-header.today { color: var(--blue); }
+.cal-events { padding: 6px; display: flex; flex-direction: column; gap: 4px; }
+.cal-event {
+  background: var(--bg2);
+  border-right: 3px solid var(--blue);
+  border-radius: 4px;
+  padding: 4px 6px;
+  font-size: 10px;
+  cursor: pointer;
+}
+.cal-event:hover { background: var(--tab-hover); }
+.cal-event-time { color: var(--text2); font-size: 9px; }
+.cal-event-title { color: var(--text); font-weight: 600; line-height: 1.3; }
+.cal-event-impact-high { border-color: var(--red); }
+.cal-event-impact-med { border-color: var(--gold); }
+.cal-event-impact-low { border-color: var(--green); }
+.cal-loading { text-align: center; padding: 40px; color: var(--text2); }
+ 
+/* ── Performance market tabs ── */
+.perf-market-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.perf-market-tab {
+  padding: 6px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  color: var(--text2);
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.perf-market-tab.active {
+  background: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-color: var(--tab-active-bg);
+}
+ 
+/* ── Responsive / Mobile ── */
+/* ── زر "قائمتي" في أسفل البطاقة ── */
+.star-btn {
+  display: block; width: 100%; margin-top: 10px; padding: 8px 10px;
+  border: 1px solid var(--border); border-radius: 9px;
+  background: transparent; color: var(--text2);
+  font-family: inherit; font-size: 12px; font-weight: 600;
+  cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.star-btn:hover { background: var(--card-hover, rgba(127,127,127,.08)); color: var(--text); }
+.star-btn.on { border-color: var(--gold, #B8860B); color: var(--gold, #B8860B); font-weight: 700; }
+ 
+/* الافتراضي (سطح المكتب): شريط الجوال السفلي والعلوي مخفيان.
+   يجب أن تسبق هذه القواعد استعلام الوسائط أدناه، لأن قاعدة بنفس
+   التخصيص تأتي بعده تغلبه مهما كان عرض الشاشة. كانت توضع بعده،
+   فاختفى شريطا التنقّل على الجوال تماماً، وبقي المستخدم محبوساً
+   في تبويب الفرص بلا طريقة لتبديل التبويب أو السوق. */
+.bottom-nav { display: none; }
+.mobile-topbar { display: none; }
+ 
+@media (max-width: 700px) {
+  /* Hide sidebar — use bottom nav instead */
+  .sidebar {
+    display: none;
+  }
+  /* Main fills full width */
+  .app-content {
+    padding: 12px 10px 80px; /* bottom padding for nav bar */
+  }
+  /* Bottom navigation bar */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--sidebar-bg);
+    border-top: 1px solid var(--sidebar-border);
+    z-index: 200;
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .bottom-nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 4px;
+    gap: 3px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--text2);
+    font-size: 10px;
+    font-weight: 600;
+    transition: color 0.15s;
+  }
+  .bottom-nav-btn.active {
+    color: var(--blue);
+  }
+  .bottom-nav-icon { font-size: 18px; }
+  /* Market selector in top bar */
+  .mobile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--sidebar-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mobile-logo { font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+  .mobile-controls { display: flex; align-items: center; gap: 8px; }
+  /* Cards: 2 columns on mobile */
+  .cards-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  /* Calendar: single column */
+  .cal-days { grid-template-columns: 1fr; }
+  /* Detail stats: 2 cols */
+  .detail-stats { grid-template-columns: 1fr 1fr; }
+  .detail-layers { grid-template-columns: 1fr 1fr; }
+  /* Tables: scroll horizontally */
+  .trades-table { font-size: 11px; }
+  .trades-table th, .trades-table td { padding: 7px 6px; }
+  /* Performance tabs row wraps nicely */
+  .perf-market-tabs { flex-wrap: wrap; }
+  /* شريط السوق على الجوال: الساعتان بصف، وحالة الجلسة بصف كامل تحتهما */
+  .clockbar { flex-wrap: wrap; padding: 14px 16px; gap: 10px; }
+  .clk b { font-size: 26px; }
+  .clk .dt { font-size: 11px; }
+  .sess {
+    order: 3; width: 100%; flex-direction: row; justify-content: center;
+    flex-wrap: wrap; gap: 4px 10px; padding: 7px 14px;
+  }
+  .sess b { font-size: 13px; }
+  .mkt-g { grid-template-columns: 1fr 1fr; }
+  .mkt-g > div:nth-child(odd) { border-inline-start: 0; }
+  .mkt-h { padding: 10px 12px; }
+  /* Bigger touch targets in bottom nav */
+  .bottom-nav-btn { padding: 10px 4px; font-size: 11px; }
+  .bottom-nav-icon { font-size: 20px; }
+  /* Readable empty/section text on phones */
+  .empty { font-size: 14px; line-height: 1.7; padding: 28px 16px; }
+  .section-head { font-size: 13px; margin: 16px 0 8px; }
+}
+ 
+/* ── Narrow phones: one card per row (cards are detail-heavy) ── */
+@media (max-width: 430px) {
+  .cards-grid { grid-template-columns: 1fr; }
+  .detail-stats { grid-template-columns: 1fr 1fr; }
+}
+ 
+/* ── Tablet / small laptop: collapse sidebar to icons ── */
+@media (min-width: 701px) and (max-width: 1024px) {
+  .sidebar { width: 72px; min-width: 72px; padding: 12px 0; }
+  .sidebar .tab-label,
+  .sidebar #themeLabel { display: none; }
+  .sidebar-header { padding: 0 6px 12px; text-align: center; }
+  .sidebar-logo { font-size: 13px; justify-content: center; gap: 2px; }
+  .nav-tab { justify-content: center; padding: 12px 0; }
+  .tab-icon { font-size: 20px; }
+  .sidebar-footer { padding: 0 6px; }
+  .sidebar-footer button { font-size: 10px !important; line-height: 1.3; padding: 7px 2px !important; }
+  .theme-toggle { justify-content: center; }
+  .market-dropdown { min-width: 130px; }
+}
+ 
+</style>
+</head>
+<body>
+ 
+<!-- ══ LOGIN OVERLAY ══ -->
+<div id="loginOverlay" style="display:flex;position:fixed;inset:0;z-index:9999;background:var(--bg);align-items:center;justify-content:center;">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:40px 32px;width:320px;max-width:90vw;box-shadow:0 8px 32px rgba(0,0,0,0.15);text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px">📈</div>
+    <div style="font-size:20px;font-weight:700;color:var(--text);margin-bottom:4px">KRM Stocks</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:28px">تسجيل الدخول</div>
+    <input id="loginEmail" type="email" placeholder="البريد الإلكتروني" autocomplete="email"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;margin-bottom:12px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;direction:ltr;outline:none">
+    <input id="loginPass" type="password" placeholder="كلمة المرور" autocomplete="current-password"
+      style="width:100%;box-sizing:border-box;padding:10px 14px;margin-bottom:8px;border:1px solid var(--border);border-radius:8px;background:var(--bg2);color:var(--text);font-size:14px;direction:ltr;outline:none">
+    <div id="loginError" style="color:var(--red);font-size:12px;min-height:18px;margin-bottom:8px"></div>
+    <button id="loginBtn" onclick="doLogin()"
+      style="width:100%;padding:11px;background:var(--tab-active-bg);color:var(--tab-active-text);border:none;border-radius:8px;font-size:15px;font-weight:600;cursor:pointer">
+      دخول
+    </button>
+  </div>
+</div>
+<script>
+function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginError');
+  const btn = document.getElementById('loginBtn');
+  if (!email || !pass) { errEl.textContent = 'أدخل الإيميل وكلمة المرور'; return; }
+  btn.disabled = true;
+  btn.textContent = '...';
+  errEl.textContent = '';
+  // signIn called after firebase loads
+  const tryLogin = () => {
+    if (!window._signIn) { setTimeout(tryLogin, 200); return; }
+    window._signIn(email, pass).catch(err => {
+      errEl.textContent = 'بيانات خاطئة';
+      btn.disabled = false;
+      btn.textContent = 'دخول';
+    });
+  };
+  tryLogin();
+}
+document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
+</script>
+ 
+<div id="app" style="display:none">
+<!-- ══ MOBILE TOP BAR ══ -->
+<div class="mobile-topbar">
+  <div class="mobile-logo">📈 KRM</div>
+  <div class="mobile-controls">
+    <div class="market-picker" id="marketPickerMobile">
+      <button class="market-picker-btn" id="marketPickerBtnMobile" onclick="toggleMarketDropdownMobile()">
+        <span id="marketFlagMobile">🇺🇸</span><span class="arrow">▼</span>
+      </button>
+      <div class="market-dropdown" id="marketDropdownMobile">
+        <div class="market-option selected" id="optUSMobile" onclick="setMarket('us');closeMarketDropdownMobile()">
+          <span class="flag">🇺🇸</span> أمريكا
+        </div>
+        <div class="market-option" id="optSAMobile" onclick="setMarket('sa');closeMarketDropdownMobile()">
+          <span class="flag">🇸🇦</span> السعودية
+        </div>
+      </div>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()" style="padding:6px 10px;font-size:13px">
+      <span id="themeIconMobile">🌙</span>
+    </button>
+    <button onclick="if(window._signOut)window._signOut()" title="تسجيل الخروج"
+      style="padding:6px 10px;font-size:13px;background:none;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--text2)">
+      خروج
+    </button>
+  </div>
+</div>
+ 
+<div class="app-layout">
+ 
+  <!-- ══ SIDEBAR ══ -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">📈 <span>KRM</span></div>
+    </div>
+ 
+    <!-- Market selector -->
+    <div class="market-picker" id="marketPicker">
+      <button class="market-picker-btn" id="marketPickerBtn" onclick="toggleMarketDropdown()">
+        <span id="marketFlag">🇺🇸</span><span class="arrow">▼</span>
+      </button>
+      <div class="market-dropdown" id="marketDropdown">
+        <div class="market-option selected" id="optUS" onclick="setMarket('us');closeMarketDropdown()">
+          <span class="flag">🇺🇸</span> أمريكا
+        </div>
+        <div class="market-option" id="optSA" onclick="setMarket('sa');closeMarketDropdown()">
+          <span class="flag">🇸🇦</span> السعودية
+        </div>
+      </div>
+    </div>
+ 
+    <!-- Nav tabs -->
+    <nav class="sidebar-nav">
+      <button class="nav-tab active" onclick="switchTab('foras', this)">
+        <span class="tab-icon">🚀</span>
+        <span class="tab-label">الفرص</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('arkitaz', this)">
+        <span class="tab-icon">🎯</span>
+        <span class="tab-label">الارتكاز</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('mylist', this)">
+        <span class="tab-icon">⭐</span>
+        <span class="tab-label">قائمتي</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('performance', this)">
+        <span class="tab-icon">📊</span>
+        <span class="tab-label">الأداء</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('portfolio', this)">
+        <span class="tab-icon">💼</span>
+        <span class="tab-label">محفظتي</span>
+      </button>
+      <button class="nav-tab" onclick="switchTab('calendar', this)">
+        <span class="tab-icon">📅</span>
+        <span class="tab-label">الأخبار</span>
+      </button>
+    </nav>
+ 
+    <div class="sidebar-footer">
+      <button class="theme-toggle" onclick="toggleTheme()">
+        <span id="themeIcon">🌙</span>
+        <span id="themeLabel">ليلي</span>
+      </button>
+      <button onclick="if(window._signOut)window._signOut()"
+        style="margin-top:8px;width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text2);cursor:pointer;font-size:13px">
+        🚪 تسجيل الخروج
+      </button>
+    </div>
+  </aside>
+ 
+  <!-- ══ MAIN CONTENT ══ -->
+  <main class="main-content">
+ 
+    <!-- ══ شريط السوق ══ -->
+    <div class="topband" id="topband">
+      <div class="clockbar">
+        <div class="clk"><span class="city">الرياض</span><b id="ckR" dir="ltr">--:--:--</b><span class="dt" id="ckRd"></span></div>
+        <div class="sess" id="sess"><b id="sessT">—</b><span id="sessC"></span></div>
+        <div class="clk"><span class="city">نيويورك</span><b id="ckN" dir="ltr">--:--:--</b><span class="dt" id="ckNd"></span></div>
+      </div>
+      <section class="mkt" id="mkt">
+        <div class="mkt-h"><b>حالة السوق</b><span class="mkt-v" id="mktV">جاري التحميل...</span></div>
+        <div class="mkt-g" id="mktG"></div>
+      </section>
+    </div>
+ 
+    <!-- ── FORAS PAGE ── -->
+    <div id="page-foras" class="page active">
+      <div class="page-header">
+        <div class="page-title">🚀 الفرص</div>
+        <span id="lastUpdate">جاري التحميل...</span>
+      </div>
+      <div id="foras-wrap">
+        <div class="section-head section-ready">
+          ✅ جاهز للدخول
+          <span class="section-count" id="cnt-ready">0</span>
+          <span class="section-hint">ثقة 60%+ وإشارة ارتداد مؤكدة</span>
+        </div>
+        <div class="cards-grid" id="grid-ready"></div>
+        <div class="section-head section-watch">
+          👀 متابعة
+          <span class="section-count" id="cnt-watch">0</span>
+          <span class="section-hint">قريب من القاع، لم تكتمل الشروط</span>
+        </div>
+        <div class="cards-grid" id="grid-watch"></div>
+      </div>
+      <div id="foras-msg"></div>
+    </div>
+ 
+    <!-- ── ARKITAZ PAGE ── -->
+    <div id="page-arkitaz" class="page">
+      <div class="page-header">
+        <div class="page-title">🎯 الارتكاز</div>
+        <span style="font-size:11px;color:var(--text2)">شروط فيصل: دعم + RSI 23-27 + MACD + شمعة</span>
+      </div>
+      <div id="ark-wrap">
+        <div class="section-head section-ready">
+          ✅ جاهز للدخول
+          <span class="section-count" id="cnt-ark-ready">0</span>
+          <span class="section-hint">اكتملت الشروط وفشل الهبوط</span>
+        </div>
+        <div class="cards-grid" id="grid-ark-ready"></div>
+        <div class="section-head section-watch">
+          👀 تحت المراقبة
+          <span class="section-count" id="cnt-ark-watch">0</span>
+          <span class="section-hint">مضغوط عند دعم، لم تكتمل الشروط</span>
+        </div>
+        <div class="cards-grid" id="grid-arkitaz"></div>
+      </div>
+      <div id="ark-msg"></div>
+    </div>
+ 
+    <!-- ── MY LIST PAGE ── -->
+    <div id="page-mylist" class="page">
+      <div class="page-header">
+        <div class="page-title">⭐ قائمتي</div>
+        <span id="mylist-sub"></span>
+      </div>
+      <div id="mylist-msg"></div>
+      <div class="cards-grid" id="grid-mylist"></div>
+    </div>
+ 
+    <!-- ── PERFORMANCE PAGE ── -->
+    <div id="page-performance" class="page">
+      <div class="page-header">
+        <div class="page-title">📊 الأداء</div>
+      </div>
+      <div class="perf-section">
+        <div class="perf-section-title">⚡ صفقات تلقائية (<span id="perf-market-label">الفرص والارتكاز</span>)</div>
+        <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
+        <table class="trades-table">
+          <thead>
+            <tr>
+              <th>السهم</th><th>الدخول</th><th>التاريخ</th>
+              <th>الهدف1</th><th>الهدف2</th><th>الوقف</th>
+              <th>الحالة</th><th>ربح/خسارة</th><th>سبب الإغلاق</th>
+            </tr>
+          </thead>
+          <tbody id="perf-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+ 
+    <!-- ── PORTFOLIO PAGE ── -->
+    <div id="page-portfolio" class="page">
+      <div class="page-header">
+        <div class="page-title">💼 محفظتي</div>
+      </div>
+      <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
+      <div class="add-portfolio-form" id="addPortfolioForm">
+        <div class="form-grid">
+          <div>
+            <label>السهم</label>
+            <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
+          </div>
+          <div>
+            <label>سعر الدخول</label>
+            <input id="pf-entry" type="number" step="0.01" placeholder="1.50">
+          </div>
+          <div>
+            <label>الكمية</label>
+            <input id="pf-qty" type="number" placeholder="100">
+          </div>
+          <div>
+            <label>تاريخ الدخول</label>
+            <input id="pf-date" type="date">
+          </div>
+          <div>
+            <label>الهدف 1</label>
+            <input id="pf-t1" type="number" step="0.01" placeholder="2.00">
+          </div>
+          <div>
+            <label>وقف الخسارة</label>
+            <input id="pf-sl" type="number" step="0.01" placeholder="1.20">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-save-buy" onclick="savePortfolioTrade()" style="flex:1">حفظ الصفقة</button>
+          <button class="btn-cancel-buy" onclick="toggleAddPortfolio()" style="flex:1">إلغاء</button>
+        </div>
+      </div>
+      <table class="trades-table">
+        <thead>
+          <tr>
+            <th>السهم</th><th>الدخول</th><th>الكمية</th>
+            <th>الهدف</th><th>الوقف</th><th>التاريخ</th>
+            <th>الحالة</th><th>ربح/خسارة</th><th></th>
+          </tr>
+        </thead>
+        <tbody id="portfolio-tbody"></tbody>
+      </table>
+    </div>
+ 
+    <!-- ── CALENDAR PAGE ── -->
+    <div id="page-calendar" class="page">
+      <div class="page-header">
+        <div class="page-title">📅 الأخبار الأسبوعية</div>
+      </div>
+      <div class="news-calendar">
+        <div class="cal-header">
+          <button class="cal-nav-btn" onclick="calPrevWeek()">◀ الأسبوع السابق</button>
+          <div class="cal-title" id="calWeekLabel">هذا الأسبوع</div>
+          <button class="cal-nav-btn" onclick="calNextWeek()">الأسبوع القادم ▶</button>
+        </div>
+        <div class="cal-days" id="calDaysGrid"></div>
+      </div>
+    </div>
+ 
+  </main>
+</div>
+ 
+<!-- ══ MOBILE BOTTOM NAV ══ -->
+<nav class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-btn active" id="bn-foras" onclick="switchTab('foras', document.querySelector('.nav-tab.active') || this); syncBottomNav('foras')">
+    <span class="bottom-nav-icon">🚀</span>الفرص
+  </button>
+  <button class="bottom-nav-btn" id="bn-arkitaz" onclick="switchTab('arkitaz', document.querySelector('.nav-tab:nth-child(2)') || this); syncBottomNav('arkitaz')">
+    <span class="bottom-nav-icon">🎯</span>الارتكاز
+  </button>
+  <button class="bottom-nav-btn" id="bn-mylist" onclick="switchTab('mylist', document.querySelector('.nav-tab:nth-child(3)') || this); syncBottomNav('mylist')">
+    <span class="bottom-nav-icon">⭐</span><span>قائمتي</span>
+  </button>
+  <button class="bottom-nav-btn" id="bn-performance" onclick="switchTab('performance', document.querySelector('.nav-tab:nth-child(4)') || this); syncBottomNav('performance')">
+    <span class="bottom-nav-icon">📊</span>الأداء
+  </button>
+  <button class="bottom-nav-btn" id="bn-portfolio" onclick="switchTab('portfolio', document.querySelector('.nav-tab:nth-child(5)') || this); syncBottomNav('portfolio')">
+    <span class="bottom-nav-icon">💼</span>محفظتي
+  </button>
+  <button class="bottom-nav-btn" id="bn-calendar" onclick="switchTab('calendar', document.querySelector('.nav-tab:nth-child(6)') || this); syncBottomNav('calendar')">
+    <span class="bottom-nav-icon">📅</span>الأخبار
+  </button>
+</nav>
+ 
+<!-- ══ DETAIL PAGE ══ -->
+<div id="detail-page">
+  <div class="detail-header">
+    <button class="btn-back" onclick="closeDetail()">← رجوع</button>
+    <div id="detailSymbol"></div>
+    <div class="detail-actions">
+      <button class="btn-buy" id="btnBuyDetail" onclick="detailBuy()">🛒 شراء</button>
+      <a id="detailTvLink" class="btn-tv-link" target="_blank">📈 TradingView</a>
+    </div>
+  </div>
+ 
+  <div class="detail-stats" id="detailStats"></div>
+  <div id="detailLevels"></div>
+  <div class="detail-layers" id="detailLayers"></div>
+  <div id="detailChart"></div>
+  <div id="detailNews"></div>
+ 
+  <div class="buy-form" id="buyFormDetail">
+    <label>تاريخ الشراء</label>
+    <input type="date" id="buyDateD">
+    <label>سعر الشراء</label>
+    <input type="number" id="buyPriceD" step="0.01">
+    <label>عدد الأسهم</label>
+    <input type="number" id="buyQtyD" placeholder="100">
+    <button class="btn-save-buy" onclick="saveBuyDetail()">حفظ الصفقة</button>
+    <button class="btn-cancel-buy" onclick="document.getElementById('buyFormDetail').classList.remove('open')">إلغاء</button>
+    <div id="saveIndicator"></div>
+  </div>
+</div>
+ 
+<!-- ══ CLOSE TRADE DIALOG ══ -->
+<div id="sellPortDialog" class="dialog-overlay">
+  <div class="dialog-box">
+    <div class="dialog-title" id="sellPortTitle">بيع</div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">الكمية المباعة</label>
+      <input type="number" step="1" min="1" id="sellPortQty" class="dialog-input" placeholder="الكل">
+      <div id="sellPortQtyHint" style="font-size:11px;color:var(--text2);margin-top:3px"></div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">سعر البيع</label>
+      <input type="number" step="0.01" id="sellPortPrice" class="dialog-input" placeholder="0.00">
+    </div>
+    <div style="margin-bottom:14px">
+      <label style="font-size:12px;color:var(--text2)">تاريخ البيع</label>
+      <input type="date" id="sellPortDate" class="dialog-input">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-save-buy" onclick="confirmSellPortfolio()" style="flex:1">تأكيد البيع</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('sellPortDialog').classList.remove('open')" style="flex:1">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<div id="closeTradeDialog" class="dialog-overlay">
+  <div class="dialog-box">
+    <div class="dialog-title">إغلاق الصفقة</div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">سعر الإغلاق</label>
+      <input type="number" id="closePriceInput" step="0.01" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:12px;color:var(--text2)">تاريخ الإغلاق</label>
+      <input type="date" id="closeDateInput" style="width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:6px;font-size:14px;margin-top:4px">
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-save-buy" onclick="confirmCloseTrade()" style="flex:1">تأكيد الإغلاق</button>
+      <button class="btn-cancel-buy" onclick="document.getElementById('closeTradeDialog').classList.remove('open')" style="flex:1">إلغاء</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ══ Firebase ══ -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+ 
+const app = initializeApp({
+  apiKey: "AIzaSyDfG990oKmfDIjvgcyRufhNv-VK4DyyG4A",
+  authDomain: "krm-stocks.firebaseapp.com",
+  projectId: "krm-stocks",
+  storageBucket: "krm-stocks.appspot.com",
+  messagingSenderId: "908147806508",
+  appId: "1:908147806508:web:be9c49e1d6e23c5c91c3c1"
+});
+ 
+const db = getFirestore(app);
+const auth = getAuth(app);
+ 
+window._db = db;
+window._firestoreOps = { doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, collection, query, where, orderBy, limit };
+ 
+// ── Auth state ──
+window._auth = auth;
+window._signOut = () => signOut(auth);
+window._signIn = (email, pass) => signInWithEmailAndPassword(auth, email, pass);
+ 
+onAuthStateChanged(auth, user => {
+  if (user) {
+    window._uid = user.uid;
+    localStorage.setItem('_krm_uid', user.uid);
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    const emailEl = document.getElementById('userEmailDisplay');
+    if (emailEl) emailEl.textContent = user.email || '';
+  } else {
+    window._uid = null;
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('app').style.display = 'none';
+  }
+});
+</script>
+ 
+<!-- ══ Main Script ══ -->
+<script type="module">
+ 
+// ── Globals ──
+let _currentStock = null;
+let _detailSource = 'foras';
+let _trades = [];
+let _portfolioTrades = [];
+let _closeTradeId = null;
+let _currentMarket = 'us';
+// الأداء يتبع السوق المختار عالمياً، فلا حالة منفصلة له
+let _calWeekOffset = 0;
+ 
+// ── Halal Universe (قائمة الأسهم الحلال) ──
+const HALAL_US = new Set("A,AAOI,ABAT,ABBV,ACA,ACAD,ACCS,ACFN,ACIU,ACIW,ACLS,ACMR,ACN,ACNT,ACTG,ADI,ADM,ADMA,ADP,ADPT,ADSK,ADUS,AEHR,AEM,AERT,AG,AGI,AGIG,AGYS,AIDX,AIRG,ALGM,ALGN,ALGS,ALKT,ALLE,ALNY,ALRM,ALV,AMCI,AMED,AMKR,AMPG,AMPGW,AMR,AMSC,ANDG,ANF,ANGX,ANIK,ANNA,ANSS,APA,APEI,APLS,APPF,APT,APXT,ARCB,ARGX,ARIS,ARLO,ARM,ARMN,ARQT,ARVN,ARW,AS,ASAN,ASC,ASM,ASML,ASND,ASRT,ASYS,ATAT,ATEN,ATGE,ATRC,AU,AUGO,AUPH,AUTL,AVNS,AWR,AXL,AYA,AYI,AZ,AZN,AZTA,B,BBIO,BCC,BCRX,BE,BEEM,BELFA,BELFB,BFLY,BGSF,BHE,BIAF,BIIB,BIO,BITF,BKKT,BKNG,BKSY,BKTI,BKYI,BLBD,BLFS,BLIN,BLLN,BNTC,BOF,BOX,BR,BRKR,BSM,BSY,BTE,BTG,BW,BWLP,BYON,BYRN,CAI,CALX,CAN,CARG,CARL,CARR,CAVA,CCJ,CCRN,CDE,CDIO,CDNA,CDNS,CELH,CENX,CEPL,CF,CGAU,CGNT,CHCI,CHWY,CIEN,CISS,CJMB,CL,CLAR,CLBT,CLH,CLMB,CLPT,CLS,CMI,CNET,CNNE,CNR,CNXN,COCO,COHR,COHU,COLM,COO,COR,CORT,COUR,CPA,CPRX,CRCT,CRGO,CRL,CROX,CRS,CRSR,CRUS,CRWD,CSCI,CSCO,CSGS,CSL,CSPI,CSTL,CTAS,CTKB,CTLP,CTM,CTS,CTSH,CUE,CURB,CURI,CV,CVGW,CVLT,CVSA,CWCO,CWST,CXDO,CYCU,DAIO,DAKT,DAY,DCBO,DCTH,DD,DDOG,DDS,DECK,DERM,DFIN,DGX,DHR,DHT,DIBS,DIOD,DLB,DLO,DOCN,DOCS,DOCU,DOV,DPC,DT,DTM,DUOL,DV,DVN,DWSN,DXCM,EA,EBF,ECG,ECL,ECOR,EFOI,EGAN,ELA,ELMD,ELUT,EME,EMR,EMX,ENPH,ENSG,ENTG,EONR,EPM,EPSN,EQIX,ERO,ESCA,ESTA,ETD,EVI,EVLV,EVOK,EW,EXEL,EXPD,EXPO,EXTR,EXYN,FAST,FATN,FBYD,FDS,FIGS,FIVE,FIX,FIZZ,FKWL,FLNC,FLR,FLS,FLXS,FLY,FN,FOLD,FORM,FPS,FRGE,FRO,FROG,FRPT,FRSH,FRTT,FSI,FSLR,FSLY,FSM,FTEK,FTI,FTNT,FVRR,FWDI,G,GASS,GCT,GE,GENC,GEOS,GEV,GFS,GGRP,GH,GHM,GIC,GIFI,GIFT,GIII,GILD,GILT,GKOS,GLBE,GLW,GMAB,GMED,GMS,GNE,GNK,GRC,GRMN,GRNQ,GRRR,GRWG,GSK,GSM,GYRE,HAL,HAS,HBB,HBM,HCC,HD,HDSN,HIMX,HNRG,HNST,HOLX,HOOK,HQY,HRMY,HSII,HSON,HSTM,HSY,HTCR,HTFL,HTLD,HTLM,HUBG,HUBS,HURC,HUSA,HWM,HYFT,IA,IAG,IBEX,IBTA,ICAD,ICCC,ICLR,IDCC,IDR,IDT,IDXX,IESC,III,IIIN,IMAX,IMCR,IMPP,INBS,INCY,INDV,INFA,INFY,INGN,INNV,INOD,INSP,INSW,INTA,INTC,INTU,INVX,IOND,IOSP,IOT,IOVA,IPDN,IPGP,IPI,IPM,IRTC,ISPC,ITRG,ITT,IVDA,J,JAKK,JBL,JCI,JFB,JKHY,JNJ,JNPR,JOB,JOUT,K,KAI,KE,KELYA,KELYB,KEYS,KGC,KLAC,KLIC,KLTR,KMB,KMDA,KNX,KO,KODK,KRMD,KRT,KVUE,KVYO,KYIV,LAUR,LAW,LEGN,LFMD,LFVN,LGCY,LGN,LHAI,LIF,LINC,LINK,LIQT,LIVN,LMAT,LMB,LNN,LNTH,LOGI,LOOP,LOPE,LPG,LQDA,LQDT,LRCX,LSPD,LTCH,LTRX,LUD,LUNR,LUXE,LVWR,LZ,MAKO,MAMA,MANH,MASI,MCHP,MCHX,MDA,MDB,MDGL,MDLK,MDLN,MDXG,MED,MEDP,MGNX,MGTX,MHH,MIRM,MKSI,MKTW,MKTX,MLI,MMM,MMSI,MNDO,MNDY,MNKD,MOD,MRAM,MRK,MRSN,MRVI,MSGS,MSI,MSM,MTLS,MTRX,MTSI,MU,MUX,MWA,MWH,MWYN,MXC,MXL,MYRG,NAGE,NAT,NATR,NAVN,NBIS,NCNO,NDAQ,NDSN,NE,NEGG,NEM,NEO,NEOV,NEPH,NGD,NHC,NICE,NKE,NL,NMAX,NOK,NOW,NPCE,NPO,NRC,NRDY,NRXP,NSP,NSSC,NTAP,NTCT,NTIC,NTNX,NTRA,NTRB,NTWK,NUE,NVDA,NVEC,NWPX,NXPI,NYAX,OABI,OCFT,ODC,ODFL,OFLX,OFRM,OGC,OII,OKTA,OLLI,OLO,OLPX,OMCL,ON,ONC,ONON,ONTF,ONTO,OPRX,OR,ORLA,ORLY,OS,OSRH,OSS,OSW,OTLK,OUST,OWLS,OXY,P,PANW,PATH,PAY,PAYS,PBYI,PCOR,PDEX,PDFS,PEGA,PEN,PESI,PETV,PG,PGEN,PGNY,PH,PHAR,PHAT,PHR,PLAB,PLL,PLPC,PLTR,PLUG,PLX,PLXS,PNRG,PODD,POWL,PPHC,PPSI,PRCT,PRDO,PRQR,PSTG,PTC,PTEN,PTGX,PTRN,PWR,PXED,Q,QCOM,QGEN,QLYS,QTRX,QTWO,RAMP,RAVE,RBA,RBRK,RDVT,RDWR,REGN,RELL,RELY,RES,REX,RGLD,RGNX,RGP,RHI,RIGL,RIOT,RIVN,RLGT,RMBS,RMCO,RMD,ROC,ROG,ROK,ROST,RPM,RPRX,RRC,RSG,RSKD,RVP,RVTY,RYTM,SAIA,SAIL,SANM,SBC,SBFM,SBUX,SCCO,SCPH,SCSC,SCWO,SCZM,SD,SDRL,SECZ,SEMR,SFIX,SHEL,SHLS,SHOP,SHW,SIBN,SILC,SIM,SIMO,SINT,SKY,SLB,SLDP,SLNG,SLP,SMCI,SMID,SMRT,SMTC,SMTI,SNDK,SNOW,SNPS,SNT,SNY,SOPH,SOUN,SPCX,SPIR,SPOK,SPT,SPXC,SQM,SRDX,SRTA,SSD,SSII,SSRM,SSTI,SSY,SSYS,STAA,STE,STM,STNG,STRL,STVN,STX,STXS,SUPN,SVCO,SVM,SWAG,SWVL,SYNA,SYRA,TAL,TARS,TCMD,TDC,TDW,TEAM,TECH,TEL,TEM,TENB,TER,TFII,TH,THTX,TJX,TKR,TLSI,TMCI,TMDX,TMO,TNK,TOL,TOMZ,TOPP,TRI,TRNO,TRNS,TRON,TRT,TRUE,TRVG,TS,TSEM,TSSI,TT,TTAN,TVTX,TWIN,TWST,TX,TXG,TXNM,UCTT,UDMY,UFPI,UI,ULS,UNF,UNP,URG,URGN,USIO,UUUU,VAL,VC,VCEL,VCYT,VERX,VIA,VIAV,VICR,VIK,VIR,VISN,VITL,VLN,VMC,VMEO,VMI,VMRK,VNRX,VPG,VRCA,VRME,VRSN,VRTX,VSH,VSTM,VTEX,VTIX,VXRT,WAT,WCN,WDAY,WDC,WDFC,WEAV,WETH,WEYS,WFCF,WFG,WFRD,WILC,WINA,WK,WMS,WPM,WRAP,WRBY,WSM,WSO,WST,WTS,WWD,WYY,XERS,XGN,XMAX,XMTR,XNET,XPER,XPON,YETI,YOU,YSS,ZDGE,ZENA,ZS".split(','));
+ 
+const HALAL_SA = new Set("1020,1111,1120,1140,1150,1182,1183,1201,1202,1210,1211,1212,1213,1214,1301,1302,1303,1304,1320,1321,1322,1323,1324,1810,1820,1830,1831,1832,1833,1834,1835,2001,2010,2020,2030,2040,2050,2060,2070,2080,2081,2082,2083,2084,2090,2100,2110,2120,2130,2140,2150,2160,2170,2180,2190,2200,2210,2220,2222,2223,2230,2240,2250,2270,2280,2281,2282,2283,2284,2285,2286,2287,2288,2290,2300,2310,2320,2330,2340,2350,2360,2370,2380,2381,2382,3002,3003,3004,3005,3007,3008,3010,3020,3030,3040,3050,3060,3080,3090,3091,3092,4001,4002,4003,4004,4005,4006,4007,4008,4009,4011,4012,4013,4014,4015,4016,4017,4018,4019,4020,4021,4030,4031,4040,4050,4051,4061,4070,4071,4080,4081,4082,4083,4090,4100,4110,4130,4140,4141,4142,4143,4144,4145,4146,4147,4148,4150,4161,4162,4163,4164,4165,4170,4180,4190,4191,4192,4193,4194,4200,4210,4220,4230,4240,4250,4260,4261,4262,4263,4264,4265,4270,4290,4291,4292,4300,4310,4320,4321,4322,4323,4324,4325,4326,4327,4328,5110,6001,6002,6004,6010,6012,6013,6014,6015,6016,6017,6018,6019,6020,6022,6040,6050,6060,6070,6090,7010,7020,7030,7040,7200,7201,7202,7203,7204,7205,7211,8313".split(','));
+ 
+ 
+// ── أسماء الشركات السعودية (الرمز وحده غير مفهوم) ──
+const SA_NAMES = Object.fromEntries("1020:بنك الجزيرة,1111:مجموعة تداول السعودية,1120:مصرف الراجحي,1140:بنك البلاد,1150:مصرف الإنماء,1182:أملاك العالمية,1183:سهل للتمويل,1201:تكوين المتطورة,1202:مبكو,1210:الكيميائية الأساسية,1211:معادن,1212:أسترا الصناعية,1213:نسيج,1214:الحسن شاكر,1301:أسلاك,1302:بوان,1303:الصناعات الكهربائية,1304:اليمامة للحديد,1320:أنابيب السعودية,1321:أنابيب الشرق,1322:أماك,1323:الكرتون المتحدة,1324:صالح الراشد,1810:سيرا القابضة,1820:بان القابضة,1830:لجام للرياضة,1831:مهارة,1832:صدر اللوجستية,1833:الموارد للقوى البشرية,1834:سماسكو,1835:تمكين للموارد البشرية,2001:كيمانول,2010:سابك,2020:سابك للمغذيات الزراعية,2030:المصافي,2040:الخزف السعودي,2050:مجموعة صافولا,2060:التصنيع,2070:الدوائية,2080:الغاز والتصنيع,2081:الخريف لتقنية المياه,2082:أكوا باور,2083:مرافق,2084:مياهنا,2090:الجبس الأهلية,2100:وفرة,2110:الكابلات السعودية,2120:المتطورة,2130:صدق,2140:أيان,2150:زجاج,2160:أميانتيت,2170:اللجين,2180:فيبكو,2190:سيسكو القابضة,2200:أنابيب,2210:نماء للكيماويات,2220:معدنية,2222:أرامكو السعودية,2223:لوبريف,2230:الكيميائية,2240:الصناعات المتقدمة للبناء,2250:المجموعة السعودية,2270:سدافكو,2280:المراعي,2281:تنمية,2282:نقي,2283:المطاحن الأولى,2284:المطاحن الحديثة,2285:المطاحن العربية,2286:المطاحن الرابعة,2287:إنتاج,2288:نفوذ,2290:ينساب,2300:صناعة الورق,2310:سبكيم العالمية,2320:البابطين,2330:المتقدمة,2340:ارتيكس,2350:كيان السعودية,2360:الفخارية,2370:مسك,2380:بترو رابغ,2381:الحفر العربية,2382:أديس,3002:أسمنت نجران,3003:أسمنت المدينة,3004:أسمنت الشمالية,3005:أسمنت أم القرى,3007:الواحة,3008:الكثيري,3010:أسمنت العربية,3020:أسمنت اليمامة,3030:أسمنت السعودية,3040:أسمنت القصيم,3050:أسمنت الجنوب,3060:أسمنت ينبع,3080:أسمنت الشرقية,3090:أسمنت تبوك,3091:أسمنت الجوف,3092:أسمنت الرياض,4001:أسواق العثيم,4002:المواساة,4003:إكسترا,4004:دله الصحية,4005:رعاية,4006:التسويق,4007:الحمادي,4008:ساكو,4009:السعودي الألماني الصحية,4011:لازوردي,4012:الأصيل,4013:سليمان الحبيب,4014:دار المعدات,4015:جمجوم فارما,4016:أفالون فارما,4017:فقيه الطبية,4018:الموسى الصحية,4019:المركز التخصصي,4020:العقارية,4021:المركز الكندي الطبي,4030:البحري,4031:الخدمات الأرضية,4040:سابتكو,4050:ساسكو,4051:باعظيم,4061:أنعام القابضة,4070:تهامة,4071:العربية للتعهدات الفنية,4080:سناد القابضة,4081:النايفات,4082:مرابحة مرنة,4083:تسهيل,4090:طيبة,4100:مكة,4110:باتك,4130:درب السعودية,4140:الصادرات,4141:العمران,4142:كابلات الرياض,4143:تالكو,4144:رووم,4145:العبيكان للزجاج,4146:جاز,4147:سي جي إس,4148:الوسائل الصناعية,4150:التعمير,4161:بن داود,4162:المنجم,4163:الدواء,4164:النهدي,4165:الماجد للعود,4170:شمس,4180:مجموعة فتيحي,4190:جرير,4191:أبو معطي,4192:السيف غاليري,4193:نايس ون,4194:بيت التسويق,4200:الدريس,4210:الأبحاث والإعلام,4220:إعمار المدينة الاقتصادية,4230:البحر الأحمر,4240:إيه إف جي العالمية (سينومي ريتيل سابقًا),4250:جبل عمر,4260:بدجت السعودية,4261:ذيب,4262:لومي,4263:سال,4264:طيران ناس,4265:شيري,4270:طباعة وتغليف,4290:الخليج للتدريب,4291:الوطنية للتعليم,4292:عطاء,4300:دار الأركان,4310:مدينة المعرفة,4320:الأندلس,4321:سينومي سنترز,4322:رتال,4323:سمو,4324:بنان,4325:مسار,4326:الماجدية,4327:الرمز,4328:لدن,5110:الكهرباء السعودية,6001:حلواني إخوان,6002:هرفي,6004:كاترين,6010:نادك,6012:ريدان,6013:التطويرية الغذائية,6014:الآمار,6015:أمريكانا,6016:برغرايززر,6017:جاهز,6018:الأندية للرياضة,6019:المسار الشامل,6020:جاكو,6022:أرما,6040:تبوك الزراعية,6050:الأسماك,6060:الشرقية للتنمية,6070:الجوف,6090:جازادكو,7010:الاتصالات السعودية (إس تي سي),7020:موبايلي,7030:زين السعودية,7040:عذيب,7200:المعمر,7201:بحر العرب,7202:سلوشنز,7203:علم,7204:توبي,7205:دار البلد,7211:عزم,8313:رسن".split(',').map(p => {
+  const i = p.indexOf(':');
+  return [p.slice(0, i), p.slice(i + 1)];
+}));
+function stockLabel(sym, market) {
+  return market === 'sa' ? (SA_NAMES[String(sym)] || '') : '';
+}
+ 
+function isHalal(sym, market) {
+  if (market === 'sa') return HALAL_SA.has(String(sym));
+  return HALAL_US.has(String(sym).toUpperCase());
+}
+ 
+// بداية الارتداد: confidence >= 25 + شمعة خضراء أخيرة (c > o) + تراجع معقول
+function isStartOfRebound(data) {
+  // Confidence check (الثقة في الإشارة يجب أن تكون >= 25)
+  if (data.confidence !== undefined && data.confidence < 25) return false;
+  // Last candle green (if candle data available) — يستخدم c/o (اختصارات Firestore)
+  if (data.candles && data.candles.length >= 2) {
+    const last = data.candles[data.candles.length - 1];
+    const close = last.c !== undefined ? last.c : last.close;
+    const open  = last.o !== undefined ? last.o : last.open;
+    const vol   = last.v !== undefined ? last.v : last.volume;
+    if (close !== undefined && open !== undefined && close <= open) return false; // شمعة حمراء = لا يزال ينزل
+    // Volume check (اختياري)
+    if (vol) {
+      const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
+      if (avgVol > 0 && vol < avgVol * 0.5) return false; // حجم منخفض جداً فقط يُرفض
+    }
+  }
+  return true;
+}
+ 
+// حد الثقة لفئة "جاهز للدخول"
+const READY_CONF = 60;
+ 
+// سبب عدم الجاهزية — يرجع null إذا السهم مستوفٍ لكل شروط الدخول
+function notReadyReason(data) {
+  // حكم السكربت أولاً: فيه تأكيد وايكوف/إليوت وفحص توقف النزول،
+  // وهي أشياء لا تُقرأ من الشموع وحدها في الواجهة.
+  if (typeof data.foras_ready === 'boolean') {
+    if (data.foras_ready) return null;
+    return (Array.isArray(data.foras_missing) && data.foras_missing.length)
+      ? data.foras_missing[0]
+      : 'لم تكتمل الشروط';
+  }
+  // احتياطي للبيانات المكتوبة قبل تشغيل السكربت الجديد
+  const conf = data.confidence || 0;
+  if (conf < READY_CONF) return `ثقة ${conf}%`;
+  if (data.candles && data.candles.length >= 2) {
+    const last  = data.candles[data.candles.length - 1];
+    const close = last.c !== undefined ? last.c : last.close;
+    const open  = last.o !== undefined ? last.o : last.open;
+    const vol   = last.v !== undefined ? last.v : last.volume;
+    if (close !== undefined && open !== undefined && close <= open) return 'شمعة حمراء';
+    if (vol) {
+      const avgVol = data.candles.slice(-20).reduce((s, c) => s + (c.v || c.volume || 0), 0) / 20;
+      if (avgVol > 0 && vol < avgVol * 0.5) return 'حجم ضعيف';
+    }
+  }
+  return null;
+}
+ 
+// ══ شريط السوق: ساعتان + حالة الجلسة + بطاقات المؤشرات ══
+const _dtf = (tz, o) => new Intl.DateTimeFormat('en-GB', { timeZone: tz, hour12: false, ...o });
+const _arDate = tz => new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',
+  { timeZone: tz, weekday: 'long', day: 'numeric', month: 'long' });
+function _hms(ms) {
+  const t = Math.max(0, Math.floor(ms / 1000));
+  const d = Math.floor(t / 86400), h = Math.floor(t % 86400 / 3600), m = Math.floor(t % 3600 / 60);
+  return (d ? d + ' يوم ' : '') + (h ? h + ' س ' : '') + m + ' د';
+}
+function _parts(tz, date) {
+  const p = {};
+  _dtf(tz, { weekday: 'short', hour: '2-digit', minute: '2-digit', second: '2-digit' })
+    .formatToParts(date).forEach(x => p[x.type] = x.value);
+  return p;
+}
+const _WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+ 
+function marketTick() {
+  const now = new Date();
+  try {
+    document.getElementById('ckR').textContent  = _dtf('Asia/Riyadh',      { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(now);
+    document.getElementById('ckN').textContent  = _dtf('America/New_York', { hour:'2-digit', minute:'2-digit', second:'2-digit' }).format(now);
+    document.getElementById('ckRd').textContent = _arDate('Asia/Riyadh').format(now);
+    document.getElementById('ckNd').textContent = _arDate('America/New_York').format(now);
+ 
+    let cls, t, c;
+    if (_currentMarket === 'sa') {
+      // تداول: الأحد–الخميس 10:00–15:00 بتوقيت الرياض
+      const p = _parts('Asia/Riyadh', now);
+      const w = _WD.indexOf(p.weekday);
+      const mm = (+p.hour % 24) * 60 + +p.minute + +p.second / 60;
+      const to = m => (m - mm) * 60000;
+      const trading = d => d >= 0 && d <= 4;
+      const nxt = () => {
+        if (trading(w) && mm < 600) return to(600);
+        let add = 0, d = w;
+        do { add++; d = (d + 1) % 7; } while (!trading(d));
+        return to(600 + add * 1440);
+      };
+      if (!trading(w))                   { cls='closed'; t='تداول مغلق · عطلة نهاية الأسبوع'; c='يفتح بعد ' + _hms(nxt()); }
+      else if (mm >= 600 && mm < 900)    { cls='open';   t='تداول مفتوح';      c='يغلق بعد ' + _hms(to(900)); }
+      else if (mm >= 570 && mm < 600)    { cls='pre';    t='ما قبل الافتتاح';  c='يفتح بعد ' + _hms(to(600)); }
+      else if (mm >= 900 && mm < 910)    { cls='post';   t='مزاد الإغلاق';     c='ينتهي بعد ' + _hms(to(910)); }
+      else                               { cls='closed'; t='تداول مغلق';       c='يفتح بعد ' + _hms(nxt()); }
+    } else {
+      // نيويورك: الإثنين–الجمعة 9:30–16:00
+      const p = _parts('America/New_York', now);
+      const wd = _WD.indexOf(p.weekday);
+      const mins = (+p.hour % 24) * 60 + +p.minute + +p.second / 60;
+      const toMs = m => (m - mins) * 60000;
+      const nextOpen = () => {
+        let add = 0, d = wd;
+        if (d >= 1 && d <= 5 && mins < 570) return toMs(570);
+        do { add++; d = (d + 1) % 7; } while (d === 0 || d === 6);
+        return toMs(570 + add * 1440);
+      };
+      if (wd === 0 || wd === 6)            { cls='closed'; t='السوق مغلق · عطلة نهاية الأسبوع'; c='يفتح بعد ' + _hms(nextOpen()); }
+      else if (mins >= 570 && mins < 960)  { cls='open';   t='السوق مفتوح';     c='يغلق بعد ' + _hms(toMs(960)); }
+      else if (mins >= 240 && mins < 570)  { cls='pre';    t='ما قبل الافتتاح'; c='يفتح بعد ' + _hms(toMs(570)); }
+      else if (mins >= 960 && mins < 1200) { cls='post';   t='ما بعد الإغلاق';  c='الافتتاح الجاي بعد ' + _hms(nextOpen()); }
+      else                                 { cls='closed'; t='السوق مغلق';      c='يفتح بعد ' + _hms(nextOpen()); }
+    }
+    const S = document.getElementById('sess');
+    S.className = 'sess ' + cls;
+    document.getElementById('sessT').textContent = t;
+    document.getElementById('sessC').textContent = c;
+  } catch (e) { /* الساعات ليست حرجة */ }
+}
+ 
+function paintMarket(d, updated) {
+  const g = document.getElementById('mktG');
+  g.innerHTML = '';
+  const fmt = v => v >= 1000 ? v.toLocaleString('en-US', { maximumFractionDigits: 2 })
+                 : v >= 100  ? v.toFixed(2) : v.toFixed(2);
+  Object.entries(d).forEach(([key, v]) => {
+    const tk = v.ticker || key.split(':')[1];
+    const vix = tk === 'VIX';
+    const tags = vix
+      ? [v.close < 20 ? ['هادئ','up'] : v.close < 25 ? ['متوتر','warn'] : ['خوف','down']]
+      : [[v.close > v.SMA50  ? 'فوق م50'  : 'تحت م50',  v.close > v.SMA50  ? 'up' : 'down'],
+         [v.close > v.SMA200 ? 'فوق م200' : 'تحت م200', v.close > v.SMA200 ? 'up' : 'down']];
+    const ch = v.change;
+    const box = document.createElement('div');
+    box.innerHTML =
+      `<div class="sy"><b>${tk === 'BRN1!' ? 'BRENT' : tk}</b><span>${v.label || ''}</span></div>
+       <div class="pxrow"><span class="px">${fmt(v.close)}</span>` +
+      (ch != null ? `<span class="ch ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span>` : '') +
+      `</div><div class="tr">` +
+      tags.map(([t, c]) => `<span class="tag ${c}">${t}</span>`).join('') +
+      (!vix && v.RSI != null ? `<span class="tag info">RSI ${Math.round(v.RSI)}</span>` : '') +
+      `</div>`;
+    g.appendChild(box);
+  });
+ 
+  // قراءة الجو العام
+  const V = document.getElementById('mktV');
+  let st, cl, msg;
+  if (_currentMarket === 'sa') {
+    const t = d['TADAWUL:TASI'], b = d['ICEEUR:BRN1!'];
+    if (!t) { V.textContent = 'ما وصلت بيانات المؤشرات.'; return; }
+    if (t.close < t.SMA200 && t.close < t.SMA50) {
+      st='سلبي'; cl='down'; msg='المؤشر العام تحت متوسطي 50 و200. السوق هابط، وصيد القيعان فيه مخاطرة عالية.';
+    } else if (t.close < t.SMA50 || (b && b.SMA50 && b.close < b.SMA50)) {
+      st='حذر'; cl='warn'; msg='المؤشر العام تحت متوسط 50. ادخل في الإشارات المكتملة فقط وبحجم أصغر.';
+    } else {
+      st='إيجابي'; cl='up'; msg='المؤشر العام فوق متوسطاته. الجو مناسب لصيد القيعان.';
+    }
+    if (t.RSI != null && t.RSI < 30) msg += ` المؤشر في تشبع بيع (RSI ${Math.round(t.RSI)}).`;
+    V.innerHTML = `<span class="tag ${cl}">جو تاسي: ${st}</span>${msg}` +
+                  (updated ? ` <span style="color:var(--text2);font-size:12px">· ${updated}</span>` : '');
+    return;
+  }
+  const iwm = d['AMEX:IWM'], iwc = d['AMEX:IWC'], vx = d['CBOE:VIX'];
+  if (!iwm) { V.textContent = 'ما وصلت بيانات المؤشرات.'; return; }
+  const vxv = vx ? vx.close : 0;
+  if (iwm.close < iwm.SMA200 || vxv > 25) {
+    st='سلبي'; cl='down'; msg='الأسهم الصغيرة تحت متوسط 200 أو الخوف عالي. أغلب محاولات صيد القاع تفشل في هالجو، خفّف الدخول جداً.';
+  } else if (iwm.close < iwm.SMA50 || (iwc && iwc.close < iwc.SMA50) || vxv >= 20) {
+    st='حذر'; cl='warn'; msg='الأسهم الصغيرة تحت متوسط 50 (ضعف قصير المدى). ادخل في الإشارات المكتملة فقط وبحجم أصغر.';
+  } else {
+    st='إيجابي'; cl='up'; msg='الأسهم الصغيرة والمتناهية الصغر فوق متوسطات 50 و200 والخوف هادئ. الجو مناسب لصيد القيعان.';
+  }
+  V.innerHTML = `<span class="tag ${cl}">جو الأسهم الصغيرة: ${st}</span>${msg}` +
+                (updated ? ` <span style="color:var(--text2);font-size:12px">· ${updated}</span>` : '');
+}
+ 
+async function loadMarket() {
+  const V = document.getElementById('mktV');
+  try {
+    await waitForDB();
+    const { getDoc, doc } = window._firestoreOps;
+    const snap = await getDoc(doc(window._db, 'market', _currentMarket));
+    if (!snap.exists()) {
+      document.getElementById('mktG').innerHTML = '';
+      V.textContent = 'بيانات المؤشرات تُكتب مع أول تشغيل للسكربت بعد هذا التحديث.';
+      return;
+    }
+    const v = snap.data();
+    paintMarket(v.data || {}, v.updated);
+  } catch (err) {
+    document.getElementById('mktG').innerHTML = '';
+    V.textContent = 'تعذّر تحميل المؤشرات.';
+  }
+}
+ 
+// ── Wait helpers ──
+async function waitForDB() {
+  for (let i = 0; i < 50; i++) {
+    if (window._db) return;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  throw new Error('Firebase timeout');
+}
+async function waitForUID() {
+  for (let i = 0; i < 100; i++) {
+    if (window._uid) return window._uid;
+    await new Promise(r => setTimeout(r, 100));
+  }
+  throw new Error('Auth timeout');
+}
+ 
+// ── Theme ──
+window.toggleTheme = function() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  if (isDark) {
+    document.documentElement.removeAttribute('data-theme');
+    document.getElementById('themeIcon').textContent = '🌙';
+    document.getElementById('themeLabel').textContent = 'ليلي';
+    localStorage.setItem('theme', 'light');
+  } else {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = '☀️';
+    document.getElementById('themeLabel').textContent = 'نهاري';
+    localStorage.setItem('theme', 'dark');
+  }
+};
+(function() {
+  if (localStorage.getItem('theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeIcon').textContent = '☀️';
+    document.getElementById('themeLabel').textContent = 'نهاري';
+  }
+})();
+ 
+// ── Market picker dropdown ──
+window.toggleMarketDropdown = function() {
+  document.getElementById('marketDropdown').classList.toggle('open');
+};
+window.closeMarketDropdown = function() {
+  document.getElementById('marketDropdown').classList.remove('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#marketPicker')) closeMarketDropdown();
+});
+ 
+// ── Market switch ──
+window.setMarket = function(market) {
+  _currentMarket = market;
+  // الشريط يتبع السوق المختار: ساعة الجلسة ومؤشراته يختلفان
+  document.getElementById('mktG').innerHTML = '';
+  document.getElementById('mktV').textContent = 'جاري التحميل...';
+  marketTick();
+  loadMarket();
+  paintPerfLabel();   // الأداء يتبع السوق المختار
+  const flag = market === 'us' ? '🇺🇸' : '🇸🇦';
+  document.getElementById('marketFlag').textContent = flag;
+  const mf = document.getElementById('marketFlagMobile');
+  if (mf) mf.textContent = flag;
+  document.getElementById('optUS').classList.toggle('selected', market === 'us');
+  document.getElementById('optSA').classList.toggle('selected', market === 'sa');
+  const optUSM = document.getElementById('optUSMobile');
+  const optSAM = document.getElementById('optSAMobile');
+  if (optUSM) optUSM.classList.toggle('selected', market === 'us');
+  if (optSAM) optSAM.classList.toggle('selected', market === 'sa');
+  reloadCurrentTab();
+};
+ 
+window.toggleMarketDropdownMobile = function() {
+  document.getElementById('marketDropdownMobile').classList.toggle('open');
+};
+window.closeMarketDropdownMobile = function() {
+  document.getElementById('marketDropdownMobile').classList.remove('open');
+};
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#marketPickerMobile')) closeMarketDropdownMobile();
+});
+ 
+// ── Bottom nav sync ──
+window.syncBottomNav = function(tab) {
+  document.querySelectorAll('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('bn-' + tab);
+  if (btn) btn.classList.add('active');
+};
+ 
+// ── Performance market switch ──
+function paintPerfLabel() {
+  const lbl = document.getElementById('perf-market-label');
+  if (lbl) lbl.textContent = _currentMarket === 'us'
+    ? 'الفرص والارتكاز - أمريكا 🇺🇸'
+    : 'الفرص والارتكاز - السعودية 🇸🇦';
+}
+// أُبقيت للتوافق مع أي استدعاء قديم: السوق صار يُحدَّد من الأعلى
+window.switchPerfMarket = function() { paintPerfLabel(); loadPerformance(); };
+ 
+function reloadCurrentTab() {
+  const activeTab = document.querySelector('.nav-tab.active');
+  if (!activeTab) return;
+  const fn = activeTab.getAttribute('onclick');
+  if (fn && fn.includes('foras')) loadForas();
+  else if (fn && fn.includes('arkitaz')) loadArkitaz();
+  else if (fn && fn.includes('mylist')) loadMyList();
+  else if (fn && fn.includes('performance')) loadPerformance();
+  else if (fn && fn.includes('portfolio')) loadPortfolio();
+}
+ 
+// ── Tab switch ──
+window.switchTab = function(tab, el) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  if (el && el.classList && el.classList.contains('nav-tab')) el.classList.add('active');
+  document.getElementById('page-' + tab).classList.add('active');
+  syncBottomNav(tab);
+  if (tab === 'foras') loadForas();
+  else if (tab === 'arkitaz') loadArkitaz();
+  else if (tab === 'mylist') loadMyList();
+  else if (tab === 'performance') loadPerformance();
+  else if (tab === 'portfolio') loadPortfolio();
+  else if (tab === 'calendar') loadCalendar();
+};
+ 
+// ── Helpers ──
+function confColor(v) {
+  if (v >= 70) return 'var(--green)';
+  if (v >= 40) return 'var(--gold)';
+  return 'var(--red)';
+}
+function rsiColor(v) {
+  if (!v) return 'var(--text2)';
+  if (v >= 23 && v <= 27) return 'var(--green)';
+  if (v < 23 || (v > 27 && v <= 35)) return 'var(--gold)';
+  return 'var(--red)';
+}
+ 
+// ── Chart ──
+// شارت حي من TradingView. الأرقام التي يحسبها الموقع تأتي من السكربت،
+// وهذا للعرض فقط — الـ widget إطار مغلق لا تُقرأ منه قيم بالجافاسكربت.
+let _tvWidget = null;
+function renderLiveChart(container, tvSymbol, candles) {
+  container.innerHTML = '';
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+ 
+  if (window.TradingView && typeof window.TradingView.widget === 'function' && tvSymbol) {
+    const holder = document.createElement('div');
+    holder.id = 'tvChartHolder';
+    holder.style.cssText = 'width:100%;height:100%';
+    container.appendChild(holder);
+    try {
+      _tvWidget = new window.TradingView.widget({
+        container_id: 'tvChartHolder',
+        symbol: tvSymbol,
+        interval: 'D',
+        timezone: 'Asia/Riyadh',
+        theme: isDark ? 'dark' : 'light',
+        style: '1',
+        locale: 'ar_AE',
+        autosize: true,
+        hide_side_toolbar: false,
+        allow_symbol_change: false,
+        save_image: false,
+        withdateranges: true,
+      });
+      return;
+    } catch (e) { /* نسقط للشموع المحفوظة */ }
+  }
+ 
+  // ارتداد: الشموع المحفوظة في Firestore.
+  // كلتا المكتبتين من شبكات خارجية، فقد تفشلان معاً على اتصال ضعيف.
+  if (candles && candles.length && window.LightweightCharts) {
+    try { renderFullChart(container, candles); return; } catch (e) { /* للرسالة أدناه */ }
+  }
+  const why = candles && candles.length ? 'تعذّر تحميل الشارت' : 'الشارت يظهر بعد أول تحديث';
+  container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;'
+    + 'height:100%;color:var(--text2);flex-direction:column;gap:8px">'
+    + `<div>📊</div><div style="font-size:12px">${why}</div></div>`;
+}
+ 
+function renderFullChart(container, candles) {
+  container.innerHTML = '';
+  if (!candles || !candles.length) {
+    container.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#555;flex-direction:column;gap:8px"><div>📊</div><div style="font-size:12px">بيانات الشارت ستُضاف تلقائياً</div></div>';
+    return;
+  }
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const chart = LightweightCharts.createChart(container, {
+    width: container.clientWidth || 700,
+    height: 268,
+    layout: { background: { color: 'transparent' }, textColor: isDark ? '#8888aa' : '#555577' },
+    grid: { vertLines: { color: isDark ? '#2a2a3a' : '#e0e0ee' }, horzLines: { color: isDark ? '#2a2a3a' : '#e0e0ee' } },
+    rightPriceScale: { borderColor: isDark ? '#2a2a3a' : '#e0e0ee' },
+    timeScale: { borderColor: isDark ? '#2a2a3a' : '#e0e0ee', timeVisible: true },
+  });
+  const series = chart.addCandlestickSeries({
+    upColor: '#22c55e', downColor: '#ef4444',
+    borderUpColor: '#22c55e', borderDownColor: '#ef4444',
+    wickUpColor: '#22c55e', wickDownColor: '#ef4444',
+  });
+  series.setData(candles.map(c => ({ time: c.t, open: c.o, high: c.h, low: c.l, close: c.c })));
+  chart.timeScale().fitContent();
+}
+ 
+// ── Float shares cache & fetcher ──
+// الأسهم الحرة تُجلب في السكربت وتصل جاهزة في data.float_shares
+// (المتصفح يُحجب عن Yahoo، فكان الحقل يبقى "—" دائماً)
+ 
+// ── Build FORAS card (tall rectangle with key levels) ──
+function buildForasCard(symbol, data, market, autoRegister = true) {
+  const div = document.createElement('div');
+  div.className = 'stock-card';
+  const conf = data.confidence || 0;
+  const confCol = confColor(conf);
+  // الشارة تتبع نفس شروط قسم "جاهز للدخول" بالضبط
+  const reason  = notReadyReason(data);
+  const isReady = reason === null;
+  const badgeTxt = isReady ? '✅ جاهز' : `⏳ ${reason}`;
+  const cur = market === 'sa' ? 'ر.س ' : '$';
+ 
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="card-symbol">${symbol}</div>
+        <div class="card-coname">${stockLabel(symbol, market)}</div>
+      </div>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${badgeTxt}</span>
+    </div>
+    <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : '—'}</div>
+    <hr class="card-divider">
+    <div class="ark-conditions">
+      <div class="card-detail-row">
+        <span class="card-detail-label">🎯 دخول</span>
+        <span class="card-detail-val" style="color:var(--blue)">${data.entry ? cur+data.entry : '—'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">🛑 وقف</span>
+        <span class="card-detail-val" style="color:var(--red)">${data.stop_loss ? cur+data.stop_loss : '—'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">🟢 هدف 1</span>
+        <span class="card-detail-val" style="color:var(--green)">${data.target1 ? cur+data.target1 : '—'}</span>
+      </div>
+      <div class="card-detail-row">
+        <span class="card-detail-label">🚀 هدف 2</span>
+        <span class="card-detail-val" style="color:#a855f7">${data.target2 ? cur+data.target2 : '—'}</span>
+      </div>
+    </div>
+    <hr class="card-divider">
+    <div class="conf-row">
+      <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
+      <span class="conf-pct" style="color:${confCol}">${conf}%</span>
+    </div>
+    <div class="card-detail-row">
+      <span class="card-detail-label">📊 أسهم حرة</span>
+      <span class="card-detail-val" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</span>
+    </div>
+    <div class="card-note">${
+      (!isReady && Array.isArray(data.foras_missing) && data.foras_missing.length)
+        ? 'ناقص: ' + data.foras_missing.join('، ')
+        : (data.note || '')
+    }</div>
+  `;
+  div.onclick = () => openDetail(symbol, data, market, 'foras');
+  attachStarButton(div, symbol, data, market, 'foras');
+  // لا تُسجَّل صفقة ورقية إلا لأسهم "جاهز للدخول"
+  if (autoRegister) autoRegisterPaperTrade(symbol, data);
+  return div;
+}
+ 
+// ── Build ARKITAZ card (tall rectangle with conditions) ──
+function buildArkitazCard(symbol, data, market) {
+  const div = document.createElement('div');
+  div.className = 'stock-card';
+  // ثقة الارتكاز لا ثقة الفرص: تلك وزنها 0.60 للقرب من أدنى 220 يوماً،
+  // وسهم الارتكاز قد يكون أعلى من قاعه بكثير وهو على دعم ممتاز.
+  const conf = (data.ark_confidence != null ? data.ark_confidence
+                                            : (data.confidence || 0));
+  const confCol = confColor(conf);
+  const cur = market === 'sa' ? 'ر.س ' : '$';
+ 
+  const rsi = data.rsi;
+  const rsiOk = rsi && rsi >= 23 && rsi <= 27;
+  const macdOk = data.macd_improving;
+  const maOk = data.ma_recovering;
+  const supportOk = data.has_support;
+  const candleOk = data.bullish_candle;
+ 
+  const rsiLabel = rsi ? rsi.toFixed(1) : '—';
+  const rsiCol = rsiColor(rsi);
+ 
+  const checkIcon = (ok) => ok ? '✅' : (ok === false ? '❌' : '⚪');
+ 
+  // الجاهزية تُقرأ من الفارز وحده. تعريف ثانٍ هنا كان يسبب تناقض
+  // الشارة مع القسم تماماً كما حدث في الفرص قبل.
+  const isReady = data.ark_ready === true;
+ 
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div>
+        <div class="card-symbol">${symbol}</div>
+        <div class="card-coname">${stockLabel(symbol, market)}</div>
+      </div>
+      <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${isReady ? '🎯 جاهز' : '⏳ انتظار'}</span>
+    </div>
+    <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : '—'}</div>
+    <hr class="card-divider">
+    <div class="ark-conditions">
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(rsiOk)}</span>
+        <span class="cond-label">RSI</span>
+        <span class="cond-val" style="color:${rsiCol}">${rsiLabel}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(macdOk)}</span>
+        <span class="cond-label">MACD</span>
+        <span class="cond-val ${macdOk ? 'cond-ok' : 'cond-warn'}">${macdOk ? 'يتحسن' : 'ضعيف'}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(maOk)}</span>
+        <span class="cond-label">المتوسطات</span>
+        <span class="cond-val ${maOk ? 'cond-ok' : 'cond-warn'}">${maOk ? 'يستعيد' : 'تحتها'}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(supportOk)}</span>
+        <span class="cond-label">دعم واضح</span>
+        <span class="cond-val">${data.support_level ? cur+data.support_level : (supportOk ? 'نعم' : '—')}</span>
+      </div>
+      <div class="ark-condition">
+        <span class="cond-icon">${checkIcon(candleOk)}</span>
+        <span class="cond-label">شمعة إيجابية</span>
+        <span class="cond-val ${candleOk ? 'cond-ok' : ''}">${candleOk ? 'نعم' : '—'}</span>
+      </div>
+    </div>
+    <hr class="card-divider">
+    <div class="conf-row">
+      <div class="conf-bar"><div class="conf-fill" style="width:${conf}%;background:${confCol}"></div></div>
+      <span class="conf-pct" style="color:${confCol}">${conf}%</span>
+    </div>
+    <div class="card-detail-row" style="margin-top:4px">
+      <span class="card-detail-label">📊 أسهم حرة</span>
+      <span class="card-detail-val" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</span>
+    </div>
+    <div class="card-note">${
+      data.ark_ready
+        ? '✅ اكتملت الشروط — الدخول قرب الدعم بأمر Limit'
+        : (Array.isArray(data.ark_missing) && data.ark_missing.length
+            ? 'ناقص: ' + data.ark_missing.join('، ')
+            : (data.consReason || data.note || ''))
+    }</div>
+  `;
+  div.onclick = () => openDetail(symbol, data, market, 'arkitaz');
+  attachStarButton(div, symbol, data, market, 'arkitaz');
+  return div;
+}
+ 
+// ── Load FORAS ──
+async function loadForas() {
+  const wrap    = document.getElementById('foras-wrap');
+  const msgEl   = document.getElementById('foras-msg');
+  const gReady  = document.getElementById('grid-ready');
+  const gWatch  = document.getElementById('grid-watch');
+  const cReady  = document.getElementById('cnt-ready');
+  const cWatch  = document.getElementById('cnt-watch');
+ 
+  wrap.style.display = 'none';
+  msgEl.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+ 
+  try {
+    await waitForDB();
+    const { getDocs, collection } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
+    const snap = await getDocs(collection(window._db, collName));
+ 
+    gReady.innerHTML = '';
+    gWatch.innerHTML = '';
+    msgEl.innerHTML = '';
+ 
+    if (snap.empty) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد فرص — قاعدة البيانات فارغة</div>';
+      loadMeta();
+      return;
+    }
+ 
+    let nReady = 0, nWatch = 0, countHalal = 0;
+ 
+    snap.forEach(d => {
+      const data = d.data();
+      if (!isHalal(d.id, _currentMarket)) return;
+      countHalal++;
+      const ready = notReadyReason(data) === null;
+      if (ready) {
+        gReady.appendChild(buildForasCard(d.id, data, _currentMarket, true));
+        nReady++;
+      } else {
+        gWatch.appendChild(buildForasCard(d.id, data, _currentMarket, false));
+        nWatch++;
+      }
+    });
+ 
+    cReady.textContent = nReady;
+    cWatch.textContent = nWatch;
+ 
+    if (nReady === 0) {
+      gReady.innerHTML = '<div class="section-empty">⏳ لا يوجد سهم مستوفٍ لشروط الدخول حالياً</div>';
+    }
+    if (nWatch === 0) {
+      gWatch.innerHTML = '<div class="section-empty">لا توجد أسهم تحت المتابعة</div>';
+    }
+ 
+    if (countHalal === 0) {
+      wrap.style.display = 'none';
+      msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>يوجد ${snap.size} سهم في القاعدة لكن لا شيء في قائمة الحلال</div>`;
+    } else {
+      wrap.style.display = '';
+    }
+ 
+    loadMeta();
+  } catch(err) {
+    wrap.style.display = 'none';
+    msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+  }
+}
+ 
+// ── Load ARKITAZ ──
+async function loadArkitaz() {
+  const wrap   = document.getElementById('ark-wrap');
+  const msgEl  = document.getElementById('ark-msg');
+  const gReady = document.getElementById('grid-ark-ready');
+  const gWatch = document.getElementById('grid-arkitaz');
+ 
+  wrap.style.display = 'none';
+  msgEl.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  try {
+    await waitForDB();
+    const { getDocs, collection } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'consolidation_sa' : 'consolidation_us';
+    const snap = await getDocs(collection(window._db, collName));
+    gReady.innerHTML = ''; gWatch.innerHTML = ''; msgEl.innerHTML = '';
+ 
+    if (snap.empty) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز</div>';
+      return;
+    }
+    let nReady = 0, nWatch = 0, total = 0;
+    snap.forEach(d => {
+      if (!isHalal(d.id, _currentMarket)) return;
+      total++;
+      const data = d.data();
+      if (data.ark_ready) { gReady.appendChild(buildArkitazCard(d.id, data, _currentMarket)); nReady++; }
+      else                { gWatch.appendChild(buildArkitazCard(d.id, data, _currentMarket)); nWatch++; }
+    });
+    document.getElementById('cnt-ark-ready').textContent = nReady;
+    document.getElementById('cnt-ark-watch').textContent = nWatch;
+ 
+    if (total === 0) {
+      msgEl.innerHTML = '<div class="empty"><div class="empty-icon">📭</div>لا توجد أسهم ارتكاز حلال حالياً</div>';
+      return;
+    }
+    if (nReady === 0) gReady.innerHTML = '<div class="section-empty">⏳ لا يوجد سهم اكتملت شروطه — الارتكاز متابعة لا دخول فوري</div>';
+    if (nWatch === 0) gWatch.innerHTML = '<div class="section-empty">لا توجد أسهم تحت المراقبة</div>';
+    wrap.style.display = '';
+  } catch(err) {
+    wrap.style.display = 'none';
+    msgEl.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div>خطأ: ${err.message}</div>`;
+  }
+}
+ 
+// ── Load meta ──
+async function loadMeta() {
+  try {
+    await waitForDB();
+    const { doc, getDoc } = window._firestoreOps;
+    const collName = _currentMarket === 'sa' ? 'suggestions_sa' : 'suggestions_us';
+    const metaDoc = await getDoc(doc(window._db, 'meta', collName));
+    const d = metaDoc.data();
+    document.getElementById('lastUpdate').textContent = d?.lastRun ? 'آخر تحديث: ' + d.lastRun : '';
+  } catch {}
+}
+ 
+// ── Auto-register paper trade (for performance tab) ──
+function autoRegisterPaperTrade(sym, data) {
+  if (!data.confidence || data.confidence < 60) return;
+  if (!data.entry && !data.close) return;
+  if (!data.stop_loss || !data.target1) return;   // بلا وقف وهدف لا يمكن إغلاقها آلياً
+ 
+  const trades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+  if (trades[sym]) return;
+  const rec = {
+    id: sym + '_' + Date.now(),
+    sym, symbol: sym,
+    market: _currentMarket || 'us',
+    entry: data.entry || data.close,
+    stop_loss: data.stop_loss,
+    target1: data.target1,
+    target2: data.target2,
+    strategy: data.strategy_type || 'auto',
+    confidence: data.confidence,
+    registeredAt: new Date().toISOString(),
+    status: 'open',
+    source: 'auto'
+  };
+  trades[sym] = rec;
+  localStorage.setItem('paperTrades', JSON.stringify(trades));
+ 
+  // تُكتب في Firestore ليراها السكربت ويغلقها عند الهدف أو الوقف
+  (async () => {
+    try {
+      await waitForDB();
+      const { doc, setDoc } = window._firestoreOps;
+      const id = `${rec.market}_${sym}`;
+      await setDoc(doc(window._db, 'paper_trades', id), rec, { merge: true });
+    } catch (e) { /* يبقى السجل المحلي على أي حال */ }
+  })();
+}
+ 
+// ── Load Performance (auto trades) — مفصول حسب السوق ──
+async function loadPerformance() {
+  const tbody = document.getElementById('perf-tbody');
+  tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text2)">⏳ جاري التحميل...</td></tr>';
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'trades'));
+    _trades = [];
+    snap.forEach(d => _trades.push({...d.data(), id: d.id}));
+ 
+    // الأداء يقيس النظام وحده، فلا تدخله صفقات المستخدم الشخصية.
+    // الصفقات الورقية: Firestore هو المرجع لأن السكربت يغلقها هناك،
+    // والسجل المحلي يكمّل ما لم يُزامَن بعد.
+    const localTrades = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+    const byKey = {};
+    Object.values(localTrades).forEach(t => {
+      byKey[`${t.market || 'us'}_${t.sym || t.symbol}`] = t;
+    });
+    try {
+      const ps = await getDocs(collection(window._db, 'paper_trades'));
+      ps.forEach(d => { byKey[d.id] = { ...(byKey[d.id] || {}), ...d.data(), id: d.id }; });
+      // أعِد المُغلقة إلى السجل المحلي حتى يتسق العرض دون اتصال
+      const back = {};
+      Object.values(byKey).forEach(t => { back[t.sym || t.symbol] = t; });
+      localStorage.setItem('paperTrades', JSON.stringify(back));
+    } catch (e) { /* نكمل بالسجل المحلي */ }
+ 
+    let allAutoTrades = Object.values(byKey);
+    // فلتر حسب السوق المحدد في تبويب الأداء
+    const perfMarket = _currentMarket || 'us';
+    const isSA = (sym) => /^\d{4}$/.test(String(sym));
+    if (perfMarket === 'sa') {
+      allAutoTrades = allAutoTrades.filter(t => isSA(t.sym || t.symbol));
+    } else {
+      allAutoTrades = allAutoTrades.filter(t => !isSA(t.sym || t.symbol));
+    }
+    renderPerfTable(allAutoTrades, tbody);
+    renderPerfSummary(allAutoTrades);
+  } catch(err) {
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:var(--text2)">خطأ في التحميل</td></tr>`;
+  }
+}
+ 
+function renderPerfTable(trades, tbody) {
+  tbody.innerHTML = '';
+  if (!trades.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات تلقائية بعد</td></tr>';
+    return;
+  }
+  trades.forEach(t => {
+    const pnl = t.close_price && t.entry ? ((t.close_price - t.entry) / t.entry * 100).toFixed(2) : null;
+    const pnlClass = pnl > 0 ? 'pnl-pos' : pnl < 0 ? 'pnl-neg' : '';
+    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' :
+      (pnl > 0 ? '<span class="status-profit">ربح</span>' : '<span class="status-loss">خسارة</span>');
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${t.sym || t.symbol}</strong></td>
+      <td>${t.entry ? '$'+Number(t.entry).toFixed(2) : '—'}</td>
+      <td style="font-size:11px">${t.registeredAt ? t.registeredAt.split('T')[0] : '—'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
+      <td>${t.target2 ? '$'+Number(t.target2).toFixed(2) : '—'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
+      <td>${statusLabel}</td>
+      <td class="${pnlClass}">${pnl !== null ? pnl+'%' : '—'}</td>
+      <td style="font-size:11px;color:var(--text2)">${
+        t.status === 'open' ? 'بانتظار الهدف أو الوقف'
+        : (t.outcome === 'target' ? '🎯 هدف'
+           : t.outcome === 'stop' ? '🛑 وقف'
+           : t.outcome === 'expired' ? '⌛ انتهت المدة' : 'مغلقة')
+      }</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+ 
+function renderPerfSummary(trades) {
+  const el = document.getElementById('perf-summary');
+  const open   = trades.filter(t => t.status === 'open');
+  const closed = trades.filter(t => t.status !== 'open');
+  const pnl    = t => (t.pnl_pct != null) ? t.pnl_pct
+                    : (t.close_price && t.entry ? (t.close_price - t.entry) / t.entry * 100 : null);
+  const wins   = closed.filter(t => { const p = pnl(t); return p != null && p > 0; });
+  const losses = closed.filter(t => { const p = pnl(t); return p != null && p <= 0; });
+  const rate   = closed.length ? Math.round(wins.length / closed.length * 100) : null;
+  const avg    = closed.length
+    ? (closed.reduce((s, t) => s + (pnl(t) || 0), 0) / closed.length) : null;
+  const rateCol = rate == null ? 'var(--text2)' : rate >= 50 ? 'var(--green)' : 'var(--red)';
+ 
+  const box = (label, value, color, hint) => `
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:92px">
+      <div style="font-size:11px;color:var(--text2)">${label}</div>
+      <div style="font-size:20px;font-weight:700${color ? ';color:' + color : ''}">${value}</div>
+      ${hint ? `<div style="font-size:10px;color:var(--text2)">${hint}</div>` : ''}
+    </div>`;
+ 
+  el.innerHTML =
+    box('إجمالي', trades.length, null, '') +
+    box('مفتوحة', open.length, 'var(--blue)', '') +
+    box('ربح', wins.length, 'var(--green)', '') +
+    box('خسارة', losses.length, 'var(--red)', '') +
+    box('نسبة النجاح', rate == null ? '—' : rate + '%', rateCol,
+        closed.length ? `من ${closed.length} مغلقة` : 'لا مغلقة بعد') +
+    box('متوسط الصفقة', avg == null ? '—' : (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%',
+        avg == null ? null : (avg >= 0 ? 'var(--green)' : 'var(--red)'), '');
+}
+ 
+// ── Portfolio (manual) ──
+window.toggleAddPortfolio = function() {
+  document.getElementById('addPortfolioForm').classList.toggle('open');
+  document.getElementById('pf-date').valueAsDate = new Date();
+};
+ 
+// ── Portfolio localStorage helpers (primary storage — survives Auth failures) ──
+// مراكزي المفتوحة — تُقرأ من المحفظة، فهي مكان الشراء الفعلي.
+// صفحة التفاصيل تعتمد عليها لعرض "تم الشراء" ومنع الشراء مرتين.
+async function refreshMyPositions() {
+  try {
+    const local = Object.values(lsPortLoad());
+    _trades = local;
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
+    const map = {};
+    local.forEach(t => { map[t.id] = t; });
+    snap.forEach(d => { map[d.id] = { ...d.data(), id: d.id }; });
+    _trades = Object.values(map);
+  } catch (e) { /* يبقى ما حُمّل محلياً */ }
+}
+ 
+const LS_PORT_KEY = '_krm_portfolio';
+function lsPortLoad() {
+  try { return JSON.parse(localStorage.getItem(LS_PORT_KEY) || '{}'); } catch { return {}; }
+}
+function lsPortSave(map) {
+  try { localStorage.setItem(LS_PORT_KEY, JSON.stringify(map)); } catch {}
+}
+ 
+window.savePortfolioTrade = async function() {
+  const sym = document.getElementById('pf-sym').value.trim().toUpperCase();
+  const entry = parseFloat(document.getElementById('pf-entry').value);
+  const qty = parseInt(document.getElementById('pf-qty').value);
+  const date = document.getElementById('pf-date').value;
+  const t1 = parseFloat(document.getElementById('pf-t1').value) || null;
+  const sl = parseFloat(document.getElementById('pf-sl').value) || null;
+  if (!sym || !entry || !qty) { alert('يرجى إدخال السهم والسعر والكمية'); return; }
+  const id = sym + '_manual_' + Date.now();
+  const trade = { id, symbol: sym, sym, entry, qty, date, target1: t1, stop_loss: sl, status: 'open', source: 'manual', registeredAt: new Date().toISOString() };
+  // Save to localStorage first (always works)
+  const map = lsPortLoad();
+  map[id] = trade;
+  lsPortSave(map);
+  // Try Firestore in background (non-blocking)
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc } = window._firestoreOps;
+    await setDoc(doc(window._db, 'users', uid, 'portfolio', id), trade);
+  } catch {}
+  document.getElementById('addPortfolioForm').classList.remove('open');
+  loadPortfolio();
+};
+ 
+async function loadPortfolio() {
+  const tbody = document.getElementById('portfolio-tbody');
+  tbody.innerHTML = '';
+  // Load from localStorage first for instant display
+  const lsMap = lsPortLoad();
+  let trades = Object.values(lsMap);
+  // Try to merge from Firestore (may have more data or synced from another device)
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'portfolio'));
+    const fsMap = {};
+    snap.forEach(d => { fsMap[d.id] = {...d.data(), id: d.id}; });
+    // Merge: Firestore wins on conflicts, localStorage fills the rest
+    const merged = {...lsMap, ...fsMap};
+    lsPortSave(merged);  // sync back to localStorage
+    trades = Object.values(merged);
+  } catch {}
+  _portfolioTrades = trades;
+  _trades = trades;   // نفس المصدر: المحفظة هي مراكزي
+  if (!trades.length) {
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--text2)">لا توجد صفقات — أضف صفقة يدوية</td></tr>';
+    return;
+  }
+  trades.sort((a, b) => (a.status === 'open' ? 0 : 1) - (b.status === 'open' ? 0 : 1)
+                     || String(b.date || '').localeCompare(String(a.date || '')));
+  trades.forEach(t => {
+    const statusLabel = t.status === 'open' ? '<span class="status-open">مفتوحة</span>' : '<span class="status-closed">مغلقة</span>';
+    const pnl = (t.status !== 'open' && t.close_price && t.entry)
+      ? ((t.close_price - t.entry) / t.entry * 100) : null;
+    const pnlCell = pnl === null ? '—'
+      : `<span class="${pnl >= 0 ? 'pnl-pos' : 'pnl-neg'}">${pnl >= 0 ? '+' : ''}${pnl.toFixed(2)}%</span>`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><strong>${t.symbol || t.sym}</strong></td>
+      <td>$${Number(t.entry).toFixed(2)}</td>
+      <td>${t.qty || '—'}</td>
+      <td>${t.target1 ? '$'+Number(t.target1).toFixed(2) : '—'}</td>
+      <td>${t.stop_loss ? '$'+Number(t.stop_loss).toFixed(2) : '—'}</td>
+      <td style="font-size:11px">${t.date || '—'}</td>
+      <td>${statusLabel}</td>
+      <td>${pnlCell}</td>
+      <td>
+        ${t.status === 'open'
+          ? `<button class="btn-close-trade" onclick="openSellPortfolio('${t.id}')">بيع</button>`
+          : ''}
+        <button class="btn-remove-trade" onclick="removePortfolioTrade('${t.id}')" style="margin-top:2px">حذف</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+ 
+// ── بيع مركز من المحفظة ──
+// المحفظة سجلّك اليدوي: أنت تُدخل الشراء وأنت تُدخل البيع. ولا علاقة
+// لها بالأداء، فذاك يُغلق نفسه آلياً ولا يُمسّ.
+let _sellPortId = null;
+
+window.openSellPortfolio = function(id) {
+  const t = (_portfolioTrades || []).find(x => x.id === id);
+  if (!t) return;
+  _sellPortId = id;
+  const d = document.getElementById('sellPortDialog');
+  document.getElementById('sellPortTitle').textContent =
+    'بيع ' + (t.symbol || t.sym) + (t.qty ? ' — ' + t.qty + ' سهم' : '');
+  document.getElementById('sellPortPrice').value = '';
+  const have = Number(t.qty) || 0;
+  const qEl = document.getElementById('sellPortQty');
+  qEl.value = have || '';
+  qEl.max = have || '';
+  document.getElementById('sellPortQtyHint').textContent =
+    have ? `عندك ${have} سهم — اترك الرقم كما هو لبيع الكل` : 'لم تُسجَّل كمية لهذه الصفقة';
+  document.getElementById('sellPortDate').value = new Date().toISOString().split('T')[0];
+  d.classList.add('open');
+};
+
+window.confirmSellPortfolio = async function() {
+  const price = parseFloat(document.getElementById('sellPortPrice').value);
+  if (!price || price <= 0) { alert('أدخل سعر البيع'); return; }
+  const t = (_portfolioTrades || []).find(x => x.id === _sellPortId);
+  if (!t) return;
+  const date = document.getElementById('sellPortDate').value || new Date().toISOString().split('T')[0];
+  const have = Number(t.qty) || 0;
+  let sold = parseInt(document.getElementById('sellPortQty').value) || 0;
+  if (have > 0) {
+    if (sold <= 0) sold = have;
+    if (sold > have) { alert('الكمية أكبر مما تملك (' + have + ')'); return; }
+  }
+  const partial = have > 0 && sold < have;
+
+  const closed = { status: 'closed', close_price: price, close_date: date,
+                   closedAt: new Date().toISOString(), closedBy: 'manual' };
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc, updateDoc } = window._firestoreOps;
+    const ref = id => doc(window._db, 'users', uid, 'portfolio', id);
+    if (!partial) {
+      // بيع كامل: الصفقة نفسها تُغلق
+      Object.assign(t, closed);
+      try { const m = lsPortLoad(); if (m[_sellPortId]) Object.assign(m[_sellPortId], closed); lsPortSave(m); } catch (e) {}
+      await updateDoc(ref(_sellPortId), closed);
+    } else {
+      // بيع جزئي: تُشقّ الصفقة — المباع يُغلق سجلاً مستقلاً،
+      // والباقي يبقى مفتوحاً بنفس سعر دخوله. فيبقى لكل كمية سعرها.
+      const sub = { ...t, ...closed, id: t.id + '_s' + Date.now(), qty: sold, partOf: t.id };
+      const left = { qty: have - sold };
+      Object.assign(t, left);
+      try {
+        const m = lsPortLoad();
+        m[sub.id] = sub;
+        if (m[_sellPortId]) m[_sellPortId].qty = left.qty;
+        lsPortSave(m);
+      } catch (e) {}
+      await setDoc(ref(sub.id), sub);
+      await updateDoc(ref(_sellPortId), left);
+    }
+  } catch (e) {}
+  document.getElementById('sellPortDialog').classList.remove('open');
+  _sellPortId = null;
+  loadPortfolio();
+  refreshMyPositions();
+};
+
+window.removePortfolioTrade = async function(id) {
+  if (!confirm('حذف هذه الصفقة؟')) return;
+  // Remove from localStorage immediately
+  const map = lsPortLoad();
+  delete map[id];
+  lsPortSave(map);
+  // Remove from Firestore in background
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, deleteDoc } = window._firestoreOps;
+    await deleteDoc(doc(window._db, 'users', uid, 'portfolio', id));
+  } catch {}
+  loadPortfolio();
+};
+ 
+// ── News Calendar ──
+const DAY_NAMES = ['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+ 
+function getWeekStart(offset = 0) {
+  const now = new Date();
+  const day = now.getDay(); // 0=Sun
+  const sun = new Date(now);
+  sun.setDate(now.getDate() - day + (offset * 7));
+  sun.setHours(0,0,0,0);
+  return sun;
+}
+ 
+async function loadCalendar() {
+  const grid = document.getElementById('calDaysGrid');
+ 
+  // Replace calendar grid with TradingView widgets
+  grid.innerHTML = '';
+  grid.style.display = 'block';
+ 
+  // Hide the prev/next week buttons and label — TradingView widget handles navigation
+  const calHeaderEl = document.querySelector('.cal-header');
+  if (calHeaderEl) calHeaderEl.style.display = 'none';
+ 
+  // Create wrapper for widgets
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
+  grid.appendChild(wrapper);
+ 
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+ 
+  // ── Economic Calendar Widget (investing.com) ──
+  const calSection = document.createElement('div');
+  calSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📅 التقويم الاقتصادي</div>`;
+  const countries = (_currentMarket === 'sa') ? '20' : '5';
+  const calIframe = document.createElement('iframe');
+  calIframe.src = `https://sslecal2.investing.com?columns=exc_flags,exc_currency,exc_importance,exc_actual,exc_forecast,exc_previous&features=datepicker,timezone&countries=${countries}&calType=week&timeZone=23&lang=3`;
+  calIframe.width = '100%';
+  calIframe.height = '450';
+  calIframe.frameBorder = '0';
+  calIframe.allowTransparency = 'true';
+  calIframe.marginWidth = '0';
+  calIframe.marginHeight = '0';
+  calIframe.style.cssText = 'border-radius:12px;overflow:hidden;display:block;';
+  calSection.appendChild(calIframe);
+  wrapper.appendChild(calSection);
+ 
+  // ── News Section (Arabic translated headlines) ──
+  const newsSection = document.createElement('div');
+  newsSection.innerHTML = `<div style="font-size:13px;font-weight:600;color:var(--text1);margin-bottom:8px;padding:0 4px">📰 آخر الأخبار <span id="news-status" style="font-weight:400;font-size:11px;opacity:.6"></span></div>`;
+  const newsListEl = document.createElement('div');
+  newsListEl.id = 'news-list';
+  newsListEl.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+  newsListEl.innerHTML = '<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⏳ جاري تحميل الأخبار...</div>';
+  newsSection.appendChild(newsListEl);
+  wrapper.appendChild(newsSection);
+ 
+  // Fetch & translate news headlines
+  loadTranslatedNews(newsListEl, isDark);
+}
+ 
+async function translateText(text) {
+  try {
+    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|ar`;
+    const r = await fetch(url);
+    const j = await r.json();
+    if (j.responseStatus === 200 && j.responseData && j.responseData.translatedText) {
+      return j.responseData.translatedText;
+    }
+  } catch(e) {}
+  return text; // fallback to original
+}
+ 
+async function loadTranslatedNews(container, isDark) {
+  const statusEl = document.getElementById('news-status');
+  try {
+    // Try multiple RSS feeds via rss2json until one works
+    const RSS_FEEDS = [
+      { url: 'https://www.cnbc.com/id/100003114/device/rss/rss.html', name: 'CNBC' },
+      { url: 'https://feeds.marketwatch.com/marketwatch/topstories/', name: 'MarketWatch' },
+      { url: 'https://search.cnbc.com/rs/search/combinedcms/view.xml?partnerId=wrss01&id=15839069', name: 'CNBC Markets' },
+      { url: 'https://www.investing.com/rss/news_25.rss', name: 'Investing.com' },
+    ];
+ 
+    let items = [];
+    let feedName = 'Finance News';
+    for (const feed of RSS_FEEDS) {
+      try {
+        const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
+        const resp = await fetch(apiUrl);
+        const json = await resp.json();
+        if (json.status === 'ok' && json.items && json.items.length) {
+          items = json.items.slice(0, 15).map(it => ({
+            title: it.title || '',
+            link: it.link || '#',
+            pubDate: it.pubDate || '',
+            source: feed.name
+          }));
+          feedName = feed.name;
+          break;
+        }
+      } catch(e) {}
+    }
+ 
+    if (!items.length) throw new Error('لا توجد أخبار');
+ 
+    container.innerHTML = '';
+    if (statusEl) statusEl.textContent = '(جاري الترجمة...)';
+ 
+    const bg = isDark ? '#1e2130' : '#f4f6fb';
+    const border = isDark ? '#2a2f45' : '#e0e4ef';
+    const textColor = isDark ? '#c8d0e8' : '#2a2f45';
+    const subColor = isDark ? '#6b7299' : '#8a90a8';
+ 
+    // Translate all titles in parallel
+    const titles = items.map(it => it.title);
+    const translated = await Promise.all(titles.map(t => translateText(t)));
+ 
+    if (statusEl) statusEl.textContent = '';
+ 
+    items.forEach((item, i) => {
+      const link = item.link;
+      const pubDate = item.pubDate;
+      const source = item.source;
+      const dateStr = pubDate ? new Date(pubDate).toLocaleString('ar-SA', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '';
+ 
+      const card = document.createElement('a');
+      card.href = link;
+      card.target = '_blank';
+      card.rel = 'noopener';
+      card.style.cssText = `display:block;background:${bg};border:1px solid ${border};border-radius:10px;padding:12px 14px;text-decoration:none;transition:opacity .15s;`;
+      card.onmouseenter = () => card.style.opacity = '0.8';
+      card.onmouseleave = () => card.style.opacity = '1';
+      card.innerHTML = `
+        <div style="font-size:13px;font-weight:600;color:${textColor};line-height:1.5;margin-bottom:4px;direction:rtl;text-align:right">${translated[i]}</div>
+        <div style="font-size:11px;color:${subColor};direction:rtl;text-align:right">${source ? source + ' · ' : ''}${dateStr}</div>
+        <div style="font-size:11px;color:${subColor};direction:ltr;text-align:left;margin-top:2px;opacity:.7">${titles[i]}</div>
+      `;
+      container.appendChild(card);
+    });
+ 
+  } catch(err) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;opacity:.5;font-size:13px">⚠️ تعذّر تحميل الأخبار: ${err.message}</div>`;
+    if (statusEl) statusEl.textContent = '';
+  }
+}
+ 
+window.calNextWeek = function() { _calWeekOffset++; loadCalendar(); };
+window.calPrevWeek = function() { _calWeekOffset--; loadCalendar(); };
+ 
+// ── Detail page ──
+function openDetail(symbol, data, market, source = 'foras') {
+  _currentStock = { symbol, data, market };
+  _detailSource = source;
+  const _lbl = stockLabel(symbol, market);
+  document.getElementById('detailSymbol').innerHTML = _lbl
+    ? `${symbol} <span style="font-size:14px;font-weight:500;color:var(--text2)">${_lbl}</span>`
+    : symbol;
+ 
+  const tvSuffix = market === 'sa' ? `TADAWUL:${symbol}` : symbol;
+  document.getElementById('detailTvLink').href = `https://www.tradingview.com/chart/?symbol=${tvSuffix}`;
+ 
+  const openTrade = _trades.find(t => t.symbol === symbol && t.status === 'open');
+  const btn = document.getElementById('btnBuyDetail');
+  if (openTrade) { btn.textContent = '🛒 شراء (عندك مركز)'; btn.classList.add('bought'); }
+  else { btn.textContent = '🛒 شراء'; btn.classList.remove('bought'); }
+  document.getElementById('buyFormDetail').classList.remove('open');
+  document.getElementById('saveIndicator').textContent = '';
+ 
+  const conf = data.confidence || 0;
+  document.getElementById('detailStats').innerHTML = `
+    <div class="stat-box">
+      <div class="stat-label">السعر الحالي</div>
+      <div class="stat-value" style="color:var(--gold)">$${data.close ? data.close.toFixed(2) : '—'}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">مستوى الثقة</div>
+      <div class="stat-value" style="color:${confColor(conf)}">${conf}%</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">RSI</div>
+      <div class="stat-value" style="color:${rsiColor(data.rsi)}">${data.rsi ? data.rsi.toFixed(1) : '—'}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">نقطة الدخول</div>
+      <div class="stat-value" style="color:var(--blue)">${data.entry ? '$'+data.entry : '—'}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">وقف الخسارة</div>
+      <div class="stat-value" style="color:var(--red)">${data.stop_loss ? '$'+data.stop_loss : '—'}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">الأسهم الحرة</div>
+      <div class="stat-value" id="detailFloatVal" style="color:${data.float_shares ? 'var(--text)' : 'var(--text2)'}">${data.float_shares || '—'}</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-label">آخر تحديث</div>
+      <div class="stat-value" style="font-size:12px;font-weight:400">${data.date || '—'}</div>
+    </div>
+  `;
+ 
+  if (data.entry) {
+    document.getElementById('detailLevels').innerHTML = `
+      <div class="tl-title">مستويات التداول</div>
+      <div class="tl-grid">
+        <div class="tl-item tl-entry"><div class="tl-item-label">🎯 نقطة الدخول</div><div class="tl-item-val">$${data.entry}</div></div>
+        <div class="tl-item tl-stop"><div class="tl-item-label">🛑 وقف الخسارة</div><div class="tl-item-val">$${data.stop_loss}</div></div>
+        <div class="tl-item tl-t1"><div class="tl-item-label">🟢 الهدف الأول</div><div class="tl-item-val">$${data.target1}</div></div>
+        <div class="tl-item tl-t2"><div class="tl-item-label">🚀 الهدف الثاني</div><div class="tl-item-val">$${data.target2 || '—'}</div></div>
+      </div>`;
+  } else {
+    document.getElementById('detailLevels').innerHTML = '<div class="tl-title" style="color:var(--text2)">مستويات التداول ستُضاف بعد التحديث</div>';
+  }
+ 
+  // طبقات التفاصيل: الارتكاز يعرض شروط فيصل، والفرص يعرض وايكوف/إليوت/كلاسيكي.
+  // التفرّع على مصدر السهم لا على وجود الحقول، لأن السكربت صار يكتب rsi
+  // لكل الأسهم، فالتفرّع بوجوده كان يقلب صفحة الفرص إلى عرض الارتكاز.
+  if (_detailSource === 'arkitaz') {
+    const rsi = data.rsi;
+    const rsiOk = rsi && rsi >= 23 && rsi <= 27;
+    document.getElementById('detailLayers').innerHTML = `
+      <div class="layer-card">
+        <div class="layer-name">📊 RSI</div>
+        <div class="layer-val" style="color:${rsiColor(rsi)}">${rsi ? rsi.toFixed(1) : '—'}</div>
+        <div style="font-size:10px;color:var(--text2)">${rsiOk ? '✅ في المنطقة المثالية 23-27' : rsi < 23 ? '⚠️ منخفض جداً' : rsi > 35 ? '❌ فوق المستهدف' : '🟡 قريب'}</div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">📈 MACD</div>
+        <div class="layer-val" style="color:${data.macd_improving ? 'var(--green)' : 'var(--text2)'}">${data.macd_improving ? '↗️' : '—'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.macd_improving ? 'يتحسن ✅' : 'ينتظر تأكيد'}</div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">〽️ المتوسطات</div>
+        <div class="layer-val" style="color:${data.ma_recovering ? 'var(--green)' : 'var(--text2)'}">${data.ma_recovering ? '↗️' : '↘️'}</div>
+        <div style="font-size:10px;color:var(--text2)">${data.ma_recovering ? 'يستعيد ✅' : 'تحت المتوسطات'}</div>
+      </div>
+    `;
+  } else {
+    const w = data.wyckoff || 0;
+    const e = data.elliott || 0;
+    const p = typeof data.score === 'number' ? Math.max(0, 1 - data.score / 0.10) : 0;
+    document.getElementById('detailLayers').innerHTML = `
+      <div class="layer-card">
+        <div class="layer-name">📊 كلاسيكي</div>
+        <div class="layer-val" style="color:${confColor(p*100)}">${(p*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${p*100}%;background:${confColor(p*100)}"></div></div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">🌊 وايكوف</div>
+        <div class="layer-val" style="color:${confColor(w*100)}">${(w*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${w*100}%;background:${confColor(w*100)}"></div></div>
+      </div>
+      <div class="layer-card">
+        <div class="layer-name">🌀 إليوت</div>
+        <div class="layer-val" style="color:${confColor(e*100)}">${(e*100).toFixed(0)}%</div>
+        <div class="layer-bar"><div class="layer-fill" style="width:${e*100}%;background:${confColor(e*100)}"></div></div>
+      </div>
+    `;
+  }
+ 
+  const news = data.news || [];
+  const newsEl = document.getElementById('detailNews');
+  if (news.length) {
+    const newsHtml = news.map(n => {
+      const d = n.time ? new Date(n.time * 1000).toLocaleDateString('ar-SA') : '';
+      return `<div class="news-item"><a href="${n.link}" target="_blank">${n.title}</a><div class="news-meta">${n.publisher}${d ? ' · ' + d : ''}</div></div>`;
+    }).join('');
+    newsEl.innerHTML = `<div class="news-title">📰 آخر الأخبار</div>${newsHtml}`;
+    newsEl.style.display = '';
+  } else {
+    newsEl.style.display = 'none';
+  }
+ 
+  const chartDiv = document.getElementById('detailChart');
+  setTimeout(() => renderLiveChart(chartDiv, tvSuffix, data.candles), 50);
+ 
+  document.getElementById('buyDateD').valueAsDate = new Date();
+  if (data.close) document.getElementById('buyPriceD').value = data.close.toFixed(2);
+  document.getElementById('detail-page').classList.add('open');
+  window.scrollTo(0, 0);
+}
+ 
+window.closeDetail = function() {
+  document.getElementById('detail-page').classList.remove('open');
+};
+window.detailBuy = function() {
+  // المنع السابق كان يقفل الزر بعد أول شراء، فلا تستطيع التزويد على
+  // مركز قائم. والمحفظة سجلّك أنت، فلك أن تشتري الدفعة تلو الأخرى.
+  document.getElementById('buyFormDetail').classList.toggle('open');
+};
+ 
+// ── Save buy ──
+window.saveBuyDetail = async function() {
+  if (!_currentStock) return;
+  const { symbol, data, market } = _currentStock;
+  const price = parseFloat(document.getElementById('buyPriceD').value);
+  const qty = parseInt(document.getElementById('buyQtyD').value) || 0;
+  const date = document.getElementById('buyDateD').value;
+  if (!price) { alert('يرجى إدخال سعر الشراء'); return; }
+  const trade = {
+    id: symbol + '_' + Date.now(),
+    symbol, sym: symbol, market,
+    entry: price, qty, date,
+    stop_loss: data.stop_loss,
+    target1: data.target1,
+    target2: data.target2,
+    confidence: data.confidence,
+    strategy: data.strategy_type || 'manual',
+    registeredAt: new Date().toISOString(),
+    status: 'open',
+    source: 'manual'      // شراؤك أنت، فمكانه المحفظة لا سجل أداء النظام
+  };
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc } = window._firestoreOps;
+    // تُحفظ في محفظتك الخاصة؛ الأداء يبقى قياساً لترشيحات النظام وحدها
+    await setDoc(doc(window._db, 'users', uid, 'portfolio', trade.id), trade);
+    try { const m = lsPortLoad(); m[trade.id] = trade; lsPortSave(m); } catch (e) {}
+    _trades.push(trade);
+    document.getElementById('saveIndicator').textContent = '✅ أُضيفت إلى محفظتي';
+    document.getElementById('buyFormDetail').classList.remove('open');
+    document.getElementById('btnBuyDetail').textContent = '🛒 شراء (عندك مركز)';
+    document.getElementById('btnBuyDetail').classList.add('bought');
+    document.getElementById('buyPriceD').value = '';
+    document.getElementById('buyQtyD').value = '';
+  } catch(err) {
+    document.getElementById('saveIndicator').textContent = '❌ ' + err.message;
+  }
+};
+ 
+// ── Close trade ──
+window.openCloseTrade = function(id) {
+  _closeTradeId = id;
+  document.getElementById('closeDateInput').valueAsDate = new Date();
+  document.getElementById('closeTradeDialog').classList.add('open');
+};
+window.confirmCloseTrade = async function() {
+  const price = parseFloat(document.getElementById('closePriceInput').value);
+  const date = document.getElementById('closeDateInput').value;
+  if (!price) { alert('يرجى إدخال سعر الإغلاق'); return; }
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, updateDoc } = window._firestoreOps;
+    await updateDoc(doc(window._db, 'users', uid, 'trades', _closeTradeId), {
+      status: 'closed', close_price: price, close_date: date
+    });
+    document.getElementById('closeTradeDialog').classList.remove('open');
+    loadPerformance();
+  } catch(err) { alert('خطأ: ' + err.message); }
+};
+ 
+window.removeTrade = async function(id) {
+  if (!confirm('حذف هذه الصفقة؟')) return;
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, deleteDoc } = window._firestoreOps;
+    await deleteDoc(doc(window._db, 'users', uid, 'trades', id));
+    // Also remove from local
+    const lt = JSON.parse(localStorage.getItem('paperTrades') || '{}');
+    Object.keys(lt).forEach(k => { if (lt[k].id === id || k === id) delete lt[k]; });
+    localStorage.setItem('paperTrades', JSON.stringify(lt));
+    loadPerformance();
+  } catch(err) { alert('خطأ: ' + err.message); }
+};
+ 
+// ── Init ──
+// القواعد الأمنية في Firestore ترفض القراءة قبل تسجيل الدخول، وهذه
+// النداءات كانت تنفّذ لحظة فتح الصفحة — قبل وصول الهوية — فتعود
+// فارغة. نراقب الهوية ونحمّل عند وصولها بلا مهلة تنتهي، فقد يطول
+// وقتك في كتابة البريد والسرّ. وإن تغيّر المستخدم أُعيد التحميل له.
+let _loadedFor = null;
+setInterval(() => {
+  if (window._uid && window._uid !== _loadedFor) {
+    _loadedFor = window._uid;
+    loadForas();
+    refreshMyPositions();
+    loadMarket();
+    checkForNewRun();
+  }
+}, 300);
+ 
+ 
+// شريط السوق: الساعات تعمل فوراً، والمؤشرات تنتظر Firebase
+marketTick();
+setInterval(marketTick, 1000);
+ 
+// ════════════════════════════════════════════════════════════════
+//  قائمتي — متابعة شخصية لكل مستخدم
+//  إضافة محضة: لا تمسّ الفرص ولا الارتكاز ولا الأداء ولا محفظتي.
+//  تُحفظ في users/{uid}/watchlist فتكون لكل إيميل على حدة، ومرآة
+//  في localStorage ليظهر المحتوى فوراً قبل أن يردّ Firestore.
+//  نخزّن نسخة من بيانات السهم وقت الإضافة، فالفارز يحذف الوثائق
+//  ويعيد كتابتها كل تشغيل، ولو خزّنّا الرمز وحده لضاع السهم من
+//  قائمتك بمجرد أن يخرج من الفرز — وهذا نقيض الغرض.
+// ════════════════════════════════════════════════════════════════
+const MYLIST_LS = '_krm_mylist';
+let _myList = {};              // key -> record
+let _myListLoaded = false;
+ 
+const mlKey = (sym, market) => market + '_' + sym;
+ 
+function mlLoadLS() {
+  try { return JSON.parse(localStorage.getItem(MYLIST_LS) || '{}'); }
+  catch { return {}; }
+}
+function mlSaveLS(map) {
+  try { localStorage.setItem(MYLIST_LS, JSON.stringify(map)); } catch {}
+}
+ 
+async function mlSync() {
+  _myList = mlLoadLS();
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { getDocs, collection } = window._firestoreOps;
+    const snap = await getDocs(collection(window._db, 'users', uid, 'watchlist'));
+    const fs = {};
+    snap.forEach(d => { fs[d.id] = { ...d.data(), id: d.id }; });
+    // Firestore هو المرجع: ما حُذف من جهاز آخر يجب أن يختفي هنا
+    _myList = fs;
+    mlSaveLS(_myList);
+  } catch {}
+  _myListLoaded = true;
+  return _myList;
+}
+ 
+window.toggleMyList = async function(ev, symbol, market, source) {
+  ev.stopPropagation();                 // لا نفتح صفحة التفاصيل
+  const key = mlKey(symbol, market);
+  const btn = ev.currentTarget;
+  const adding = !_myList[key];
+  const data = btn._data || {};
+ 
+  if (adding) {
+    _myList[key] = { symbol, market, source: source || 'foras',
+                     addedAt: new Date().toISOString(), data };
+  } else {
+    delete _myList[key];
+  }
+  mlSaveLS(_myList);
+  paintStar(btn, adding);
+  updateMyListCount();
+  if (document.getElementById('page-mylist').classList.contains('active')) loadMyList();
+ 
+  try {
+    await waitForDB();
+    const uid = await waitForUID();
+    const { doc, setDoc, deleteDoc } = window._firestoreOps;
+    const ref = doc(window._db, 'users', uid, 'watchlist', key);
+    if (adding) await setDoc(ref, _myList[key]);
+    else        await deleteDoc(ref);
+  } catch (e) {
+    // الحفظ المحلي تمّ؛ المزامنة تُعاد عند الفتح القادم
+  }
+};
+ 
+function paintStar(btn, on) {
+  btn.classList.toggle('on', on);
+  btn.textContent = on ? '✓ في قائمتي' : '⭐ أضف لقائمتي';
+}
+ 
+function updateMyListCount() {
+  const n = Object.keys(_myList).length;
+  const sub = document.getElementById('mylist-sub');
+  if (sub) sub.textContent = n ? `${n} سهم تتابعه` : '';
+}
+ 
+// يُستدعى من نهاية باني البطاقة، فيصلح للفرص والارتكاز معاً
+function attachStarButton(div, symbol, data, market, source) {
+  const btn = document.createElement('button');
+  btn.className = 'star-btn';
+  btn._data = data;
+  paintStar(btn, !!_myList[mlKey(symbol, market)]);
+  btn.onclick = ev => window.toggleMyList(ev, symbol, market, source);
+  div.appendChild(btn);
+}
+ 
+async function loadMyList() {
+  const grid = document.getElementById('grid-mylist');
+  const msg  = document.getElementById('mylist-msg');
+  msg.innerHTML = '<div class="empty"><div class="empty-icon">⏳</div>جاري التحميل...</div>';
+  if (!_myListLoaded) await mlSync();
+  grid.innerHTML = ''; msg.innerHTML = '';
+  updateMyListCount();
+ 
+  const rows = Object.values(_myList)
+    .filter(r => r.market === _currentMarket)
+    .sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || ''));
+ 
+  if (!rows.length) {
+    const other = Object.values(_myList).length;
+    msg.innerHTML = '<div class="empty"><div class="empty-icon">⭐</div>'
+      + 'قائمتك فارغة في هذا السوق.<br>افتح الفرص أو الارتكاز واضغط '
+      + '"⭐ أضف لقائمتي" أسفل أي بطاقة تريد متابعتها.'
+      + (other ? '<br><span style="opacity:.7">عندك ' + other + ' في السوق الآخر.</span>' : '')
+      + '</div>';
+    return;
+  }
+  rows.forEach(r => {
+    const card = r.source === 'arkitaz'
+      ? buildArkitazCard(r.symbol, r.data || {}, r.market)
+      : buildForasCard(r.symbol, r.data || {}, r.market, false);
+    grid.appendChild(card);
+  });
+}
+ 
+// ── تحديث تلقائي ──
+// الساعة حيّة، لكن المؤشرات والبطاقات كانت تُقرأ مرة واحدة عند فتح
+// الصفحة فقط. والفارز يكتب أربع مرات يومياً، فالصفحة المفتوحة على
+// الجوال تبقى على بيانات الصباح حتى تُغلق وتُفتح. نراقب رقم إصدار
+// الفرز كل خمس دقائق — قراءة مستند واحد — ونعيد التحميل حين يتغيّر
+// فقط، لا كل مرة، فلا تُستهلك قراءات بلا داعٍ.
+const _seenVersion = {};
+async function checkForNewRun() {
+  try {
+    await waitForDB();
+    const { getDoc, doc } = window._firestoreOps;
+    const mk   = _currentMarket;
+    const snap = await getDoc(doc(window._db, 'meta', 'suggestions_' + mk));
+    if (!snap.exists()) return;
+    const v = snap.data().version;
+    if (_seenVersion[mk] === undefined) { _seenVersion[mk] = v; return; }
+    if (v !== _seenVersion[mk]) {
+      _seenVersion[mk] = v;
+      loadMarket();
+      reloadCurrentTab();
+    }
+  } catch (e) { /* التحديث التلقائي ليس حرجاً؛ الفشل صامت */ }
+}
+setInterval(checkForNewRun, 5 * 60 * 1000);
+ 
+window.openDetail = openDetail;
+window.openCloseTrade = window.openCloseTrade;
+window.removeTrade = window.removeTrade;
+window.confirmCloseTrade = window.confirmCloseTrade;
+window.saveBuyDetail = window.saveBuyDetail;
+ 
+</script>
+</div><!-- /#app -->
+</body>
+</html>
+ 
+
