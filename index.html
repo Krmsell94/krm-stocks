@@ -967,6 +967,37 @@ body {
   .market-dropdown { min-width: 130px; }
 }
  
+
+/* ── قرب الدخول: كم شرطاً اكتمل من ستة ── */
+.prox-row { display:flex; align-items:center; gap:7px; margin:7px 0 2px }
+.prox-bar { display:flex; gap:2px; flex:1 }
+.prox-seg { height:5px; flex:1; border-radius:2px; background:var(--border) }
+.prox-seg.on { background:var(--blue) }
+.prox-seg.full { background:var(--green) }
+.prox-txt { font-size:10px; color:var(--text2); white-space:nowrap }
+
+/* ── سطر الخلاصة أعلى الفرص ── */
+.lead-box { border-radius:9px; padding:10px 13px; margin-bottom:13px; font-size:13px;
+            border:1px solid var(--border); background:var(--bg2); line-height:1.7 }
+.lead-go   { border-color:var(--green); background:rgba(34,197,94,.08) }
+.lead-wait { border-color:var(--border) }
+.lead-box b { color:var(--text) }
+
+/* ── زر التنبيه ── */
+.notif-btn { background:var(--bg2); border:1px solid var(--border); color:var(--text2);
+             border-radius:7px; padding:5px 10px; font-size:12px; cursor:pointer;
+             font-family:inherit; white-space:nowrap }
+.notif-btn.on { border-color:var(--green); color:var(--green) }
+
+/* ── مقارنة الأداء بالباكتست ── */
+.bench { border:1px solid var(--border); border-radius:9px; padding:11px 13px; background:var(--bg2) }
+.bench-h { font-size:12px; color:var(--text2); margin-bottom:8px }
+.bench table { width:100%; border-collapse:collapse; font-size:13px }
+.bench td, .bench th { padding:5px 4px; text-align:center }
+.bench th { font-size:11px; color:var(--text2); font-weight:600 }
+.bench td:first-child, .bench th:first-child { text-align:right; color:var(--text2); font-size:12px }
+.bench tr + tr { border-top:1px solid var(--border) }
+.bench-note { font-size:11px; color:var(--text2); margin-top:8px; line-height:1.6 }
 </style>
 </head>
 <body>
@@ -1069,7 +1100,7 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <span class="tab-icon">🚀</span>
         <span class="tab-label">الفرص</span>
       </button>
-      <button class="nav-tab" onclick="switchTab('arkitaz', this)">
+      <button class="nav-tab" style="display:none" onclick="switchTab('arkitaz', this)">
         <span class="tab-icon">🎯</span>
         <span class="tab-label">الارتكاز</span>
       </button>
@@ -1124,7 +1155,9 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
       <div class="page-header">
         <div class="page-title">🚀 الفرص</div>
         <span id="lastUpdate">جاري التحميل...</span>
+        <button id="notifBtn" class="notif-btn" onclick="enableNotifs()">🔕 فعّل التنبيه</button>
       </div>
+      <div id="foras-lead"></div>
       <div id="foras-wrap">
         <div class="section-head section-ready">
           ✅ جاهز للدخول
@@ -1183,6 +1216,7 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
       <div class="perf-section">
         <div class="perf-section-title">⚡ صفقات تلقائية (<span id="perf-market-label">الفرص والارتكاز</span>)</div>
         <div id="perf-summary" style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;"></div>
+        <div id="perf-bench" style="margin-bottom:14px"></div>
         <table class="trades-table">
           <thead>
             <tr>
@@ -1269,7 +1303,7 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
   <button class="bottom-nav-btn active" id="bn-foras" onclick="switchTab('foras', document.querySelector('.nav-tab.active') || this); syncBottomNav('foras')">
     <span class="bottom-nav-icon">🚀</span>الفرص
   </button>
-  <button class="bottom-nav-btn" id="bn-arkitaz" onclick="switchTab('arkitaz', document.querySelector('.nav-tab:nth-child(2)') || this); syncBottomNav('arkitaz')">
+  <button class="bottom-nav-btn" id="bn-arkitaz" style="display:none" onclick="switchTab('arkitaz', document.querySelector('.nav-tab:nth-child(2)') || this); syncBottomNav('arkitaz')">
     <span class="bottom-nav-icon">🎯</span>الارتكاز
   </button>
   <button class="bottom-nav-btn" id="bn-mylist" onclick="switchTab('mylist', document.querySelector('.nav-tab:nth-child(3)') || this); syncBottomNav('mylist')">
@@ -1455,6 +1489,8 @@ function isStartOfRebound(data) {
  
 // حد الثقة لفئة "جاهز للدخول"
 const READY_CONF = 60;
+// أكثر عدد شروط ناقصة رُصد في سجلات الفارز هو ستة
+const FORAS_TOTAL = 6;
  
 // سبب عدم الجاهزية — يرجع null إذا السهم مستوفٍ لكل شروط الدخول
 function notReadyReason(data) {
@@ -1565,14 +1601,22 @@ function paintMarket(d, updated) {
       : [[v.close > v.SMA50  ? 'فوق م50'  : 'تحت م50',  v.close > v.SMA50  ? 'up' : 'down'],
          [v.close > v.SMA200 ? 'فوق م200' : 'تحت م200', v.close > v.SMA200 ? 'up' : 'down']];
     const ch = v.change;
+    // تاسي الحقيقي بالآلاف. وحين يفشل جلب المؤشر يبني الفارز بديلاً
+    // مركّباً من ثماني شركات قيمته حول المئة، فعرضه كأنه تاسي يضلّل
+    // كل من يعرف السوق. النسبة تبقى ذات معنى، والمستوى لا، فنخفيه
+    // ونقول ما هو بدل أن نكتب رقماً ليس للمؤشر.
+    const synth = (tk === 'TASI' && v.close != null && v.close < 1000);
     const box = document.createElement('div');
     box.innerHTML =
       `<div class="sy"><b>${tk === 'BRN1!' ? 'BRENT' : tk}</b><span>${v.label || ''}</span></div>
-       <div class="pxrow"><span class="px">${fmt(v.close)}</span>` +
+       <div class="pxrow">` +
+      (synth ? `<span class="px" style="font-size:15px;color:var(--text2)">مركّب</span>`
+             : `<span class="px">${fmt(v.close)}</span>`) +
       (ch != null ? `<span class="ch ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span>` : '') +
       `</div><div class="tr">` +
       tags.map(([t, c]) => `<span class="tag ${c}">${t}</span>`).join('') +
       (!vix && v.RSI != null ? `<span class="tag info">RSI ${Math.round(v.RSI)}</span>` : '') +
+      (synth ? `<span class="tag warn">مركّب من 8 شركات</span>` : '') +
       `</div>`;
     g.appendChild(box);
   });
@@ -1591,7 +1635,10 @@ function paintMarket(d, updated) {
       st='إيجابي'; cl='up'; msg='المؤشر العام فوق متوسطاته. الجو مناسب لصيد القيعان.';
     }
     if (t.RSI != null && t.RSI < 30) msg += ` المؤشر في تشبع بيع (RSI ${Math.round(t.RSI)}).`;
-    V.innerHTML = `<span class="tag ${cl}">جو تاسي: ${st}</span>${msg}` +
+    const synthNote = (t.close != null && t.close < 1000)
+      ? ' <span style="color:var(--text2)">(المؤشر نفسه لم يصل، فالقراءة من مركّب ثماني شركات — اتجاه تقريبي لا رقم تاسي)</span>'
+      : '';
+    V.innerHTML = `<span class="tag ${cl}">جو تاسي: ${st}</span>${msg}${synthNote}` +
                   (updated ? ` <span style="color:var(--text2);font-size:12px">· ${updated}</span>` : '');
     return;
   }
@@ -1847,6 +1894,14 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
   const reason  = notReadyReason(data);
   const isReady = reason === null;
   const badgeTxt = isReady ? '✅ جاهز' : `⏳ ${reason}`;
+  // كم شرطاً بقي؟ الفارز يرسل قائمة الناقص، وأكثر ما رُصد ستة.
+  // البطاقات كانت متشابهة فلا يُعرف الذي ينقصه ارتداد واحد من
+  // الذي ينقصه كل شيء.
+  const missArr = Array.isArray(data.foras_missing) ? data.foras_missing : [];
+  const missN   = isReady ? 0 : (missArr.length || 1);
+  const doneN   = Math.max(0, FORAS_TOTAL - missN);
+  const proxBar = Array.from({ length: FORAS_TOTAL }, (_, i) =>
+    `<span class="prox-seg ${i < doneN ? (isReady ? 'full' : 'on') : ''}"></span>`).join('');
   const cur = market === 'sa' ? 'ر.س ' : '$';
  
   div.innerHTML = `
@@ -1858,6 +1913,10 @@ function buildForasCard(symbol, data, market, autoRegister = true) {
       <span class="${isReady ? 'badge-ready' : 'badge-wait'}">${badgeTxt}</span>
     </div>
     <div class="card-price">${cur}${data.close ? data.close.toFixed(2) : '—'}</div>
+    <div class="prox-row">
+      <div class="prox-bar">${proxBar}</div>
+      <span class="prox-txt">${isReady ? 'اكتملت الشروط' : `اكتمل ${doneN} من ${FORAS_TOTAL}`}</span>
+    </div>
     <hr class="card-divider">
     <div class="ark-conditions">
       <div class="card-detail-row">
@@ -1985,6 +2044,88 @@ function buildArkitazCard(symbol, data, market) {
   return div;
 }
  
+// ── سطر الخلاصة أعلى الفرص ──
+// في سوق هابط تمرّ أيام بصفر إشارة، فيفتح المرء الصفحة فيرى جداراً
+// أصفر لا يقول له شيئاً. هذا السطر يقول له الخلاصة في نظرة.
+// «ينقصه 1» ركيك. العربية تقول شرط وشرطان وثلاثة شروط.
+function arConds(n) {
+  if (n === 1) return 'شرط واحد';
+  if (n === 2) return 'شرطان';
+  if (n >= 3 && n <= 10) return `${n} شروط`;
+  return `${n} شرطاً`;
+}
+ 
+function paintForasLead(rows, nReady) {
+  const el = document.getElementById('foras-lead');
+  if (!el) return;
+  if (!rows.length) { el.innerHTML = ''; return; }
+  if (nReady > 0) {
+    const names = rows.filter(r => r.ready).slice(0, 3).map(r => r.sym).join('، ');
+    el.innerHTML = `<div class="lead-box lead-go">✅ ${nReady} ${nReady === 1 ? 'سهم مكتمل الشروط' : 'سهم مكتملة شروطها'} اليوم — <b>${names}</b>${nReady > 3 ? ' وغيرها' : ''}</div>`;
+    return;
+  }
+  const near = rows.slice(0, 3);
+  el.innerHTML =
+    `<div class="lead-box lead-wait">لا دخول اليوم. الأقرب: `
+    + near.map(r => `<b>${r.sym}</b> <span style="color:var(--text2)">ينقصه ${arConds(r.miss)}</span>`).join(' · ')
+    + `</div>`;
+}
+ 
+// ── تنبيه عند أول إشارة جاهزة ──
+// الصفحة تسأل القاعدة كل خمس دقائق أصلاً، فيكفي أن نقارن قائمة
+// الجاهز بما رأيناه آخر مرة. أول تحميل يضبط المرجع ولا ينبّه،
+// وإلا انهال عليك إشعار بكل سهم قائم.
+const SEEN_READY_KEY = '_krm_seen_ready';
+function _seenReady() {
+  try { return JSON.parse(localStorage.getItem(SEEN_READY_KEY) || '{}'); } catch (e) { return {}; }
+}
+function _saveSeenReady(m) {
+  try { localStorage.setItem(SEEN_READY_KEY, JSON.stringify(m)); } catch (e) {}
+}
+ 
+function notifyNewReady(syms) {
+  const mk = _currentMarket;
+  const store = _seenReady();
+  const prev = store[mk];
+  store[mk] = syms;
+  _saveSeenReady(store);
+  paintNotifyBtn();
+  if (!Array.isArray(prev)) return;
+  const fresh = syms.filter(x => prev.indexOf(x) === -1);
+  if (!fresh.length) return;
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    new Notification('إشارة دخول جديدة', {
+      body: fresh.join('، ') + (mk === 'sa' ? ' — السوق السعودي' : ' — السوق الأمريكي'),
+      tag: 'krm-ready-' + mk
+    });
+  } catch (e) {}
+}
+ 
+window.enableNotifs = async function() {
+  if (!('Notification' in window)) {
+    alert('متصفحك لا يدعم الإشعارات.\n\nفي آيفون: افتح زرّ المشاركة ← «إضافة إلى الشاشة الرئيسية»، ثم افتح الموقع من الأيقونة وفعّل التنبيه من هناك.');
+    return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm === 'granted') {
+      new Notification('تم التفعيل', { body: 'سأنبّهك حين يكتمل سهم.' });
+    } else if (perm === 'denied') {
+      alert('الإشعارات ممنوعة لهذا الموقع. فعّلها من إعدادات المتصفح ثم أعد المحاولة.');
+    }
+  } catch (e) {}
+  paintNotifyBtn();
+};
+ 
+function paintNotifyBtn() {
+  const b = document.getElementById('notifBtn');
+  if (!b) return;
+  const ok = ('Notification' in window) && Notification.permission === 'granted';
+  b.textContent = ok ? '🔔 التنبيه مفعّل' : '🔕 فعّل التنبيه';
+  b.classList.toggle('on', ok);
+}
+ 
 // ── Load FORAS ──
 async function loadForas() {
   const wrap    = document.getElementById('foras-wrap');
@@ -2015,19 +2156,35 @@ async function loadForas() {
  
     let nReady = 0, nWatch = 0, countHalal = 0;
  
+    // نجمع أولاً ثم نرتّب. الصفحة كانت تعرض الأسهم بترتيب القاعدة،
+    // فيستوي الذي ينقصه ارتداد واحد مع الذي ينقصه ستة شروط.
+    const rows = [];
     snap.forEach(d => {
       const data = d.data();
       if (!isHalal(d.id, _currentMarket)) return;
       countHalal++;
       const ready = notReadyReason(data) === null;
-      if (ready) {
-        gReady.appendChild(buildForasCard(d.id, data, _currentMarket, true));
+      const miss  = ready ? 0
+        : ((Array.isArray(data.foras_missing) && data.foras_missing.length)
+            ? data.foras_missing.length : 1);
+      rows.push({ sym: d.id, data, ready, miss, conf: data.confidence || 0 });
+    });
+ 
+    // الجاهز أولاً، ثم الأقلّ نقصاً، ثم الأعلى ثقة
+    rows.sort((a, b) => (b.ready - a.ready) || (a.miss - b.miss) || (b.conf - a.conf));
+ 
+    rows.forEach(r => {
+      if (r.ready) {
+        gReady.appendChild(buildForasCard(r.sym, r.data, _currentMarket, true));
         nReady++;
       } else {
-        gWatch.appendChild(buildForasCard(d.id, data, _currentMarket, false));
+        gWatch.appendChild(buildForasCard(r.sym, r.data, _currentMarket, false));
         nWatch++;
       }
     });
+ 
+    paintForasLead(rows, nReady);
+    notifyNewReady(rows.filter(r => r.ready).map(r => r.sym));
  
     cReady.textContent = nReady;
     cWatch.textContent = nWatch;
@@ -2251,6 +2408,66 @@ function renderPerfSummary(trades) {
         closed.length ? `من ${closed.length} مغلقة` : 'لا مغلقة بعد') +
     box('متوسط الصفقة', avg == null ? '—' : (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%',
         avg == null ? null : (avg >= 0 ? 'var(--green)' : 'var(--red)'), '');
+ 
+  renderBench(closed, pnl, rate, avg);
+}
+ 
+// ── مقارنة الأداء الحيّ بالباكتست ──
+// أرقام الباكتست: 169 صفقة على ثلاث سنوات — 60.4% نجاح، +2.60%
+// متوسطاً، معامل ربح 1.65. وهي سقف متفائل لا أرضية: فلتر التراجع
+// الساعي كان معطّلاً فيه، والأسهم المشطوبة غائبة عنه.
+const BENCH = { rate: 60.4, avg: 2.60, pf: 1.65, n: 169 };
+const BENCH_MIN_N = 30;
+ 
+// العربية تميّز المفرد والمثنى وجمع القلّة، و«5 صفقة مغلقة» ركيك
+function arTrades(n) {
+  if (n === 1) return 'صفقة مغلقة واحدة';
+  if (n === 2) return 'صفقتان مغلقتان';
+  if (n >= 3 && n <= 10) return `${n} صفقات مغلقة`;
+  return `${n} صفقة مغلقة`;
+}
+ 
+function renderBench(closed, pnl, rate, avg) {
+  const el = document.getElementById('perf-bench');
+  if (!el) return;
+  const n = closed.length;
+ 
+  const ps = closed.map(pnl).filter(x => x != null);
+  const sumW = ps.filter(x => x > 0).reduce((a, b) => a + b, 0);
+  const sumL = Math.abs(ps.filter(x => x <= 0).reduce((a, b) => a + b, 0));
+  const pf = sumL > 0 ? (sumW / sumL) : (sumW > 0 ? null : null);
+ 
+  const cmp = (live, bench, digits, suffix) => {
+    if (live == null) return `<span style="color:var(--text2)">—</span>`;
+    const col = live >= bench ? 'var(--green)' : 'var(--red)';
+    const sign = suffix === '%' && live >= 0 && bench === BENCH.avg ? '+' : '';
+    return `<span style="color:${col};font-weight:700">${sign}${live.toFixed(digits)}${suffix}</span>`;
+  };
+ 
+  const row = (label, benchTxt, liveCell) =>
+    `<tr><td>${label}</td><td style="color:var(--text2)">${benchTxt}</td><td>${liveCell}</td></tr>`;
+ 
+  let note;
+  if (n === 0) {
+    note = 'لم تُغلق صفقة بعد. المقارنة تبدأ مع أول إغلاق.';
+  } else if (n < BENCH_MIN_N) {
+    note = `عينتك ${arTrades(n)} من نحو ${BENCH_MIN_N} يُعتدّ بها. ما دونها تتقلّب النسبة بصفقة واحدة، فلا تحكم بها بعد.`;
+  } else {
+    note = `عينتك ${arTrades(n)} — صارت ذات دلالة.`;
+  }
+  note += ' وأرقام الباكتست سقف متفائل: فلتر التراجع الساعي كان معطّلاً فيه، والأسهم المشطوبة غائبة عنه.';
+ 
+  el.innerHTML = `
+    <div class="bench">
+      <div class="bench-h">مقارنة بالباكتست (${BENCH.n} صفقة على 3 سنوات)</div>
+      <table>
+        <tr><th>المقياس</th><th>الباكتست</th><th>أداؤك الحيّ</th></tr>
+        ${row('نسبة النجاح', BENCH.rate + '%', cmp(rate == null ? null : rate, BENCH.rate, 0, '%'))}
+        ${row('متوسط الصفقة', '+' + BENCH.avg.toFixed(2) + '%', cmp(avg, BENCH.avg, 2, '%'))}
+        ${row('معامل الربح', BENCH.pf.toFixed(2), cmp(pf, BENCH.pf, 2, ''))}
+      </table>
+      <div class="bench-note">${note}</div>
+    </div>`;
 }
  
 // ── Portfolio (manual) ──
@@ -2831,6 +3048,7 @@ setInterval(() => {
     refreshMyPositions();
     loadMarket();
     checkForNewRun();
+    paintNotifyBtn();
   }
 }, 300);
  
@@ -2995,4 +3213,5 @@ window.saveBuyDetail = window.saveBuyDetail;
 </body>
 </html>
  
+
 
