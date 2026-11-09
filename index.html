@@ -968,6 +968,11 @@ body {
 }
  
 
+/* ── فرق النقاط بجانب النسبة في شريط المؤشرات ── */
+.pts { font-size:11px; font-weight:600; margin-inline-start:6px; opacity:.85 }
+.pts.up   { color:var(--green) }
+.pts.down { color:var(--red) }
+
 /* ── قرب الدخول: كم شرطاً اكتمل من ستة ── */
 .prox-row { display:flex; align-items:center; gap:7px; margin:7px 0 2px }
 .prox-bar { display:flex; gap:2px; flex:1 }
@@ -1606,13 +1611,21 @@ function paintMarket(d, updated) {
     // كل من يعرف السوق. النسبة تبقى ذات معنى، والمستوى لا، فنخفيه
     // ونقول ما هو بدل أن نكتب رقماً ليس للمؤشر.
     const synth = (tk === 'TASI' && v.close != null && v.close < 1000);
+    // أسماء مختصرة مفهومة بدل رموز ياهو الخام
+    const NAMES = { 'BRN1!':'BRENT', 'GC1!':'GOLD', 'IXIC':'NASDAQ', 'DJI':'DOW' };
+    // النفط والذهب يُسعّران بالدولار لا بالنقاط
+    const inUsd = (tk === 'BRN1!' || tk === 'GC1!');
+    const pts = v.points;
     const box = document.createElement('div');
     box.innerHTML =
-      `<div class="sy"><b>${tk === 'BRN1!' ? 'BRENT' : tk}</b><span>${v.label || ''}</span></div>
+      `<div class="sy"><b>${NAMES[tk] || tk}</b><span>${v.label || ''}</span></div>
        <div class="pxrow">` +
       (synth ? `<span class="px" style="font-size:15px;color:var(--text2)">مركّب</span>`
              : `<span class="px">${fmt(v.close)}</span>`) +
       (ch != null ? `<span class="ch ${ch >= 0 ? 'up' : 'down'}">${ch >= 0 ? '+' : ''}${ch.toFixed(2)}%</span>` : '') +
+      // النقاط: النسبة وحدها لا تقول كم تحرّك المؤشر فعلاً
+      (pts != null ? `<span class="pts ${pts >= 0 ? 'up' : 'down'}">${pts >= 0 ? '+' : ''}${
+          Math.abs(pts) >= 100 ? Math.round(pts).toLocaleString('en-US') : pts.toFixed(2)}${inUsd ? ' دولار' : ' نقطة'}</span>` : '') +
       `</div><div class="tr">` +
       tags.map(([t, c]) => `<span class="tag ${c}">${t}</span>`).join('') +
       (!vix && v.RSI != null ? `<span class="tag info">RSI ${Math.round(v.RSI)}</span>` : '') +
