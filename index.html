@@ -968,6 +968,25 @@ body {
 }
  
 
+/* ── بحث الأسهم في المحفظة ── */
+.pf-sugg { display:none; position:absolute; z-index:40; top:100%;
+           inset-inline-start:0; inset-inline-end:auto;
+           /* الخانة نصف عرض الشبكة، والقائمة تحتاج أكثر لئلا ينكسر الاسم */
+           min-width:250px; max-width:min(88vw, 360px);
+           background:var(--bg); border:1px solid var(--border); border-radius:9px;
+           margin-top:3px; max-height:230px; overflow-y:auto;
+           box-shadow:0 8px 22px rgba(0,0,0,.18) }
+.pf-sugg.open { display:block }
+.pf-row { padding:9px 11px; cursor:pointer; display:flex; gap:9px; align-items:center;
+          border-bottom:1px solid var(--border); font-size:13px; white-space:nowrap }
+.pf-row:last-child { border-bottom:0 }
+.pf-row:hover, .pf-row:active { background:var(--bg2) }
+.pf-row b { min-width:52px; color:var(--text) }
+.pf-row span { color:var(--text2); font-size:12px; flex:1;
+                overflow:hidden; text-overflow:ellipsis }
+.pf-row em { font-style:normal; font-size:10px; color:var(--text2); opacity:.7 }
+.pf-hint { font-size:11px; color:var(--text2); margin-top:4px; min-height:14px }
+
 /* ── فرق النقاط بجانب النسبة في شريط المؤشرات ── */
 .pts { font-size:11px; font-weight:600; margin-inline-start:6px; opacity:.85 }
 .pts.up   { color:var(--green) }
@@ -1243,9 +1262,12 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
       <button class="btn-add-portfolio" onclick="toggleAddPortfolio()">+ إضافة صفقة يدوية</button>
       <div class="add-portfolio-form" id="addPortfolioForm">
         <div class="form-grid">
-          <div>
+          <div style="position:relative">
             <label>السهم</label>
-            <input id="pf-sym" placeholder="AAPL" style="text-transform:uppercase">
+            <input id="pf-sym" autocomplete="off" placeholder="رمز أو اسم — 1120 أو الراجحي أو AAPL"
+                   oninput="pfSearch()" onfocus="pfSearch()">
+            <div id="pf-sugg" class="pf-sugg"></div>
+            <div id="pf-hint" class="pf-hint"></div>
           </div>
           <div>
             <label>سعر الدخول</label>
@@ -2515,6 +2537,95 @@ function lsPortSave(map) {
   try { localStorage.setItem(LS_PORT_KEY, JSON.stringify(map)); } catch {}
 }
  
+// ── بحث الأسهم عند الإضافة اليدوية ──
+// تشتري سهماً وتنسى تسجيله، ثم يختفي من الفرص عند الفرز التالي
+// فلا تجد من أين تضيفه. هنا تبحث في قوائمك الحلال كلها — بالرمز
+// أو بالاسم العربي — ويُملأ الهدف والوقف تلقائياً إن كان السهم
+// ما زال في الفرص أو الارتكاز أو قائمتك.
+let _pfIndex = null;
+function pfIndex() {
+  if (_pfIndex) return _pfIndex;
+  _pfIndex = [];
+  HALAL_SA.forEach(x => _pfIndex.push({ sym: String(x), market: 'sa',
+                                        name: SA_NAMES[String(x)] || '' }));
+  HALAL_US.forEach(x => _pfIndex.push({ sym: String(x), market: 'us', name: '' }));
+  return _pfIndex;
+}
+
+window.pfSearch = function() {
+  const box = document.getElementById('pf-sugg');
+  const q   = document.getElementById('pf-sym').value.trim();
+  if (!box) return;
+  if (q.length < 1) { box.innerHTML = ''; box.classList.remove('open'); return; }
+  const qU = q.toUpperCase();
+  const hits = [];
+  pfIndex().forEach(r => {
+    const su = r.sym.toUpperCase();
+    let rank = -1;
+    if (su === qU)                   rank = 0;
+    else if (su.startsWith(qU))      rank = 1;
+    else if (r.name && r.name.startsWith(q)) rank = 2;
+    else if (r.name && r.name.includes(q))   rank = 3;
+    else if (su.includes(qU))        rank = 4;
+    if (rank >= 0) hits.push({ ...r, rank });
+  });
+  hits.sort((a, b) => a.rank - b.rank || a.sym.localeCompare(b.sym));
+  const top = hits.slice(0, 8);
+  if (!top.length) {
+    box.innerHTML = '<div class="pf-row"><span>لا شيء في قوائمك يطابق البحث</span></div>';
+    box.classList.add('open');
+    return;
+  }
+  box.innerHTML = top.map(r =>
+    `<div class="pf-row" onclick="pfPick('${r.sym}','${r.market}')">
+       <b>${r.sym}</b><span>${r.name || ''}</span>
+       <em>${r.market === 'sa' ? 'السعودي' : 'الأمريكي'}</em>
+     </div>`).join('');
+  box.classList.add('open');
+};
+
+window.pfPick = async function(sym, market) {
+  document.getElementById('pf-sym').value = sym;
+  document.getElementById('pf-sugg').classList.remove('open');
+  const hint = document.getElementById('pf-hint');
+  const name = market === 'sa' ? (SA_NAMES[sym] || '') : '';
+  if (hint) hint.textContent = name;
+
+  let d = null;
+  const inList = _myList && _myList[mlKey(sym, market)];
+  if (inList && inList.data) d = inList.data;
+  if (!d) {
+    try {
+      await waitForDB();
+      const { getDoc, doc } = window._firestoreOps;
+      for (const col of ['suggestions_' + market, 'consolidation_' + market]) {
+        const snap = await getDoc(doc(window._db, col, sym));
+        if (snap.exists()) { d = snap.data(); break; }
+      }
+    } catch (e) { /* يبقى الإدخال يدوياً */ }
+  }
+  if (!d) {
+    if (hint) hint.textContent = (name ? name + ' · ' : '') + 'لا بيانات محفوظة — أدخل الهدف والوقف يدوياً';
+    return;
+  }
+  const fill = (id, v) => {
+    const el = document.getElementById(id);
+    if (el && !el.value && v != null && v !== '') el.value = v;
+  };
+  fill('pf-entry', d.close != null ? Number(d.close).toFixed(2) : d.entry);
+  fill('pf-t1', d.target1);
+  fill('pf-sl', d.stop_loss);
+  if (hint) hint.textContent = (name ? name + ' · ' : '') + 'مُلئ الهدف والوقف من آخر فرز';
+};
+
+// نقرة خارج القائمة تغلقها
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#pf-sym') && !e.target.closest('#pf-sugg')) {
+    const b = document.getElementById('pf-sugg');
+    if (b) b.classList.remove('open');
+  }
+});
+
 window.savePortfolioTrade = async function() {
   const sym = document.getElementById('pf-sym').value.trim().toUpperCase();
   const entry = parseFloat(document.getElementById('pf-entry').value);
@@ -3226,5 +3337,6 @@ window.saveBuyDetail = window.saveBuyDetail;
 </body>
 </html>
  
+
 
 
