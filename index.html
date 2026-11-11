@@ -1228,6 +1228,20 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <div class="page-title">⭐ قائمتي</div>
         <span id="mylist-sub"></span>
       </div>
+      <button class="btn-add-portfolio" onclick="toggleAddMyList()">+ أضف سهماً لقائمتي</button>
+      <div class="add-portfolio-form" id="addMyListForm">
+        <div style="position:relative">
+          <label style="display:block;margin-bottom:5px">السهم</label>
+          <input id="ml-sym" autocomplete="off" style="width:100%;box-sizing:border-box"
+                 placeholder="رمز أو اسم — 1120 أو الراجحي أو YSS"
+                 oninput="symSearch('ml')" onfocus="symSearch('ml')">
+          <div id="ml-sugg" class="pf-sugg"></div>
+          <div id="ml-hint" class="pf-hint"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn-cancel-buy" onclick="toggleAddMyList()" style="flex:1">إغلاق</button>
+        </div>
+      </div>
       <div id="mylist-msg"></div>
       <div class="cards-grid" id="grid-mylist"></div>
     </div>
@@ -1264,8 +1278,8 @@ document.getElementById('loginPass').addEventListener('keydown', e => { if(e.key
         <div class="form-grid">
           <div style="position:relative">
             <label>السهم</label>
-            <input id="pf-sym" autocomplete="off" placeholder="رمز أو اسم — 1120 أو الراجحي أو AAPL"
-                   oninput="pfSearch()" onfocus="pfSearch()">
+            <input id="pf-sym" autocomplete="off" placeholder="رمز أو اسم — 1120 أو الراجحي أو YSS"
+                   oninput="symSearch('pf')" onfocus="symSearch('pf')">
             <div id="pf-sugg" class="pf-sugg"></div>
             <div id="pf-hint" class="pf-hint"></div>
           </div>
@@ -1810,21 +1824,28 @@ function paintPerfLabel() {
 window.switchPerfMarket = function() { paintPerfLabel(); loadPerformance(); };
  
 function reloadCurrentTab() {
-  const activeTab = document.querySelector('.nav-tab.active');
-  if (!activeTab) return;
-  const fn = activeTab.getAttribute('onclick');
-  if (fn && fn.includes('foras')) loadForas();
-  else if (fn && fn.includes('arkitaz')) loadArkitaz();
-  else if (fn && fn.includes('mylist')) loadMyList();
-  else if (fn && fn.includes('performance')) loadPerformance();
-  else if (fn && fn.includes('portfolio')) loadPortfolio();
+  // الصفحة الظاهرة هي الحقيقة، لا الزرّ المضيء. كان يُقرأ من الزرّ،
+  // وأزرار الشريط السفلي تُمرّر أحياناً زرّاً غير زرّها، فيُعاد تحميل
+  // تبويب غير المعروض عند تبديل السوق أو وصول فرز جديد.
+  const page = document.querySelector('.page.active');
+  if (!page) return;
+  const tab = page.id.replace('page-', '');
+  if (tab === 'foras') loadForas();
+  else if (tab === 'arkitaz') loadArkitaz();
+  else if (tab === 'mylist') loadMyList();
+  else if (tab === 'performance') loadPerformance();
+  else if (tab === 'portfolio') loadPortfolio();
 }
  
 // ── Tab switch ──
 window.switchTab = function(tab, el) {
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  if (el && el.classList && el.classList.contains('nav-tab')) el.classList.add('active');
+  // الزرّ الصحيح يُستنتج من اسم التبويب نفسه، لا مما مُرّر — فأزرار
+  // الشريط السفلي تمرّر "النشط حالياً" أو ترتيباً ثابتاً قد ينزاح.
+  const own = document.querySelector('.nav-tab[onclick*="\'' + tab + '\'"]');
+  const mark = own || (el && el.classList && el.classList.contains('nav-tab') ? el : null);
+  if (mark) mark.classList.add('active');
   document.getElementById('page-' + tab).classList.add('active');
   syncBottomNav(tab);
   if (tab === 'foras') loadForas();
@@ -2426,6 +2447,10 @@ function renderPerfSummary(trades) {
   const avg    = closed.length
     ? (closed.reduce((s, t) => s + (pnl(t) || 0), 0) / closed.length) : null;
   const rateCol = rate == null ? 'var(--text2)' : rate >= 50 ? 'var(--green)' : 'var(--red)';
+  // إجمالي الربح: مجموع نسب الصفقات المغلقة. يفترض حجماً متساوياً
+  // في كل صفقة، وهو حال الصفقات الورقية فكلها وحدة واحدة.
+  const total = closed.length
+    ? closed.reduce((a, t) => a + (pnl(t) || 0), 0) : null;
  
   const box = (label, value, color, hint) => `
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;text-align:center;min-width:92px">
@@ -2442,7 +2467,10 @@ function renderPerfSummary(trades) {
     box('نسبة النجاح', rate == null ? '—' : rate + '%', rateCol,
         closed.length ? `من ${closed.length} مغلقة` : 'لا مغلقة بعد') +
     box('متوسط الصفقة', avg == null ? '—' : (avg >= 0 ? '+' : '') + avg.toFixed(1) + '%',
-        avg == null ? null : (avg >= 0 ? 'var(--green)' : 'var(--red)'), '');
+        avg == null ? null : (avg >= 0 ? 'var(--green)' : 'var(--red)'), '') +
+    box('إجمالي الربح', total == null ? '—' : (total >= 0 ? '+' : '') + total.toFixed(1) + '%',
+        total == null ? null : (total >= 0 ? 'var(--green)' : 'var(--red)'),
+        closed.length ? 'مجموع المغلقة' : '');
  
   renderBench(closed, pnl, rate, avg);
 }
@@ -2552,21 +2580,23 @@ function pfIndex() {
   return _pfIndex;
 }
 
-window.pfSearch = function() {
-  const box = document.getElementById('pf-sugg');
-  const q   = document.getElementById('pf-sym').value.trim();
-  if (!box) return;
+window.symSearch = function(prefix) {
+  prefix = prefix || 'pf';
+  const box = document.getElementById(prefix + '-sugg');
+  const inp = document.getElementById(prefix + '-sym');
+  if (!box || !inp) return;
+  const q = inp.value.trim();
   if (q.length < 1) { box.innerHTML = ''; box.classList.remove('open'); return; }
   const qU = q.toUpperCase();
   const hits = [];
   pfIndex().forEach(r => {
     const su = r.sym.toUpperCase();
     let rank = -1;
-    if (su === qU)                   rank = 0;
-    else if (su.startsWith(qU))      rank = 1;
+    if (su === qU)                           rank = 0;
+    else if (su.startsWith(qU))              rank = 1;
     else if (r.name && r.name.startsWith(q)) rank = 2;
     else if (r.name && r.name.includes(q))   rank = 3;
-    else if (su.includes(qU))        rank = 4;
+    else if (su.includes(qU))                rank = 4;
     if (rank >= 0) hits.push({ ...r, rank });
   });
   hits.sort((a, b) => a.rank - b.rank || a.sym.localeCompare(b.sym));
@@ -2577,37 +2607,78 @@ window.pfSearch = function() {
     return;
   }
   box.innerHTML = top.map(r =>
-    `<div class="pf-row" onclick="pfPick('${r.sym}','${r.market}')">
+    `<div class="pf-row" onclick="symPick('${r.sym}','${r.market}','${prefix}')">
        <b>${r.sym}</b><span>${r.name || ''}</span>
        <em>${r.market === 'sa' ? 'السعودي' : 'الأمريكي'}</em>
      </div>`).join('');
   box.classList.add('open');
 };
 
-window.pfPick = async function(sym, market) {
-  document.getElementById('pf-sym').value = sym;
-  document.getElementById('pf-sugg').classList.remove('open');
-  const hint = document.getElementById('pf-hint');
+// نجلب آخر ما يعرفه الموقع عن السهم: قائمتك أولاً ثم الفرص ثم
+// الارتكاز. يعيد {data, source} أو null.
+async function lookupSymbol(sym, market) {
+  const inList = _myList && _myList[mlKey(sym, market)];
+  if (inList && inList.data && Object.keys(inList.data).length) {
+    return { data: inList.data, source: inList.source || 'foras' };
+  }
+  try {
+    await waitForDB();
+    const { getDoc, doc } = window._firestoreOps;
+    const cols = [['suggestions_' + market, 'foras'],
+                  ['consolidation_' + market, 'arkitaz']];
+    for (const [col, src] of cols) {
+      const snap = await getDoc(doc(window._db, col, sym));
+      if (snap.exists()) return { data: snap.data(), source: src };
+    }
+  } catch (e) { /* بلا اتصال: يبقى الإدخال يدوياً */ }
+  return null;
+}
+
+window.symPick = async function(sym, market, prefix) {
+  prefix = prefix || 'pf';
+  const inp  = document.getElementById(prefix + '-sym');
+  const box  = document.getElementById(prefix + '-sugg');
+  const hint = document.getElementById(prefix + '-hint');
+  if (inp) inp.value = sym;
+  if (box) box.classList.remove('open');
   const name = market === 'sa' ? (SA_NAMES[sym] || '') : '';
   if (hint) hint.textContent = name;
 
-  let d = null;
-  const inList = _myList && _myList[mlKey(sym, market)];
-  if (inList && inList.data) d = inList.data;
-  if (!d) {
+  const found = await lookupSymbol(sym, market);
+
+  // ── قائمتي: الإضافة مباشرة ──
+  if (prefix === 'ml') {
+    const key = mlKey(sym, market);
+    if (_myList[key]) {
+      if (hint) hint.textContent = (name ? name + ' · ' : '') + 'موجود في قائمتك أصلاً';
+      return;
+    }
+    _myList[key] = { symbol: sym, market,
+                     source: found ? found.source : 'foras',
+                     addedAt: new Date().toISOString(),
+                     data: found ? found.data : {} };
+    mlSaveLS(_myList);
     try {
       await waitForDB();
-      const { getDoc, doc } = window._firestoreOps;
-      for (const col of ['suggestions_' + market, 'consolidation_' + market]) {
-        const snap = await getDoc(doc(window._db, col, sym));
-        if (snap.exists()) { d = snap.data(); break; }
-      }
-    } catch (e) { /* يبقى الإدخال يدوياً */ }
+      const uid = await waitForUID();
+      const { doc, setDoc } = window._firestoreOps;
+      await setDoc(doc(window._db, 'users', uid, 'watchlist', key), _myList[key]);
+    } catch (e) { /* السجل المحلي يكفي حتى يعود الاتصال */ }
+    updateMyListCount();
+    if (inp) inp.value = '';
+    if (hint) hint.textContent = (name ? name + ' · ' : '') +
+      (found ? 'أُضيف ومعه بيانات آخر فرز' : 'أُضيف — بلا بيانات فرز بعد');
+    if (market === _currentMarket) loadMyList();
+    else if (hint) hint.textContent += ' (في السوق الآخر)';
+    return;
   }
-  if (!d) {
+
+  // ── المحفظة: ملء الحقول ──
+  if (!found) {
     if (hint) hint.textContent = (name ? name + ' · ' : '') + 'لا بيانات محفوظة — أدخل الهدف والوقف يدوياً';
     return;
   }
+  const d = found.data;
   const fill = (id, v) => {
     const el = document.getElementById(id);
     if (el && !el.value && v != null && v !== '') el.value = v;
@@ -2618,12 +2689,26 @@ window.pfPick = async function(sym, market) {
   if (hint) hint.textContent = (name ? name + ' · ' : '') + 'مُلئ الهدف والوقف من آخر فرز';
 };
 
+window.toggleAddMyList = function() {
+  const f = document.getElementById('addMyListForm');
+  if (!f) return;
+  f.classList.toggle('open');
+  if (f.classList.contains('open')) {
+    const i = document.getElementById('ml-sym');
+    if (i) { i.value = ''; i.focus(); }
+    const h = document.getElementById('ml-hint');
+    if (h) h.textContent = '';
+  }
+};
+
 // نقرة خارج القائمة تغلقها
 document.addEventListener('click', function(e) {
-  if (!e.target.closest('#pf-sym') && !e.target.closest('#pf-sugg')) {
-    const b = document.getElementById('pf-sugg');
-    if (b) b.classList.remove('open');
-  }
+  ['pf', 'ml'].forEach(px => {
+    if (!e.target.closest('#' + px + '-sym') && !e.target.closest('#' + px + '-sugg')) {
+      const b = document.getElementById(px + '-sugg');
+      if (b) b.classList.remove('open');
+    }
+  });
 });
 
 window.savePortfolioTrade = async function() {
@@ -3337,6 +3422,7 @@ window.saveBuyDetail = window.saveBuyDetail;
 </body>
 </html>
  
+
 
 
 
